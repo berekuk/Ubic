@@ -1,0 +1,48 @@
+Each init-invoked process has corresponding "running" flag.
+It's implemented as simple file in FS.
+
+FLOW PRESUDOCODE
+
+# lsb-required actions
+start:
+    if (running flag exists) {
+        print "already started"
+        # TODO - check status, at least optionally?
+    }
+    if (status() != "running") {
+        impl.start() # TODO - start-stop-daemon or daemonize.pl
+    }
+
+stop
+    if (status() == "running") {
+        impl.stop()
+    } else {
+        print "not running"
+    }
+
+restart: # what's the difference from start?
+    stop()
+    start()
+
+try-restart:
+    ?
+
+status:
+    impl.status()
+
+reload:
+    ?
+
+force-reload:
+    restart() (by default, but can differ)
+
+# watchdog
+check:
+    if (running flag not exists) {
+        return # nothing to check
+    }
+    if (status() != "running") {
+        complain in common log
+        start()
+    }
+
