@@ -1,0 +1,7 @@
+/*.prerm.debhelper
+/*.postinst.debhelper
+/files
+/*.postrm.debhelper
+/yandex-ubic
+/*.substvars
+/stamp-makefile-build

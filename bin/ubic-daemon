@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+# Copyright (c) 2009 Yandex.ru
+
+use strict;
+use warnings;
+
+=head1 NAME
+
+ubic-daemon - daemononize any binary
+
+=head1 SYNOPSIS
+
+    ubic-daemon --name=sleep 'sleep 1000'
+
+=cut
+
+use Getopt::Long 2.32;
+use Pod::Usage;
+
+use Yandex::Ubic::Daemon qw(start_daemon);
+
+my $name;
+my $pid_dir = '/var/lib/yandex-ubic/ubic-daemon/pids';
+
+GetOptions(
+    'name=s'    => \$name,
+    'pid-dir=s' => \$pid_dir,
+) or pod2usage(2);
+pod2usage(2) unless @ARGV == 1;
+pod2usage(2) unless defined $name;
+
+start_daemon({
+    name => $name,
+    pidfile => "$pid_dir/$name",
+    bin => shift(@ARGV),
+});
+
+=head1 SEE ALSO
+
+L<Yandex::Ubic::Daemon>
+
+=head1 AUTHOR
+
+Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
+
+=cut
+
+

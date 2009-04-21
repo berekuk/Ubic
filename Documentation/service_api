@@ -1,0 +1,8 @@
+my $service = Yandex::Ubic::Service->new({
+    name => "yandex-ppb-something",
+    start => sub { xystem("something.pl") },
+    stop => sub { xystem("killall something.pl") },
+    status => sub { $status = xqx("ps uax | grep something.pl | grep -v grep | wc -l"); chomp $status; $status },
+});
+$service->start;
+
