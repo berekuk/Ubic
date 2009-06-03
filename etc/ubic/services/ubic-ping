@@ -1,0 +1,23 @@
+# vim:syntax=perl
+use Ubic::Service::Common;
+use LWP::Simple;
+require "/usr/share/ubic/ubic-ping";
+
+my $port = 12345;
+
+Ubic::Service::Common->new({
+    start => sub {
+        my $pid = Ubic::Ping->new($port)->background;
+        # TODO - save pid somewhere
+    },
+    stop => sub {
+        # ???
+    },
+    status => sub {
+        my $result = get("http://localhost:$port/?name=ubic-ping") || '';
+        return ((
+            $result =~ /^ok$/
+        ) ? 'running' : 'not running');
+    },
+    name => 'ubic-ping',
+});

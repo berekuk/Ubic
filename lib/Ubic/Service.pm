@@ -63,6 +63,24 @@ sub stop {
     die "not implemented";
 }
 
+=item B<status>
+
+Check real status of service.
+
+It should check that service is running correctly and return "running" if it is so.
+
+=cut
+sub status {
+    my ($self) = @_;
+    die "not implemented";
+}
+
+sub restart {
+    my ($self) = @_;
+    $self->stop;
+    return $self->start; # FIXME!
+}
+
 =item B<enable>
 
 Enable service.
@@ -95,6 +113,17 @@ Returns true value if service is enabled, false otherwise.
 sub is_enabled {
     my ($self) = @_;
     Ubic::Catalog->is_enabled($self->name);
+}
+
+=item B<port>
+
+Should return port number if service provides a server which uses TCP protocol.
+
+=cut
+sub port {
+    my ($self) = @_;
+    return; # by default, service has no port
+    # TODO - what will this method return when complex services which runs several daemons at once will be implemented?
 }
 
 =back

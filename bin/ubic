@@ -1,0 +1,92 @@
+#!/usr/bin/perl
+# Copyright (c) 2009 Yandex.ru
+
+use strict;
+use warnings;
+
+=head1 NAME
+
+ubic - simple viewer of ubic services
+
+=head1 SYNOPSIS
+
+    ubic list
+
+    ubic start SERVICE
+    ubic stop SERVICE
+    ubic restart SERVICE
+
+=cut
+
+use Getopt::Long 2.32;
+use Pod::Usage;
+
+use Ubic::Catalog;
+
+GetOptions() or pod2usage(2);
+
+my $command = shift or pod2usage(2);
+
+if ($command eq 'list') {
+    pod2usage(2) if @ARGV;
+    my @services = Ubic::Catalog->services;
+
+    for my $service (@services) {
+        my $name = $service->name;
+        my $enabled = Ubic::Catalog->is_enabled($name);
+        if ($enabled) {
+            my $status = $service->status;
+            if ($status eq 'running') {
+                my $msg;
+                $msg .= "\e[32m" if -t STDOUT;
+                $msg .= "$name\t$status\n";
+                $msg .= "\e[0m" if -t STDOUT;
+                print $msg;
+            }
+            else {
+                my $msg;
+                $msg .= "\e[31m" if -t STDOUT;
+                $msg .= "$name\t$status\n";
+                $msg .= "\e[0m" if -t STDOUT;
+                print $msg;
+            }
+        }
+        else {
+            print "$name\toff\n";
+        }
+    }
+    exit;
+}
+elsif ($command eq 'start') {
+    my $name = shift or pod2usage(2);
+    pod2usage(2) if @ARGV;
+    print "Starting $name... ";
+    my $result = Ubic::Catalog->service($name)->start;
+    print "$result\n";
+    exit;
+}
+elsif ($command eq 'stop') {
+    my $name = shift or pod2usage(2);
+    pod2usage(2) if @ARGV;
+    print "Stopping $name... ";
+    my $result = Ubic::Catalog->service($name)->stop;
+    print "$result\n";
+    exit;
+}
+elsif ($command eq 'restart') {
+    my $name = shift or pod2usage(2);
+    pod2usage(2) if @ARGV;
+    print "Restarting $name... ";
+    my $result = Ubic::Catalog->service($name)->restart;
+    print "$result\n";
+    exit;
+}
+else {
+    pod2usage(2);
+}
+
+=head1 AUTHOR
+
+Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
+
+=cut

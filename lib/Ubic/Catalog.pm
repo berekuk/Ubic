@@ -20,8 +20,12 @@ Ubic::Catalog - catalog of all ubic services
 =cut
 
 use Params::Validate qw(:all);
+use Carp;
+use Perl6::Slurp;
+use File::Basename;
 
-our $WATCHDOG_DIR = $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/yandex-ubic/watchdogs";
+our $WATCHDOG_DIR = $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdogs";
+our $SERVICE_DIR = $ENV{UBIC_SERVICE_DIR} || '/etc/ubic/services';
 
 sub watchdog_file($) {
     my ($service_name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
@@ -43,6 +47,34 @@ sub disable($$) {
     if ($class->is_enabled($service_name)) {
         unlink watchdog_file($service_name) or die "Can't unlink '".watchdog_file($service_name)."'";
     }
+}
+
+sub service($$) {
+    my ($class, $service_name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $file = "$SERVICE_DIR/$service_name";
+    if (-e $file) {
+        my $content = slurp($file);
+        $content = "# line 1 $file\n$content";
+        my $service = eval $content;
+        if ($@) {
+            die "Failed to eval '$file': $@";
+        }
+        return $service;
+    }
+    else {
+        croak "Service '$service_name' not found";
+    }
+}
+
+sub services($) {
+    my ($class) = validate_pos(@_, 1);
+    my @services;
+    for my $file (glob("$SERVICE_DIR/*")) {
+        # TODO - can $SERVICE_DIR contain any subdirs?
+        $file = basename($file);
+        push @services, $class->service($file);
+    }
+    return @services;
 }
 
 =head1 AUTHOR

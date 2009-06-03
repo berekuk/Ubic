@@ -20,7 +20,7 @@ use Pod::Usage;
 use Ubic::Daemon qw(start_daemon);
 
 my $name;
-my $pid_dir = '/var/lib/yandex-ubic/ubic-daemon/pids';
+my $pid_dir = '/var/lib/ubic/ubic-daemon/pids';
 
 GetOptions(
     'name=s'    => \$name,

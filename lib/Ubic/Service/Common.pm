@@ -38,7 +38,7 @@ use Yandex::Lockf;
 use Yandex::X;
 use Yandex::Persistent;
 
-our $LOCK_DIR = "/var/lock/yandex-ubic";
+our $LOCK_DIR = "/var/lock/ubic"; # FIXME - on some hosts lock dir can be tmpfs!
 
 =head1 CONSTRUCTOR
 
@@ -81,10 +81,16 @@ sub new {
         status      => { type => CODEREF },
         name        => { type => SCALAR, regex => qr/^[\w.-]+$/ },
         lock_dir    => { type => SCALAR, optional => 1},
+        port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1},
     });
     my $self = bless {%$params} => $class;
     $self->{lock_dir} ||= $LOCK_DIR;
     return $self;
+}
+
+sub port {
+    my ($self) = @_;
+    return $self->{port};
 }
 
 sub lock {
@@ -197,10 +203,12 @@ sub do_start {
 sub do_stop {
     my ($self) = @_;
     $self->{stop}->();
-    if ($self->status eq 'not running') {
+    my $status = $self->status;
+    if ($status eq 'not running') {
         return 'stopped';
-    } else {
-        die 'stop failed';
+    }
+    else {
+        die "stop failed, current status: '$status'";
     }
 }
 

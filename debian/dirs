@@ -1,0 +1,3 @@
+var/lib/ubic/ubic-daemon
+var/lib/ubic/watchdogs
+var/lock/ubic
