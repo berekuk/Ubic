@@ -17,7 +17,7 @@ ubic-daemon - daemononize any binary
 use Getopt::Long 2.32;
 use Pod::Usage;
 
-use Yandex::Ubic::Daemon qw(start_daemon);
+use Ubic::Daemon qw(start_daemon);
 
 my $name;
 my $pid_dir = '/var/lib/yandex-ubic/ubic-daemon/pids';
@@ -37,7 +37,7 @@ start_daemon({
 
 =head1 SEE ALSO
 
-L<Yandex::Ubic::Daemon>
+L<Ubic::Daemon>
 
 =head1 AUTHOR
 

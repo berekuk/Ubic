@@ -1,13 +1,4 @@
 #!/usr/bin/make -f
 
-PACKAGE=$(shell dh_listpackages)
-
-DEB_MAKE_INSTALL_TARGET  := install DESTDIR=debian/$(PACKAGE)
-include /usr/share/cdbs/1/class/makefile.mk
-include /usr/share/cdbs/1/rules/debhelper.mk
-
-binary-predeb/$(PACKAGE)::
-	dh_perldeps
-	dh_builddeps
-	dh_clearvcs
-	dh_versions `find debian/$(PACKAGE)/usr/share/perl5 -name '*.pm'`
+include /usr/share/cdbs/1/class/perlmodule.mk
+include /usr/share/cdbs/1/class/ppb.mk

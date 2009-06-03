@@ -1,16 +1,16 @@
-package Yandex::Ubic::Service::SimpleDaemon;
+package Ubic::Service::SimpleDaemon;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-Yandex::Ubic::Service::SimpleDaemon - variant of service when your service is simple daemonized binary
+Ubic::Service::SimpleDaemon - variant of service when your service is simple daemonized binary
 
 =head1 SYNOPSIS
 
-    use Yandex::Ubic::Service::SimpleDaemon;
-    $service = Yandex::Ubic::Service::SimpleDaemon->new({
+    use Ubic::Service::SimpleDaemon;
+    $service = Ubic::Service::SimpleDaemon->new({
         name => "sleep",
         bin => "sleep 1000",
     });
@@ -18,16 +18,16 @@ Yandex::Ubic::Service::SimpleDaemon - variant of service when your service is si
 
 =head1 DESCRIPTION
 
-Unlike L<Yandex::Ubic::Service>, this class allows you to specify only name and binary of your service.
+Unlike L<Ubic::Service::Common>, this class allows you to specify only name and binary of your service.
 
-Also, other options like I<lock_dir> and I<watchdog_dir> will be propagated to C<Yandex::Ubic::Service> constructor.
+Also, other options like I<lock_dir> and I<watchdog_dir> will be propagated to C<Ubic::Service::Common> constructor.
 
 =cut
 
-use Yandex::Ubic::Service;
-use base qw(Yandex::Ubic::Service);
+use Ubic::Service::Common;
+use base qw(Ubic::Service::Common);
 
-use Yandex::Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
+use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 
 our $PID_DIR = $ENV{PID_DIR} || "/var/lib/yandex-ubic/simple-daemon/pids";
 
@@ -65,7 +65,7 @@ sub new {
 
 =head1 SEE ALSO
 
-L<Yandex::Ubic::Daemon> - module to daemonize any binary
+L<Ubic::Daemon> - module to daemonize any binary
 
 =head1 AUTHOR
 

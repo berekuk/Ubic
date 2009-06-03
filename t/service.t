@@ -13,10 +13,14 @@ xsystem('mkdir tfiles');
 xsystem('mkdir tfiles/watchdog');
 xsystem('mkdir tfiles/lock');
 
-use Yandex::Ubic::Service;
+BEGIN {
+    $ENV{UBIC_WATCHDOG_DIR} = 'tfiles/watchdog';
+}
+
+use Ubic::Service::Common;
 
 my $running;
-my $service = Yandex::Ubic::Service->new({
+my $service = Ubic::Service::Common->new({
     start => sub {
         $running++;
     },
@@ -31,7 +35,6 @@ my $service = Yandex::Ubic::Service->new({
         }
     },
     name => 'some.service',
-    watchdog_dir => 'tfiles/watchdog',
     lock_dir => 'tfiles/lock',
 });
 is($service->start, 'started', 'start works');

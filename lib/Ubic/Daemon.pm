@@ -1,15 +1,15 @@
-package Yandex::Ubic::Daemon;
+package Ubic::Daemon;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-Yandex::Ubic::Daemon - toolkit for creating daemonized process
+Ubic::Daemon - toolkit for creating daemonized process
 
 =head1 SYNOPSIS
 
-    use Yandex::Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
+    use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
     start_daemon({bin => '/bin/sleep', pidfile => "/var/lib/something/pid"});
     stop_daemon("/var/lib/something/pid");
     check_daemon("/var/lib/something/pid");
@@ -141,7 +141,7 @@ See the code for many critical TODO sections.
 
 =head1 SEE ALSO
 
-L<Yandex::Ubic::Service::SimpleDaemon>
+L<Ubic::Service::SimpleDaemon>
 
 =head1 AUTHOR
 

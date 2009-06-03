@@ -1,15 +1,15 @@
-package Yandex::Ubic::Service;
+package Ubic::Service::Common;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-Yandex::Ubic::Service - container specifying one service
+Ubic::Service::Common - common way to construct new service by specifying several callbacks
 
 =head1 SYNOPSIS
 
-    $service = Yandex::Ubic::Service->new({
+    $service = Ubic::Service::Common->new({
         start => sub {
             # implementation-specific
         },
@@ -29,16 +29,20 @@ Each service should provide safe C<start()>, C<stop()> and C<status()> methods.
 
 =cut
 
+use Params::Validate qw(:all);
+
+use Ubic::Service;
+use base qw(Ubic::Service);
+
 use Yandex::Lockf;
 use Yandex::X;
 use Yandex::Persistent;
 
-our $WATCHDOG_DIR = "/var/lib/yandex-ubic/watchdogs";
 our $LOCK_DIR = "/var/lock/yandex-ubic";
 
 =head1 CONSTRUCTOR
 
-C<< Yandex::Ubic::Service->new($params) >>
+C<< Ubic::Service::Common->new($params) >>
 
 Construct service object.
 
@@ -70,27 +74,17 @@ Service's name.
 
 =cut
 sub new {
-    my ($class, $params) = @_;
-    # FIXME - check that params have all required keys
-    for my $hook (qw/ start stop status /) {
-        die "'$hook' hook not specified" unless exists $params->{$hook};
-        die "'$hook' hook should be CODE ref" unless ref($params->{$hook}) eq 'CODE';
-    }
-    unless (defined $params->{name}) {
-        die "name not specified";
-    }
-    if ($params->{name} !~ /^[\w+\-\.]+$/) {
-        die "forbidden name '$params->{name}'";
-    }
+    my $class = shift;
+    my $params = validate(@_, {
+        start       => { type => CODEREF },
+        stop        => { type => CODEREF },
+        status      => { type => CODEREF },
+        name        => { type => SCALAR, regex => qr/^[\w.-]+$/ },
+        lock_dir    => { type => SCALAR, optional => 1},
+    });
     my $self = bless {%$params} => $class;
-    $self->{watchdog_dir} ||= $WATCHDOG_DIR;
     $self->{lock_dir} ||= $LOCK_DIR;
     return $self;
-}
-
-sub name {
-    my ($self) = @_;
-    return $self->{name};
 }
 
 sub lock {
@@ -174,32 +168,21 @@ sub stop {
     }
 }
 
+=item C<name>
+
+Returns name specified in constructor.
+
+=cut
+sub name {
+    my ($self) = @_;
+    return $self->{name};
+}
+
 =back
 
 =cut
 
 ##### internal methods ######
-sub watchdog_file {
-    my ($self) = @_;
-    return "$self->{watchdog_dir}/$self->{name}";
-}
-
-sub is_enabled {
-    my ($self) = @_;
-    return (-e $self->watchdog_file); # watchdog presence means service is running or should be running
-}
-
-sub enable {
-    my ($self) = @_;
-    my $watchdog = Yandex::Persistent->new($self->watchdog_file);
-}
-
-sub disable {
-    my ($self) = @_;
-    if ($self->is_enabled) {
-        unlink $self->watchdog_file or die "Can't unlink ".$self->watchdog_file;
-    }
-}
 
 sub do_start {
     my ($self) = @_;

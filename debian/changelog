@@ -1,3 +1,17 @@
+yandex-ubic (0.1.2) unstable; urgency=low
+
+  * using Module::Install to build
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 03 Jun 2009 23:00:15 +0400
+
+yandex-ubic (0.1.1) unstable; urgency=low
+
+  * Yandex:: package namespace removed, Ubic is unique word anyway
+  * Ubic::Service is just an interface now
+  * Ubic::Catalog introduced
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 03 Jun 2009 22:45:03 +0400
+
 yandex-ubic (0.1.0) unstable; urgency=low
 
   * Initial release.
