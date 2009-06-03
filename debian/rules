@@ -1,4 +1,4 @@
 #!/usr/bin/make -f
 
-include /usr/share/cdbs/1/class/perlmodule.mk
+include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/class/ppb.mk
