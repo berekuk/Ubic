@@ -7,4 +7,6 @@ all_from       'lib/Ubic/Catalog.pm';
 # Specific dependencies
 install_script 'bin/ubic-daemon';
 
-WriteAll;
+WriteMakefile(
+    clean => { FILES => 'tfiles' },
+);

@@ -1,0 +1,23 @@
+bin/ubic-daemon
+Documentation/api
+Documentation/flow
+Documentation/goal
+inc/Module/Install.pm
+inc/Module/Install/Base.pm
+inc/Module/Install/Makefile.pm
+inc/Module/Install/MakeMaker.pm
+inc/Module/Install/Metadata.pm
+inc/Module/Install/Scripts.pm
+lib/Ubic/Catalog.pm
+lib/Ubic/Daemon.pm
+lib/Ubic/Service.pm
+lib/Ubic/Service/Common.pm
+lib/Ubic/Service/SimpleDaemon.pm
+Makefile
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.bak
+MANIFEST.SKIP
+META.yml
+README
+t/service.t
