@@ -1,3 +1,11 @@
+yandex-ubic (0.2.4) unstable; urgency=low
+
+  * first tests for Ubic.pm
+  * Ubic.pm implements try_restart
+  * sleeping-daemon is moved into tests, don't need it in real installation
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 04 Jun 2009 23:45:14 +0400
+
 yandex-ubic (0.2.3) unstable; urgency=low
 
   * POD tests and bugfixes

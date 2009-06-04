@@ -165,11 +165,28 @@ sub restart($$) {
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
     my $lock = $self->lock($name);
 
+    $self->enable($name);
+    $self->service($name)->stop;
+    $self->service($name)->start;
+    return 'restarted';
+}
+
+=item B<try_restart>
+
+Restart service by name if it is enabled.
+
+=cut
+sub try_restart($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
     unless ($self->is_enabled($name)) {
         return 'down';
     }
-    my $result = $self->service($name)->restart;
-    return $result;
+    $self->service($name)->stop;
+    $self->service($name)->start;
+    return 'restarted';
 }
 
 =item B<status>
