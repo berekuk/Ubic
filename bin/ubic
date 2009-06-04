@@ -21,7 +21,7 @@ ubic - simple viewer of ubic services
 use Getopt::Long 2.32;
 use Pod::Usage;
 
-use Ubic::Catalog;
+use Ubic;
 
 GetOptions() or pod2usage(2);
 
@@ -29,11 +29,11 @@ my $command = shift or pod2usage(2);
 
 if ($command eq 'list') {
     pod2usage(2) if @ARGV;
-    my @services = Ubic::Catalog->services;
+    my @services = Ubic->services;
 
     for my $service (@services) {
         my $name = $service->name;
-        my $enabled = Ubic::Catalog->is_enabled($name);
+        my $enabled = Ubic->is_enabled($name);
         if ($enabled) {
             my $status = $service->status;
             if ($status eq 'running') {
@@ -61,7 +61,7 @@ elsif ($command eq 'start') {
     my $name = shift or pod2usage(2);
     pod2usage(2) if @ARGV;
     print "Starting $name... ";
-    my $result = Ubic::Catalog->service($name)->start;
+    my $result = Ubic->start($name);
     print "$result\n";
     exit;
 }
@@ -69,7 +69,7 @@ elsif ($command eq 'stop') {
     my $name = shift or pod2usage(2);
     pod2usage(2) if @ARGV;
     print "Stopping $name... ";
-    my $result = Ubic::Catalog->service($name)->stop;
+    my $result = Ubic->stop($name);
     print "$result\n";
     exit;
 }
@@ -77,7 +77,7 @@ elsif ($command eq 'restart') {
     my $name = shift or pod2usage(2);
     pod2usage(2) if @ARGV;
     print "Restarting $name... ";
-    my $result = Ubic::Catalog->service($name)->restart;
+    my $result = Ubic->restart($name);
     print "$result\n";
     exit;
 }

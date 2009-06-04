@@ -12,43 +12,13 @@ ubic-ping - http server which returns service status by it's name or port
 
 =cut
 
-use Ubic::Catalog;
+use Ubic;
 
 use base qw(HTTP::Server::Simple::CGI);
 
-sub handle_request {
-    my ($self, $cgi) = @_;
-    my $service;
-    if (my $port = $cgi->param('port')) {
-        # find service my port
-        my @services = Ubic::Catalog->services();
-        for (@services) {
-            if ($_->port and $_->port == $port) {
-                $service = $_;
-                last;
-            }
-        }
-        unless ($service) {
-            print "HTTP/1.0 404 Not found\r\n\r\n";
-            print "Service at port $port not found\n";
-            return;
-        }
-    }
-    elsif (my $name = $cgi->param('name')) {
-        eval {
-            $service = Ubic::Catalog->service($name);
-        }; if ($@) {
-            print "HTTP/1.0 404 Not found\r\n\r\n";
-            print "Service with name $name not found\n";
-            return;
-        }
-    }
-    else {
-        print "HTTP/1.0 404 Not found\r\n\r\n";
-        print "Expected name or port\n";
-        return;
-    }
-    if ($service->is_enabled) {
+sub print_status($) {
+    my ($service) = @_;
+    if (Ubic->is_enabled($service->name)) {
         print "HTTP/1.0 200 OK\r\n\r\n";
         print "ok\n";
         return;
@@ -56,6 +26,44 @@ sub handle_request {
     else {
         print "HTTP/1.0 200 OK\r\n\r\n";
         print "disabled\n";
+        return;
+    }
+}
+
+sub handle_request {
+    my ($self, $cgi) = @_;
+    if ($cgi->path_info eq '/ping') {
+        # ping self
+        print "HTTP/1.0 200 OK\r\n\r\n";
+        print "ok\n";
+        return;
+    }
+    elsif (my ($port) = $cgi->path_info =~ m{^/status/port/(\d+)/?$}) {
+        # find service my port
+        my @services = Ubic->services();
+        for (@services) {
+            if ($_->port and $_->port == $port) {
+                print_status($_);
+                return;
+            }
+        }
+        print "HTTP/1.0 404 Not found\r\n\r\n";
+        print "Service at port '$port' not found\n";
+        return;
+    }
+    elsif (my ($name) = $cgi->path_info =~ m{^/status/service/(.+?)/?$}) {
+        my $service = eval {
+            Ubic->service($name);
+        }; if ($@) {
+            print "HTTP/1.0 404 Not found\r\n\r\n";
+            print "Service with name '$name' not found\n";
+            return;
+        }
+        print_status($service);
+    }
+    else {
+        print "HTTP/1.0 404 Not found\r\n\r\n";
+        print "Expected /status/name/NAME or /status/port/PORT query\n";
         return;
     }
 }

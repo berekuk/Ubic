@@ -1,23 +1,33 @@
 # vim:syntax=perl
 use Ubic::Service::Common;
+use Yandex::Persistent;
 use LWP::Simple;
+use POSIX;
 require "/usr/share/ubic/ubic-ping";
 
 my $port = 12345;
 
 Ubic::Service::Common->new({
     start => sub {
-        my $pid = Ubic::Ping->new($port)->background;
-        # TODO - save pid somewhere
+        my $pid;
+        {
+            local $0 = "ubic-ping";
+            $pid = Ubic::Ping->new($port)->background;
+        }
+        my $state = Yandex::Persistent->new("/var/lib/ubic/ubic-ping.pid");
+        $state->{pid} = $pid;
+        $state->commit;
     },
     stop => sub {
-        # ???
+        my $state = Yandex::Persistent->new("/var/lib/ubic/ubic-ping.pid");
+        my $pid = $state->{pid} or return;
+        kill SIGTERM => $pid;
     },
     status => sub {
-        my $result = get("http://localhost:$port/?name=ubic-ping") || '';
+        my $result = get("http://localhost:$port/ping") || '';
         return ((
             $result =~ /^ok$/
         ) ? 'running' : 'not running');
     },
-    name => 'ubic-ping',
+    port => $port,
 });

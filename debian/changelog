@@ -1,3 +1,14 @@
+yandex-ubic (0.2.0) unstable; urgency=low
+
+  * Ubic::Catalog renamed into Ubic
+  * services don't have methods enable, disable and is_enabled, Ubic.pm does
+  * ubic-ping:
+    - request API changed into more RESTful
+    - start/stop on package installation
+    - correctly save pid in file and stop using that pid
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 04 Jun 2009 19:13:01 +0400
+
 yandex-ubic (0.1.4) unstable; urgency=low
 
   * ubic script

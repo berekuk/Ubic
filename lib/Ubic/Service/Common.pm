@@ -20,6 +20,7 @@ Ubic::Service::Common - common way to construct new service by specifying severa
             # implementation-specific
         },
         name => "yandex-ppb-something",
+        port => 1234,
     });
     $service->start;
 
@@ -31,14 +32,10 @@ Each service should provide safe C<start()>, C<stop()> and C<status()> methods.
 
 use Params::Validate qw(:all);
 
-use Ubic::Service;
-use base qw(Ubic::Service);
+use base qw(Ubic::Service::Skeleton);
 
 use Yandex::Lockf;
-use Yandex::X;
 use Yandex::Persistent;
-
-our $LOCK_DIR = "/var/lock/ubic"; # FIXME - on some hosts lock dir can be tmpfs!
 
 =head1 CONSTRUCTOR
 
@@ -70,6 +67,10 @@ This code will be used as safety check against double start and as a watchdog.
 
 Service's name.
 
+=item I<port>
+
+Service's port.
+
 =back
 
 =cut
@@ -79,13 +80,17 @@ sub new {
         start       => { type => CODEREF },
         stop        => { type => CODEREF },
         status      => { type => CODEREF },
-        name        => { type => SCALAR, regex => qr/^[\w.-]+$/ },
+        name        => { type => SCALAR, regex => qr/^[\w.-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
         lock_dir    => { type => SCALAR, optional => 1},
         port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1},
     });
     my $self = bless {%$params} => $class;
-    $self->{lock_dir} ||= $LOCK_DIR;
     return $self;
+}
+
+sub lock_dir {
+    my ($self) = @_;
+    return $self->{lock_dir} || $self->SUPER::lock_dir;
 }
 
 sub port {
@@ -93,124 +98,22 @@ sub port {
     return $self->{port};
 }
 
-sub lock {
-    my $self = shift;
-    return lockf("$self->{lock_dir}/$self->{name}");
+sub status_impl {
+    my ($self) = @_;
+    $self->{status}->();
 }
 
-=head1 ACTIONS
-
-=over
-
-=item C<status>
-
-Get status of service.
-
-Possible values: C<running>, C<not running>, C<unknown>, C<broken>.
-
-=cut
-sub status {
+sub start_impl {
     my ($self) = @_;
-    my $status = $self->{status}->();
-    $status ||= 'unknown';
-    return $status;
+    $self->{start}->();
 }
 
-=item C<start>
-
-Start service.
-
-Throws exception on failure.
-
-=cut
-sub start {
+sub stop_impl {
     my ($self) = @_;
-    my $lock = $self->lock;
-    my $enabled = $self->is_enabled;
-    if ($enabled) {
-        # already started
-        my $status = $self->status;
-        if ($status eq 'running') {
-            return 'already running';
-        } elsif ($status eq 'not running') {
-            return $self->do_start;
-        } elsif ($status eq 'broken') {
-            # checks inside do_start and do_stop guarantee correct status
-            $self->do_stop;
-            return $self->do_start;
-        } else {
-            die "Unknown status '$status'";
-        }
-    } else {
-        $self->enable;
-        # we shouldn't check status in this case, right? right?
-        $self->do_start;
-    }
-}
-
-=item C<stop>
-
-Stop service.
-
-Return values: C<stopped>, C<not running>.
-
-Throws exception on failure.
-
-=cut
-sub stop {
-    my ($self) = @_;
-    my $lock = $self->lock;
-    my $enabled = $self->is_enabled;
-    if ($enabled) {
-        my $status = $self->status;
-        if ($status ne 'not running') {
-            $self->do_stop;
-        }
-        # TODO - check status
-        $self->disable; # disabling is a last step - we don't check for running service when watchdog is not installed
-        return 'stopped';
-    } else {
-        return 'not running';
-    }
-}
-
-=item C<name>
-
-Returns name specified in constructor.
-
-=cut
-sub name {
-    my ($self) = @_;
-    return $self->{name};
+    $self->{stop}->();
 }
 
 =back
-
-=cut
-
-##### internal methods ######
-
-sub do_start {
-    my ($self) = @_;
-    $self->{start}->();
-    if ($self->status eq 'running') {
-        return 'started';
-    } else {
-        die 'start failed';
-    }
-}
-
-sub do_stop {
-    my ($self) = @_;
-    $self->{stop}->();
-    my $status = $self->status;
-    if ($status eq 'not running') {
-        return 'stopped';
-    }
-    else {
-        die "stop failed, current status: '$status'";
-    }
-}
 
 =head1 AUTHOR
 

@@ -22,7 +22,7 @@ Ubic::Service - interface and base class for any ubic service
 =cut
 
 use Carp;
-use Ubic::Catalog;
+use Ubic;
 
 =item B<name>
 
@@ -31,8 +31,14 @@ Name of service.
 Each service should have an unique name.
 
 =cut
-sub name {
-    croak "name() not implemented";
+sub name($;$) {
+    my ($self, $name) = @_;
+    if (defined $name) {
+        $self->{name} = $name;
+    }
+    else {
+        return $self->{name};
+    }
 }
 
 =cut
@@ -42,8 +48,6 @@ sub name {
 Start service. Should throw exception on failure and string with operation result otherwise.
 
 Starting already running service should do nothing and return "already running".
-
-Successful start of a service B<must> enable this service.
 
 =cut
 sub start {
@@ -81,40 +85,6 @@ sub restart {
     return $self->start; # FIXME!
 }
 
-=item B<enable>
-
-Enable service.
-
-Enabled service means that service *should* be running. It will be checked by watchdog and marked as broken if it's enabled but not running.
-
-=cut
-sub enable {
-    my ($self) = @_;
-    Ubic::Catalog->enable($self->name);
-}
-
-=item B<disable>
-
-Disable service.
-
-Disabled service means that service is ignored by ubic. It's state will no longer be checked by watchdog, and pings will answer that service is not running, even if it's not true.
-
-=cut
-sub disable {
-    my ($self) = @_;
-    Ubic::Catalog->disable($self->name);
-}
-
-=item B<is_enabled>
-
-Returns true value if service is enabled, false otherwise.
-
-=cut
-sub is_enabled {
-    my ($self) = @_;
-    Ubic::Catalog->is_enabled($self->name);
-}
-
 =item B<port>
 
 Should return port number if service provides a server which uses TCP protocol.
@@ -124,6 +94,16 @@ sub port {
     my ($self) = @_;
     return; # by default, service has no port
     # TODO - what will this method return when complex services which runs several daemons at once will be implemented?
+}
+
+=item B<check_period>
+
+Returns period of checking a service by watchdog in seconds.
+
+=cut
+sub check_period {
+    my ($self) = @_;
+    return 60;
 }
 
 =back

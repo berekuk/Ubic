@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+=head1 NAME
+
+ubic-watchdog - watchdog which checks all ubic services.
+
+=cut
+
+use Getopt::Long 2.32;
+use Pod::Usage;
+
+use Yandex::Logger;
+use Ubic;
+
+my @services = Ubic->services;
+
+for my $service (@services) {
+    my $name = $service->name;
+    next unless Ubic->is_enabled($service->name); # don't check disabled services
+    # TODO - fork on each service, or at least set alert
+    my $status = $service->status;
+    unless ($status eq 'running') {
+        INFO "$name is broken, restarting";
+        $service->start;
+    }
+    $status = $service->status;
+    if ($status ne 'running') {
+        INFO "Failed to start $name";
+    }
+}
+
