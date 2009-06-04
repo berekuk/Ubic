@@ -128,10 +128,14 @@ sub check_daemon {
     eval {
         lockf($pidfile, {nonblocking => 1});
     };
-    if ($@) {
-        return 1;
-    } else {
+    unless ($@) {
         return;
+    }
+    if ($@ =~ /temporarily unavailable/) {
+        return 1;
+    }
+    else {
+        die "Failed to take lock: $@";
     }
 }
 

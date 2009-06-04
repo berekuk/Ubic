@@ -1,3 +1,17 @@
+yandex-ubic (0.2.1) unstable; urgency=low
+
+  * ubic:
+   - check if effective user is root
+   - bash_completion
+  * ubic-watchdog on cron
+  * Ubic.pm refactored
+   - singleton object creating on-demand
+   - cached_status and set_cached_status methods
+  * ubic-ping returns cached status
+  * sleeping-daemon (useless but good for tests)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 04 Jun 2009 20:46:26 +0400
+
 yandex-ubic (0.2.0) unstable; urgency=low
 
   * Ubic::Catalog renamed into Ubic

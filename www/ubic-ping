@@ -18,14 +18,20 @@ use base qw(HTTP::Server::Simple::CGI);
 
 sub print_status($) {
     my ($service) = @_;
-    if (Ubic->is_enabled($service->name)) {
+    unless (Ubic->is_enabled($service->name)) {
+        print "HTTP/1.0 200 OK\r\n\r\n";
+        print "disabled\n";
+        return;
+    }
+    my $status = Ubic->cached_status($service->name); # should read status from static file on disk
+    if ($status eq 'running') {
         print "HTTP/1.0 200 OK\r\n\r\n";
         print "ok\n";
         return;
     }
     else {
         print "HTTP/1.0 200 OK\r\n\r\n";
-        print "disabled\n";
+        print "$status\n";
         return;
     }
 }

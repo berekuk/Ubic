@@ -20,47 +20,57 @@ Ubic::Service::SimpleDaemon - variant of service when your service is simple dae
 
 Unlike L<Ubic::Service::Common>, this class allows you to specify only name and binary of your service.
 
-Also, other options like I<lock_dir> and I<watchdog_dir> will be propagated to C<Ubic::Service::Common> constructor.
+Also, other options like I<lock_dir> and I<watchdog_dir> will be propagated to C<Ubic::Service::Skeleton> constructor.
 
 =cut
 
-use Ubic::Service::Common;
-use base qw(Ubic::Service::Common);
+use base qw(Ubic::Service::Skeleton);
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 
-our $PID_DIR = $ENV{PID_DIR} || "/var/lib/yandex-ubic/simple-daemon/pids";
+use Params::Validate qw(:all);
+
+our $PID_DIR = $ENV{PID_DIR} || "/var/lib/ubic/simple-daemon/pids";
+
+sub pidfile {
+    my ($self) = @_;
+    my $name = $self->name or die "Can't start nameless SimpleDaemon";
+    return "$PID_DIR/$name";
+}
 
 sub new {
-    my ($class, $params) = @_;
-    my $name = delete $params->{name} or die "name not specified";
-    my $bin = delete $params->{bin} or die "bin not specified";
-
-    my $pidfile = "$PID_DIR/$name";
-
-    return $class->SUPER::new({
-        %$params,
-        name => $name,
-        start => sub {
-            start_daemon({
-                pidfile => $pidfile,
-                stdout => "/dev/null",
-                stderr => "/dev/null",
-                bin => $bin,
-            }),
-        },
-        stop => sub {
-            stop_daemon($pidfile);
-        },
-        status => sub {
-            if (check_daemon($pidfile)) {
-                return 'running';
-            }
-            else {
-                return 'not running';
-            }
-        },
+    my $class = shift;
+    my $params = validate(@_, {
+        bin => { type => SCALAR },
+        name => { type => SCALAR, optional => 1 },
     });
+
+    return bless {%$params} => $class;
+}
+
+sub start_impl {
+    my ($self) = @_;
+    start_daemon({
+        pidfile => $self->pidfile,
+        stdout => "/dev/null",
+        stderr => "/dev/null",
+        bin => $self->{bin},
+    }),
+}
+
+sub stop_impl {
+    my ($self) = @_;
+    stop_daemon($self->pidfile);
+}
+
+sub status_impl {
+    my ($self) = @_;
+    if (check_daemon($self->pidfile)) {
+        return 'running';
+    }
+    else {
+        return 'not running';
+    }
 }
 
 =head1 SEE ALSO

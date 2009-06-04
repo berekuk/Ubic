@@ -24,13 +24,42 @@ use Carp;
 use Perl6::Slurp;
 use File::Basename;
 use Yandex::Persistent;
+use Scalar::Util qw(blessed);
 
-our $WATCHDOG_DIR = $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdogs";
-our $SERVICE_DIR = $ENV{UBIC_SERVICE_DIR} || '/etc/ubic/services';
+our $SINGLETON;
 
-sub watchdog_file($) {
+sub obj {
+    my ($param) = validate_pos(@_, 1);
+    if (blessed($param)) {
+        return $param;
+    }
+    if ($param eq 'Ubic') {
+        # method called as a class method => singleton
+        $SINGLETON ||= Ubic->new({});
+        return $SINGLETON;
+    }
+    die "Unknown argument '$param'";
+}
+
+sub new {
+    my $class = shift;
+    my $params = validate(@_, {
+        watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdogs" },
+        service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/services" },
+    });
+    return bless {%$params} => $class;
+}
+
+sub watchdog_file($$) {
+    my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    return "$WATCHDOG_DIR/$name";
+    return "$self->{watchdog_dir}/$name";
+}
+
+sub watchdog($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    return Yandex::Persistent->new($self->watchdog_file($name));
 }
 
 =item B<enable>
@@ -41,8 +70,10 @@ Enabled service means that service *should* be running. It will be checked by wa
 
 =cut
 sub enable($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $watchdog = Yandex::Persistent->new(watchdog_file($name));
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $watchdog = $self->watchdog($name);
+    $watchdog->{status} = 'unknown';
     $watchdog->commit;
 }
 
@@ -52,8 +83,10 @@ Returns true value if service is enabled, false otherwise.
 
 =cut
 sub is_enabled($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    return (-e watchdog_file($name)); # watchdog presence means service is running or should be running
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
 }
 
 =item B<disable>
@@ -64,9 +97,11 @@ Disabled service means that service is ignored by ubic. It's state will no longe
 
 =cut
 sub disable($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    if ($class->is_enabled($name)) {
-        unlink watchdog_file($name) or die "Can't unlink '".watchdog_file($name)."'";
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    if ($self->is_enabled($name)) {
+        unlink $self->watchdog_file($name) or die "Can't unlink '".$self->watchdog_file($name)."'";
     }
 }
 
@@ -76,9 +111,12 @@ Start service by name.
 
 =cut
 sub start($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    $class->enable($name);
-    $class->service($name)->start;
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    $self->enable($name);
+    my $result = $self->service($name)->start;
+    $self->set_cached_status($name, 'running');
+    return $result;
 }
 
 =item B<stop>
@@ -87,9 +125,13 @@ Stop service by name.
 
 =cut
 sub stop($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    $class->disable($name);
-    $class->service($name)->stop;
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    $self->disable($name);
+    my $result = $self->service($name)->stop;
+    # we can't save result in watchdog file - it doesn't exist when service is disabled...
+    return $result;
 }
 
 =item B<restart>
@@ -98,12 +140,14 @@ Restart service by name.
 
 =cut
 sub restart($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    unless ($class->is_enabled($name)) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    unless ($self->is_enabled($name)) {
         return 'down';
     }
-    $class->service($name)->stop;
-    $class->service($name)->start;
+    my $result = $self->service($name)->restart;
+    return $result;
 }
 
 =item B<status>
@@ -112,13 +156,37 @@ Get service status by name.
 
 =cut
 sub status($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    $class->service($name)->status;
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    $self->service($name)->status;
 }
 
+=item B<cached_status>
+
+Get cached status of enabled service.
+
+=cut
+sub cached_status($$) {
+    my ($self) = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    unless ($self->is_enabled($name)) {
+        return 'disabled';
+    }
+    return $self->watchdog($name)->{status};
+}
+
+=item B<service>
+
+Get service by name.
+
+=cut
 sub service($$) {
-    my ($class, $name) = validate_pos(@_, 1, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $file = "$SERVICE_DIR/$name";
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+
+    my $file = "$self->{service_dir}/$name";
     if (-e $file) {
         my $content = slurp($file);
         $content = "# line 1 $file\n$content";
@@ -136,15 +204,30 @@ sub service($$) {
     }
 }
 
+=item B<services>
+
+Get list of all services.
+
+=cut
 sub services($) {
-    my ($class) = validate_pos(@_, 1);
+    my $self = obj(shift);
+
     my @services;
-    for my $file (glob("$SERVICE_DIR/*")) {
-        # TODO - can $SERVICE_DIR contain any subdirs?
+    for my $file (glob("$self->{service_dir}/*")) {
+        # TODO - can $self->{service_dir} contain any subdirs?
         $file = basename($file);
-        push @services, $class->service($file);
+        push @services, $self->service($file);
     }
     return @services;
+}
+
+sub set_cached_status($$$) {
+    my $self = obj(shift);
+    my ($name, $status) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/}, {type => SCALAR});
+
+    my $watchdog = $self->watchdog($name);
+    $watchdog->{status} = $status;
+    $watchdog->commit;
 }
 
 =head1 AUTHOR

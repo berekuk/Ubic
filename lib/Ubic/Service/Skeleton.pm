@@ -99,10 +99,11 @@ sub stop {
 sub do_start {
     my ($self) = @_;
     $self->start_impl;
-    if ($self->status eq 'running') {
+    my $status = $self->status;
+    if ($status eq 'running') {
         return 'started';
     } else {
-        die 'start failed';
+        die "start failed, status: '$status'";
     }
 }
 

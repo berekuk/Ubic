@@ -20,7 +20,7 @@ my @services = Ubic->services;
 for my $service (@services) {
     my $name = $service->name;
     next unless Ubic->is_enabled($service->name); # don't check disabled services
-    # TODO - fork on each service, or at least set alert
+    # TODO - fork on each service, or at least set alarm
     my $status = $service->status;
     unless ($status eq 'running') {
         INFO "$name is broken, restarting";
@@ -29,6 +29,7 @@ for my $service (@services) {
     $status = $service->status;
     if ($status ne 'running') {
         INFO "Failed to start $name";
+        Ubic->set_cached_status($service, $status);
     }
 }
 

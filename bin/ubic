@@ -57,7 +57,13 @@ if ($command eq 'list') {
     }
     exit;
 }
-elsif ($command eq 'start') {
+
+# all other commands should be running from root
+if ($>) {
+    die "Permission denied";
+}
+
+if ($command eq 'start') {
     my $name = shift or pod2usage(2);
     pod2usage(2) if @ARGV;
     print "Starting $name... ";
