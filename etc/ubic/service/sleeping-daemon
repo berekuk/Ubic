@@ -1,0 +1,7 @@
+# vim:syntax=perl
+use Ubic::Service::SimpleDaemon;
+
+Ubic::Service::SimpleDaemon->new({
+    bin => 'sleep 1000',
+    name => 'sleeping-daemon',
+});

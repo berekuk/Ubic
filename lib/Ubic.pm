@@ -24,6 +24,8 @@ use Carp;
 use Perl6::Slurp;
 use File::Basename;
 use Yandex::Persistent;
+use Yandex::Lockf;
+use Yandex::X qw(xopen);
 use Scalar::Util qw(blessed);
 
 our $SINGLETON;
@@ -44,10 +46,11 @@ sub obj {
 sub new {
     my $class = shift;
     my $params = validate(@_, {
-        watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdogs" },
-        service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/services" },
+        watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdog" },
+        service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
+        lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "/var/lib/ubic/lock" },
     });
-    return bless {%$params} => $class;
+    return bless {%$params, locks => {}} => $class;
 }
 
 sub watchdog_file($$) {
@@ -62,6 +65,13 @@ sub watchdog($$) {
     return Yandex::Persistent->new($self->watchdog_file($name));
 }
 
+sub lock($$) {
+    my ($self) = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    $self->{locks}{$name} ||= xopen(">>$self->{lock_dir}/$name");
+    return lockf($self->{locks}{$name});
+}
+
 =item B<enable>
 
 Enable service.
@@ -72,6 +82,8 @@ Enabled service means that service *should* be running. It will be checked by wa
 sub enable($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
     my $watchdog = $self->watchdog($name);
     $watchdog->{status} = 'unknown';
     $watchdog->commit;
@@ -85,6 +97,7 @@ Returns true value if service is enabled, false otherwise.
 sub is_enabled($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
 
     return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
 }
@@ -99,6 +112,7 @@ Disabled service means that service is ignored by ubic. It's state will no longe
 sub disable($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
 
     if ($self->is_enabled($name)) {
         unlink $self->watchdog_file($name) or die "Can't unlink '".$self->watchdog_file($name)."'";
@@ -113,6 +127,8 @@ Start service by name.
 sub start($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
     $self->enable($name);
     my $result = $self->service($name)->start;
     $self->set_cached_status($name, 'running');
@@ -127,6 +143,7 @@ Stop service by name.
 sub stop($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
 
     $self->disable($name);
     my $result = $self->service($name)->stop;
@@ -142,6 +159,7 @@ Restart service by name.
 sub restart($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
         return 'down';
@@ -158,6 +176,7 @@ Get service status by name.
 sub status($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
 
     $self->service($name)->status;
 }
@@ -170,6 +189,7 @@ Get cached status of enabled service.
 sub cached_status($$) {
     my ($self) = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
         return 'disabled';
@@ -185,6 +205,7 @@ Get service by name.
 sub service($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    # no lock - service's construction should be harmless
 
     my $file = "$self->{service_dir}/$name";
     if (-e $file) {
@@ -224,6 +245,7 @@ sub services($) {
 sub set_cached_status($$$) {
     my $self = obj(shift);
     my ($name, $status) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/}, {type => SCALAR});
+    my $lock = $self->lock($name);
 
     my $watchdog = $self->watchdog($name);
     $watchdog->{status} = $status;

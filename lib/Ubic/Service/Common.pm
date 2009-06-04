@@ -81,16 +81,10 @@ sub new {
         stop        => { type => CODEREF },
         status      => { type => CODEREF },
         name        => { type => SCALAR, regex => qr/^[\w.-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
-        lock_dir    => { type => SCALAR, optional => 1},
         port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1},
     });
     my $self = bless {%$params} => $class;
     return $self;
-}
-
-sub lock_dir {
-    my ($self) = @_;
-    return $self->{lock_dir} || $self->SUPER::lock_dir;
 }
 
 sub port {

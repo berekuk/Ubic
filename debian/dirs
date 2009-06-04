@@ -1,5 +1,5 @@
 var/lib/ubic/ubic-daemon
-var/lib/ubic/watchdogs
-var/lib/ubic/simple-daemon/pids
-var/lock/ubic
+var/lib/ubic/watchdog
+var/lib/ubic/simple-daemon/pid
+var/lib/ubic/lock
 var/log/ubic

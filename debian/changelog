@@ -1,3 +1,10 @@
+yandex-ubic (0.2.2) unstable; urgency=low
+
+  * Ubic.pm takes locks on each action
+  * all dir names are singular
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 04 Jun 2009 22:38:24 +0400
+
 yandex-ubic (0.2.1) unstable; urgency=low
 
   * ubic:

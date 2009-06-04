@@ -20,8 +20,6 @@ Ubic::Service::SimpleDaemon - variant of service when your service is simple dae
 
 Unlike L<Ubic::Service::Common>, this class allows you to specify only name and binary of your service.
 
-Also, other options like I<lock_dir> and I<watchdog_dir> will be propagated to C<Ubic::Service::Skeleton> constructor.
-
 =cut
 
 use base qw(Ubic::Service::Skeleton);

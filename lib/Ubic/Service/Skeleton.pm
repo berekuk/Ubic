@@ -13,17 +13,6 @@ use Yandex::Lockf;
 
 use base qw(Ubic::Service);
 
-our $LOCK_DIR = "/var/lock/ubic"; # FIXME - on some hosts lock dir can be tmpfs!
-
-sub lock_dir {
-    return $LOCK_DIR;
-}
-
-sub lock {
-    my $self = shift;
-    return lockf($self->lock_dir."/$self->{name}");
-}
-
 =head1 ACTIONS
 
 =over
@@ -51,7 +40,6 @@ Throws exception on failure.
 =cut
 sub start {
     my ($self) = @_;
-    my $lock = $self->lock;
 
     my $status = $self->status;
     if ($status eq 'running') {
@@ -78,7 +66,6 @@ Throws exception on failure.
 =cut
 sub stop {
     my ($self) = @_;
-    my $lock = $self->lock;
 
     my $status = $self->status;
     if ($status eq 'not running') {
