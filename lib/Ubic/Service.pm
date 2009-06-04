@@ -77,10 +77,16 @@ sub status {
     die "not implemented";
 }
 
-sub restart {
+=item B<reload>
+
+Reload service, if possible.
+
+Should return true value if reload is implemented.
+
+=cut
+sub reload {
     my ($self) = @_;
-    $self->stop;
-    return $self->start; # FIXME!
+    return;
 }
 
 =item B<port>

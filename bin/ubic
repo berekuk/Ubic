@@ -10,8 +10,7 @@ ubic - simple viewer of ubic services
 
 =head1 SYNOPSIS
 
-    ubic list
-
+    ubic status
     ubic start SERVICE
     ubic stop SERVICE
     ubic restart SERVICE
@@ -22,73 +21,29 @@ use Getopt::Long 2.32;
 use Pod::Usage;
 
 use Ubic;
+use Ubic::Init;
 
 GetOptions() or pod2usage(2);
 
-my $command = shift or pod2usage(2);
+my $command = $ARGV[0] or pod2usage(2);
 
-if ($command eq 'list') {
-    pod2usage(2) if @ARGV;
-    my @services = Ubic->services;
-
-    for my $service (@services) {
-        my $name = $service->name;
-        my $enabled = Ubic->is_enabled($name);
-        if ($enabled) {
-            my $status = $service->status;
-            if ($status eq 'running') {
-                my $msg;
-                $msg .= "\e[32m" if -t STDOUT;
-                $msg .= "$name\t$status\n";
-                $msg .= "\e[0m" if -t STDOUT;
-                print $msg;
-            }
-            else {
-                my $msg;
-                $msg .= "\e[31m" if -t STDOUT;
-                $msg .= "$name\t$status\n";
-                $msg .= "\e[0m" if -t STDOUT;
-                print $msg;
-            }
-        }
-        else {
-            print "$name\toff\n";
-        }
+if ($command eq 'status' or $command eq 'cached-status' and @ARGV == 1) {
+    my $cached;
+    if ($command eq 'status' and $>) {
+        print "Not a root, printing cached statuses\n";
+        $cached = 1;
     }
-    exit;
-}
-
-# all other commands should be running from root
-if ($>) {
-    die "Permission denied";
-}
-
-if ($command eq 'start') {
-    my $name = shift or pod2usage(2);
-    pod2usage(2) if @ARGV;
-    print "Starting $name... ";
-    my $result = Ubic->start($name);
-    print "$result\n";
-    exit;
-}
-elsif ($command eq 'stop') {
-    my $name = shift or pod2usage(2);
-    pod2usage(2) if @ARGV;
-    print "Stopping $name... ";
-    my $result = Ubic->stop($name);
-    print "$result\n";
-    exit;
-}
-elsif ($command eq 'restart') {
-    my $name = shift or pod2usage(2);
-    pod2usage(2) if @ARGV;
-    print "Restarting $name... ";
-    my $result = Ubic->restart($name);
-    print "$result\n";
-    exit;
+    if ($command eq 'cached-status') {
+        $cached = 1;
+    }
+    for my $service (Ubic->services) {
+        Ubic::Init::print_status($service->name, $cached);
+    }
 }
 else {
-    pod2usage(2);
+    $0 = "/etc/init.d/$ARGV[1]";
+    @ARGV = ($command);
+    Ubic::Init->run;
 }
 
 =head1 AUTHOR

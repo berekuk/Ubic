@@ -17,10 +17,6 @@ Ubic - catalog of all ubic services
 
     $something_enabled = Ubic->is_enabled("yandex-something");
 
-=head1 METHODS
-
-=over
-
 =cut
 
 use Params::Validate qw(:all);
@@ -69,6 +65,12 @@ sub watchdog($$) {
     return Yandex::Persistent->new($self->watchdog_file($name));
 }
 
+sub watchdog_ro($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    return Yandex::Persistent->new($self->watchdog_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
+}
+
 sub lock($$) {
     my ($self) = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
@@ -76,7 +78,146 @@ sub lock($$) {
     return lockf($self->{locks}{$name});
 }
 
-=item B<enable>
+=head1 LSB METHODS
+
+See L<http://refspecs.freestandards.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html> for init-script method specifications.
+
+Following functions are trying to conform, except that all dashes in method names are replaced with underscores.
+
+=over
+
+=item B<start($name)>
+
+Start service.
+
+=cut
+sub start($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    $self->enable($name);
+    my $result = $self->service($name)->start;
+    $self->set_cached_status($name, 'running');
+    return $result;
+}
+
+=item B<stop($name)>
+
+Stop service.
+
+=cut
+sub stop($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    $self->disable($name);
+    my $result = $self->service($name)->stop;
+    # we can't save result in watchdog file - it doesn't exist when service is disabled...
+    return $result;
+}
+
+=item B<restart($name)>
+
+Restart service; start it if it's not running.
+
+=cut
+sub restart($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    $self->enable($name);
+    $self->service($name)->stop;
+    $self->service($name)->start;
+    $self->set_cached_status($name, 'running');
+    return 'restarted';
+}
+
+=item B<try_restart($name)>
+
+Restart service if it is enabled.
+
+=cut
+sub try_restart($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    unless ($self->is_enabled($name)) {
+        return 'down';
+    }
+    $self->service($name)->stop;
+    $self->service($name)->start;
+    return 'restarted';
+}
+
+=item B<reload($name)>
+
+Reloads service if reloading is implemented; throw exception otherwise.
+
+=cut
+sub reload($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    unless ($self->is_enabled($name)) {
+        return 'down';
+    }
+
+    # if reload isn't implemented, do nothing
+    # TODO - would it be better to execute reload as force-reload always? but it would be incompatible with LSB specification...
+    my $reloaded = $self->service($name)->reload;
+    unless ($reloaded) {
+        die 'reload not implemented';
+    }
+    return $reloaded;
+}
+
+=item B<force_reload($name)>
+
+Reloads service if reloading is implemented, otherwise restarts it.
+
+Does nothing if service is disabled.
+
+=cut
+sub force_reload($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    unless ($self->is_enabled($name)) {
+        return 'down';
+    }
+
+    my $reloaded = $self->service($name)->reload;
+    return $reloaded if $reloaded;
+
+    $self->try_restart($name);
+}
+
+=item B<status($name)>
+
+Get service status.
+
+=cut
+sub status($$) {
+    my $self = obj(shift);
+    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my $lock = $self->lock($name);
+
+    $self->service($name)->status;
+}
+
+=back
+
+=head1 OTHER METHODS
+
+=over
+
+=item B<enable($name)>
 
 Enable service.
 
@@ -93,7 +234,7 @@ sub enable($$) {
     $watchdog->commit;
 }
 
-=item B<is_enabled>
+=item B<is_enabled($name)>
 
 Returns true value if service is enabled, false otherwise.
 
@@ -101,12 +242,12 @@ Returns true value if service is enabled, false otherwise.
 sub is_enabled($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
 
+    die "Service '$name' not found" unless -e "$self->{service_dir}/$name";
     return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
 }
 
-=item B<disable>
+=item B<disable($name)>
 
 Disable service.
 
@@ -123,104 +264,27 @@ sub disable($$) {
     }
 }
 
-=item B<start>
 
-Start service by name.
-
-=cut
-sub start($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
-
-    $self->enable($name);
-    my $result = $self->service($name)->start;
-    $self->set_cached_status($name, 'running');
-    return $result;
-}
-
-=item B<stop>
-
-Stop service by name.
-
-=cut
-sub stop($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
-
-    $self->disable($name);
-    my $result = $self->service($name)->stop;
-    # we can't save result in watchdog file - it doesn't exist when service is disabled...
-    return $result;
-}
-
-=item B<restart>
-
-Restart service by name.
-
-=cut
-sub restart($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
-
-    $self->enable($name);
-    $self->service($name)->stop;
-    $self->service($name)->start;
-    return 'restarted';
-}
-
-=item B<try_restart>
-
-Restart service by name if it is enabled.
-
-=cut
-sub try_restart($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
-
-    unless ($self->is_enabled($name)) {
-        return 'down';
-    }
-    $self->service($name)->stop;
-    $self->service($name)->start;
-    return 'restarted';
-}
-
-=item B<status>
-
-Get service status by name.
-
-=cut
-sub status($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
-
-    $self->service($name)->status;
-}
-
-=item B<cached_status>
+=item B<cached_status($name)>
 
 Get cached status of enabled service.
+
+Unlike other methods, it doesn't require user to be root.
 
 =cut
 sub cached_status($$) {
     my ($self) = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
         return 'disabled';
     }
-    return $self->watchdog($name)->{status};
+    return $self->watchdog_ro($name)->{status};
 }
 
-=item B<service>
+=item B<service($name)>
 
-Get service by name.
+Get service object by name.
 
 =cut
 sub service($$) {
@@ -246,7 +310,7 @@ sub service($$) {
     }
 }
 
-=item B<services>
+=item B<services()>
 
 Get list of all services.
 

@@ -1,5 +1,5 @@
 Source: yandex-ubic
-Maintainer: Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
+Maintainer: Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>
 Section: perl
 Priority: optional
 Standards-Version: 3.7.2
@@ -11,6 +11,6 @@ Section: perl
 Priority: optional
 Architecture: all
 Depends: ${perl:Depends}
-Description: yandex-ubic - framework for writing init scripts with watchdogs
+Description: framework for writing init scripts with watchdogs
  This module contains some common perl modules and binaries which should
  greatly simplify writing of new init scripts.

@@ -1,0 +1,4 @@
+#!/usr/bin/perl
+
+use Ubic::Init;
+Ubic::Init->run;

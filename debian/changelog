@@ -1,3 +1,13 @@
+yandex-ubic (0.2.5) unstable; urgency=low
+
+  * Ubic.pm: other LSB methods implemented - try_restart, reload, force_reload
+  * bin/ubic: list renamed into status
+  * most code from bin/ubic moved into new module Ubic::Init
+  * /etc/init.d/ubic-ping script
+  * slight debianization improvements
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 05 Jun 2009 02:23:23 +0400
+
 yandex-ubic (0.2.4) unstable; urgency=low
 
   * first tests for Ubic.pm

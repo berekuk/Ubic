@@ -59,3 +59,7 @@ $Ubic::SINGLETON = Ubic->new({
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled after stop');
 }
 
+# TODO - test reload, try_restart, force_reload
+# TODO - test locks
+# TODO - test cached_status
+
