@@ -17,6 +17,10 @@ Ubic - catalog of all ubic services
 
     $something_enabled = Ubic->is_enabled("yandex-something");
 
+=head1 METHODS
+
+=over
+
 =cut
 
 use Params::Validate qw(:all);
@@ -251,6 +255,8 @@ sub set_cached_status($$$) {
     $watchdog->{status} = $status;
     $watchdog->commit;
 }
+
+=back
 
 =head1 AUTHOR
 

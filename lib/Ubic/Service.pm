@@ -41,8 +41,6 @@ sub name($;$) {
     }
 }
 
-=cut
-
 =item B<start>
 
 Start service. Should throw exception on failure and string with operation result otherwise.

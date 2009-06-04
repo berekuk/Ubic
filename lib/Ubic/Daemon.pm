@@ -20,6 +20,8 @@ This module tries to safely start and daemonize any binary.
 
 Main source of knowledge if daemon is still running is pidfile, which is locked all the time after daemon was created.
 
+=over
+
 =cut
 
 use IO::Handle;
@@ -30,8 +32,15 @@ use Exporter;
 use base qw(Exporter);
 our @EXPORT_OK = qw(start_daemon stop_daemon check_daemon);
 
+use Params::Validate qw(:all);
+
+=item B<stop_daemon($pidfile)>
+
+Stop daemon which was started with $pidfile.
+
+=cut
 sub stop_daemon($) {
-    my ($pidfile) = @_;
+    my ($pidfile) = validate_pos(@_, 1);
 
     my $fh = xopen('<', $pidfile);
     chomp(my $pid = <$fh>);
@@ -55,14 +64,23 @@ sub stop_daemon($) {
     die "failed to stop daemon with pidfile '$pidfile' (pid $pid)";
 }
 
+=item B<start_daemon($params)>
+
+Start daemon. See source for params (sorry).
+
+=cut
 sub start_daemon($) {
-    my ($options) = @_;
-    my $bin = $options->{bin} or die "binary not specified";
-    my $stdout = $options->{stdout} || '/dev/null';
-    my $stderr = $options->{stderr} || '/dev/null';
+    my %options = validate(@_, {
+        bin => { type => SCALAR },
+        pidfile => { type => SCALAR },
+        stdout => { type => SCALAR, default => '/dev/null' },
+        stderr => { type => SCALAR, default => '/dev/null' },
+        ubic_log => { type => SCALAR, default => '/dev/null' },
+    });
+    my           ($bin, $pidfile, $stdout, $stderr, $ubic_log)
+    = @options{qw/ bin   pidfile   stdout   stderr   ubic_log /};
+
     my $stdin = '/dev/null';
-    my $pidfile = $options->{pidfile} or die "pidfile not specified";
-    my $ubic_log = $options->{ubic_log} || '/dev/null';
 
     if (my $child = xfork) {
         # main process
@@ -109,6 +127,7 @@ sub start_daemon($) {
                 if ($? > 0) {
                     die "Daemon failed: $?";
                 }
+                exit;
             } else {
                 # start new process group - became immune to kills at parent group and at the same time be able to kill all processes below
                 ### TODO - should we start process group twice - for daemonizer and for daemon?
@@ -122,7 +141,13 @@ sub start_daemon($) {
     }
 }
 
-# returns true if daemon is running
+=item B<check_daemon($pidfile)>
+
+Check whether daemon is running.
+
+Returns true if it is so.
+
+=cut
 sub check_daemon {
     my ($pidfile) = @_;
     eval {
@@ -138,6 +163,8 @@ sub check_daemon {
         die "Failed to take lock: $@";
     }
 }
+
+=back
 
 =head1 BUGS
 

@@ -107,8 +107,6 @@ sub stop_impl {
     $self->{stop}->();
 }
 
-=back
-
 =head1 AUTHOR
 
 Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
