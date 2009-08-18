@@ -72,7 +72,7 @@ sub services($) {
         next unless -f $file;
         # TODO - can $self->{catalog_dir} contain any subdirs?
         $file = basename($file);
-        push @services, $self->simple_service($file);
+        push @services, $self->service($file);
     }
     return @services;
 }

@@ -30,6 +30,8 @@ Name of service.
 
 Each service should have an unique name.
 
+In case of subservices, initial name should be the most lower-level name; it will be concatenated with names of it's parents *by* it's parents. (See L<Ubic::Catalog>'s code for more details).
+
 =cut
 sub name($;$) {
     my ($self, $name) = @_;

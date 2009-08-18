@@ -54,28 +54,35 @@ sub new {
     return bless $self => $class;
 }
 
+sub plain_name($$) {
+    my $self = shift;
+    my ($name) = validate_pos(@_, { type => SCALAR });
+    $name =~ s{/}{:};
+    return $name;
+}
+
 sub watchdog_file($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    return "$self->{watchdog_dir}/$name";
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
+    return "$self->{watchdog_dir}/".$self->plain_name($name);
 }
 
 sub watchdog($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     return Yandex::Persistent->new($self->watchdog_file($name));
 }
 
 sub watchdog_ro($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     return Yandex::Persistent->new($self->watchdog_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
 }
 
 sub lock($$) {
     my ($self) = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    $self->{locks}{$name} ||= xopen(">>$self->{lock_dir}/$name");
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
+    $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$self->plain_name($name));
     return lockf($self->{locks}{$name});
 }
 
@@ -94,7 +101,7 @@ Start service.
 =cut
 sub start($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -110,7 +117,7 @@ Stop service.
 =cut
 sub stop($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     $self->disable($name);
@@ -126,7 +133,7 @@ Restart service; start it if it's not running.
 =cut
 sub restart($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -143,7 +150,7 @@ Restart service if it is enabled.
 =cut
 sub try_restart($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -161,7 +168,7 @@ Reloads service if reloading is implemented; throw exception otherwise.
 =cut
 sub reload($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -186,7 +193,7 @@ Does nothing if service is disabled.
 =cut
 sub force_reload($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -206,7 +213,7 @@ Get service status.
 =cut
 sub status($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     $self->service($name)->status;
@@ -227,7 +234,7 @@ Enabled service means that service *should* be running. It will be checked by wa
 =cut
 sub enable($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     my $watchdog = $self->watchdog($name);
@@ -242,7 +249,7 @@ Returns true value if service is enabled, false otherwise.
 =cut
 sub is_enabled($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
 
     die "Service '$name' not found" unless $self->{catalog}->has_service($name);
     return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
@@ -257,7 +264,7 @@ Disabled service means that service is ignored by ubic. It's state will no longe
 =cut
 sub disable($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
     if ($self->is_enabled($name)) {
@@ -275,7 +282,7 @@ Unlike other methods, it doesn't require user to be root.
 =cut
 sub cached_status($$) {
     my ($self) = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
+    my ($name) = validate_pos(@_, 1);
 
     unless ($self->is_enabled($name)) {
         return 'disabled';
@@ -306,7 +313,7 @@ sub services($) {
 
 sub set_cached_status($$$) {
     my $self = obj(shift);
-    my ($name, $status) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/}, {type => SCALAR});
+    my ($name, $status) = validate_pos(@_, 1, {type => SCALAR});
     my $lock = $self->lock($name);
 
     my $watchdog = $self->watchdog($name);

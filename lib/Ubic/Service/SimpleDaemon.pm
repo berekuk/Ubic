@@ -33,6 +33,7 @@ our $PID_DIR = $ENV{UBIC_DAEMON_PID_DIR} || "/var/lib/ubic/simple-daemon/pid";
 sub pidfile {
     my ($self) = @_;
     my $name = $self->name or die "Can't start nameless SimpleDaemon";
+    $name =~ s{/}{:}; # plain_name from lib/Ubic; should this be somewhere in common library? should this be method of Ubic::Service? should we care, really?
     return "$PID_DIR/$name";
 }
 

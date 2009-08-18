@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4 + 4 + 4 + 4;
+use Test::More tests => 4 + 4 + 4 + 6;
 use Test::Exception;
 
 use lib 'lib';
@@ -61,12 +61,17 @@ $Ubic::SINGLETON = Ubic->new({
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled after stop');
 }
 
-# multiservices (4)
+# multiservices (6)
 {
     lives_ok(sub { Ubic->service('multi')->service('sleep2') }, 'multi/sleep2 is accessible');
     dies_ok(sub { Ubic->service('multi')->service('sleep3') }, 'multi/sleep3 is non-existent');
     lives_ok(sub { Ubic->service('multi/sleep2') }, 'multi/sleep2 is accessible through short syntax too');
     dies_ok(sub { Ubic->service('multi/sleep3') }, 'multi/sleep3 is non-existent with short syntax either');
+
+    Ubic->start('multi/sleep2');
+    is(Ubic->service('multi/sleep2')->status, 'running', 'multiservice can be started too');
+    Ubic->stop('multi/sleep2');
+    is(Ubic->service('multi/sleep2')->status, 'not running', 'multiservice can be stopped');
 }
 
 # TODO - test reload, try_restart, force_reload

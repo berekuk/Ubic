@@ -38,15 +38,25 @@ sub service($$) {
     my $self = shift;
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
     my @parts = split '/', $name;
+
+    my $service;
     if (@parts == 1) {
-        return $self->simple_service($name);
+        $service = $self->simple_service($name);
     }
-    # complex service
-    my $top_level = $self->simple_service($parts[0]);
-    unless ($top_level->isa('Ubic::Catalog')) {
-        croak "top-level service '$parts[0]' is not a multiservice";
+    else {
+        # complex service
+        my $top_level = $self->simple_service($parts[0]);
+        unless ($top_level->isa('Ubic::Catalog')) {
+            croak "top-level service '$parts[0]' is not a multiservice";
+        }
+        $service = $top_level->service(join '/', @parts[1..$#parts]);
     }
-    return $top_level->service(join '/', @parts[1..$#parts]);
+    if ($self->isa('Ubic::Service')) { # multiservice, not most top-level
+        $service->name($self->name."/".$service->name); # append upper-level class to name hierarhy
+        # beware of services caching! we can accidentally do this twice.
+        # would $service->name($name) be simpler solution?
+    }
+    return $service;
 }
 
 =item C<has_service($name)>
