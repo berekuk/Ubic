@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 7;
 use Test::Exception;
 
 use lib 'lib';
@@ -49,5 +49,16 @@ ok(check_daemon("tfiles/pid"), 'daemon is running again');
 sleep 4;
 ok(!(check_daemon("tfiles/pid")), 'daemon stopped after several seconds');
 
+start_daemon({
+    function => sub { sleep 2 },
+    name => 'callback-daemon',
+    pidfile => "tfiles/pid",
+    stdout => 'tfiles/stdout',
+    stderr => 'tfiles/stderr',
+    ubic_log => 'tfiles/ubic.log',
+});
+ok(check_daemon("tfiles/pid"), 'daemon in callback mode started');
+sleep 4;
+ok(!(check_daemon("tfiles/pid")), 'callback daemon stopped after several seconds');
 
 

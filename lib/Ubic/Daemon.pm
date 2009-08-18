@@ -16,7 +16,7 @@ Ubic::Daemon - toolkit for creating daemonized process
 
 =head1 DESCRIPTION
 
-This module tries to safely start and daemonize any binary.
+This module tries to safely start and daemonize any binary or any perl function.
 
 Main source of knowledge if daemon is still running is pidfile, which is locked all the time after daemon was created.
 
@@ -29,9 +29,14 @@ use POSIX qw(setsid);
 use Yandex::X;
 use Yandex::Lockf;
 
+use Carp;
+
 use Exporter;
 use base qw(Exporter);
 our @EXPORT_OK = qw(start_daemon stop_daemon check_daemon);
+our %EXPORT_TAGS = (
+    all => \@EXPORT_OK,
+);
 
 use Params::Validate qw(:all);
 
@@ -67,19 +72,66 @@ sub stop_daemon($) {
 
 =item B<start_daemon($params)>
 
-Start daemon. See source for params (sorry).
+Start daemon. Params:
+
+=over
+
+=item I<bin>
+
+Binary which will be daemonized.
+
+=item I<function>
+
+Function which will be daemonized. One and only one of I<function> and I<bin> must be specified.
+
+=item I<name>
+
+Name of guardian process. Guardian will be named "ubic-guardian $name".
+
+If not specified, I<bin>'s value will be assumed, or C<anonymous> when daemonizing perl code.
+
+=item I<pidfile>
+
+Pidfile. It will be locked for all time when service will be running. It will contain pid of daemon.
+
+=item I<stdout>
+
+Write all daemon's output to given file. If not specified, all output will be redirected to C</dev/null>.
+
+=item I<stderr>
+
+Write all daemon's error output to given file. If not specified, all stderr will be redirected to C</dev/null>.
+
+=item I<ubic_log>
+
+Filename of ubic log. It will contain some technical information about running daemon.
+
+If not specified, C</dev/null> will be assumed.
+
+=back
 
 =cut
 sub start_daemon($) {
     my %options = validate(@_, {
-        bin => { type => SCALAR },
+        bin => { type => SCALAR, optional => 1 },
+        function => { type => CODEREF, optional => 1 },
+        name => { type => SCALAR, optional => 1 },
         pidfile => { type => SCALAR },
         stdout => { type => SCALAR, default => '/dev/null' },
         stderr => { type => SCALAR, default => '/dev/null' },
         ubic_log => { type => SCALAR, default => '/dev/null' },
     });
-    my           ($bin, $pidfile, $stdout, $stderr, $ubic_log)
-    = @options{qw/ bin   pidfile   stdout   stderr   ubic_log /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log /};
+    if (not defined $bin and not defined $function) {
+        croak "One of 'bin' and 'function' should be specified";
+    }
+    if (defined $bin and defined $function) {
+        croak "Only one of 'bin' and 'function' should be specified";
+    }
+    unless (defined $name) {
+        $name = $bin || 'anonymous';
+    }
 
     my $stdin = '/dev/null';
 
@@ -110,7 +162,7 @@ sub start_daemon($) {
             $ubic_fh = xopen(">>", $ubic_log);
             $ubic_fh->autoflush(1);
             $SIG{HUP} = 'ignore';
-            $0 = "ubic-daemon $bin";
+            $0 = "ubic-guardian $name";
             setsid; # ubic-daemon gets it's own session
             xprint($ubic_fh, "self name: $0\n");
 
@@ -122,10 +174,10 @@ sub start_daemon($) {
             $pid_fh->flush;
 
             if (my $child = xfork) {
-                # daemonizer
+                # guardian
 
                 xclose($write_pipe);
-                xprint($ubic_fh, "daemonizer pid: $$\n");
+                xprint($ubic_fh, "guardian pid: $$\n");
                 xprint($ubic_fh, "daemon pid: $child\n");
 
                 $SIG{TERM} = sub {
@@ -146,11 +198,18 @@ sub start_daemon($) {
 
                 # start new process group - became immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
+                $0 = "ubic-daemon $name";
 
                 xprint($write_pipe, "xexecing into daemon\n");
                 xclose($write_pipe);
 
-                xexec($bin); # finally, run underlying binary
+                if ($bin) {
+                    xexec($bin); # finally, run underlying binary
+                }
+                else {
+                    $function->();
+                }
+
             }
         };
         if ($write_pipe) {
