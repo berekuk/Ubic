@@ -1,3 +1,10 @@
+yandex-ubic (0.3.0) unstable; urgency=low
+
+  * services construction abstracted into Ubic::Catalog
+  * initial implementation of multiservices
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 18 Aug 2009 21:12:43 +0400
+
 yandex-ubic (0.2.7) unstable; urgency=low
 
   * Ubic::Daemon supports daemonizing of any callback

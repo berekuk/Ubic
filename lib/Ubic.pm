@@ -19,10 +19,9 @@ Ubic - catalog of all ubic services
 
 =cut
 
+use Ubic::Catalog::Dir;
 use Params::Validate qw(:all);
 use Carp;
-use Perl6::Slurp;
-use File::Basename;
 use Yandex::Persistent;
 use Yandex::Lockf;
 use Yandex::X qw(xopen);
@@ -45,12 +44,14 @@ sub obj {
 
 sub new {
     my $class = shift;
-    my $params = validate(@_, {
+    my $self = validate(@_, {
         watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdog" },
         service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
         lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "/var/lib/ubic/lock" },
     });
-    return bless {%$params, locks => {}} => $class;
+    $self->{locks} = {};
+    $self->{catalog} = Ubic::Catalog::Dir->new($self->{service_dir});
+    return bless $self => $class;
 }
 
 sub watchdog_file($$) {
@@ -243,7 +244,7 @@ sub is_enabled($$) {
     my $self = obj(shift);
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
 
-    die "Service '$name' not found" unless -e "$self->{service_dir}/$name";
+    die "Service '$name' not found" unless $self->{catalog}->has_service($name);
     return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
 }
 
@@ -289,25 +290,8 @@ Get service object by name.
 =cut
 sub service($$) {
     my $self = obj(shift);
-    my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    # no lock - service's construction should be harmless
-
-    my $file = "$self->{service_dir}/$name";
-    if (-e $file) {
-        my $content = slurp($file);
-        $content = "# line 1 $file\n$content";
-        my $service = eval $content;
-        if ($@) {
-            die "Failed to eval '$file': $@";
-        }
-        unless (defined $service->name) {
-            $service->name($name);
-        }
-        return $service;
-    }
-    else {
-        croak "Service '$name' not found";
-    }
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} }); # this guarantees that : will be unambiguous separator in watchdog filename
+    return $self->{catalog}->service($name);
 }
 
 =item B<services()>
@@ -317,14 +301,7 @@ Get list of all services.
 =cut
 sub services($) {
     my $self = obj(shift);
-
-    my @services;
-    for my $file (glob("$self->{service_dir}/*")) {
-        # TODO - can $self->{service_dir} contain any subdirs?
-        $file = basename($file);
-        push @services, $self->service($file);
-    }
-    return @services;
+    return $self->{catalog}->services();
 }
 
 sub set_cached_status($$$) {
