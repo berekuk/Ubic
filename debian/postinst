@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+if [ -x "/etc/init.d/ubic-ping" ]; then
+    update-rc.d ubic-ping defaults >/dev/null
+    invoke-rc.d ubic-ping start || exit $?
+fi
+

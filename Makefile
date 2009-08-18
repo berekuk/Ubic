@@ -6,7 +6,7 @@ test:
 
 build-man:
 	mkdir -p man
-	pod2man bin/ubic-daemon man/ubic-daemon.1
+	for f in bin/*; do pod2man -n $$(basename $$f) $$f man/$$(basename $$f).1; done
 
 install: build-man
 	# executable
@@ -23,6 +23,9 @@ install: build-man
 	cp www/* $(DESTDIR)/usr/share/ubic/
 	# configs
 	cp -r etc $(DESTDIR)/
+	# lintian overrides
+	mkdir -p $(DESTDIR)/usr/share/lintian/overrides
+	cp debian/yandex-ubic.lintian-overrides $(DESTDIR)/usr/share/lintian/overrides/yandex-ubic
 
 clean:
 	rm -rf man
