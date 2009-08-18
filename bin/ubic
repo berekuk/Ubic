@@ -17,7 +17,7 @@ ubic - simple viewer of ubic services
 
 =cut
 
-use Getopt::Long 2.32;
+use Getopt::Long 2.33;
 use Pod::Usage;
 
 use Ubic;

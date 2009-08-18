@@ -2,3 +2,5 @@
 
 include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/class/ppb.mk
+
+DEB_MAKE_CHECK_TARGET=test

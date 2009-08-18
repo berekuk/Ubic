@@ -1,14 +1,14 @@
 # vim: noet
+build:
+	mkdir -p man
+	for f in bin/*; do pod2man -n $$(basename $$f) $$f man/$$(basename $$f).1; done
+
 test:
 	set -e; for f in bin/* www/*; do perl -Ilib -c $$f; done
 	set -e; for m in `find lib -name '*.pm'`; do perl -Ilib -c $$m; done
 	prove -v t/*.t
 
-build-man:
-	mkdir -p man
-	for f in bin/*; do pod2man -n $$(basename $$f) $$f man/$$(basename $$f).1; done
-
-install: build-man
+install:
 	# executable
 	mkdir -p -m 0755 $(DESTDIR)/usr/bin/
 	cp bin/* $(DESTDIR)/usr/bin/
