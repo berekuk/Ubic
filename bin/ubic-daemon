@@ -14,13 +14,13 @@ ubic-daemon - daemononize any binary
 
 =cut
 
-use Getopt::Long 2.32;
+use Getopt::Long 2.33;
 use Pod::Usage;
 
 use Ubic::Daemon qw(start_daemon);
 
 my $name;
-my $pid_dir = '/var/lib/ubic/ubic-daemon/pids';
+my $pid_dir = '/var/lib/ubic/ubic-daemon/pid';
 
 GetOptions(
     'name=s'    => \$name,

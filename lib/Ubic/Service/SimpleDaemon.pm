@@ -28,7 +28,7 @@ use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 
 use Params::Validate qw(:all);
 
-our $PID_DIR = $ENV{UBIC_DAEMON_PID_DIR} || "/var/lib/ubic/simple-daemon/pids";
+our $PID_DIR = $ENV{UBIC_DAEMON_PID_DIR} || "/var/lib/ubic/simple-daemon/pid";
 
 sub pidfile {
     my ($self) = @_;

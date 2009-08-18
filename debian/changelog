@@ -1,3 +1,11 @@
+yandex-ubic (0.2.6) unstable; urgency=low
+
+  * Ubic::Daemon: start daemon more safely, propagate starting info through
+    pipe
+  * pids renamed to pid everywhere
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 18 Aug 2009 14:19:47 +0400
+
 yandex-ubic (0.2.5) unstable; urgency=low
 
   * Ubic.pm: other LSB methods implemented - try_restart, reload, force_reload

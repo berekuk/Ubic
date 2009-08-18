@@ -25,6 +25,7 @@ Main source of knowledge if daemon is still running is pidfile, which is locked 
 =cut
 
 use IO::Handle;
+use POSIX qw(setsid);
 use Yandex::X;
 use Yandex::Lockf;
 
@@ -82,38 +83,48 @@ sub start_daemon($) {
 
     my $stdin = '/dev/null';
 
-    if (my $child = xfork) {
-        # main process
-        waitpid($child, 0); # child should fork again and return
-        if ($? > 0) {
-            die "Failed to create daemon: $?";
-        }
-    } else {
-        # forking child - will reopen standard streams, fork and return
-        open STDOUT, ">>", $stdout or die "Can't write to '$stdout'";
-        open STDERR, ">>", $stderr or die "Can't write to '$stderr'";
-        open STDIN, "<", $stdin or die "Can't read from '$stdin'";
-        my $ubic_fh = xopen(">>", $ubic_log);
-        $ubic_fh->autoflush(1);
-        $SIG{HUP} = 'ignore';
-        $0 = "ubic-daemon $bin";
-        xprint($ubic_fh, "self name: $0\n");
+    pipe my ($read_pipe, $write_pipe) or die "pipe failed";
+    my $child;
 
-        # check that lock is free now
-        # this is a possible race condition, i know...
-        my $lock = lockf($pidfile, {nonblocking => 1});
-        undef $lock;
+    unless ($child = xfork) {
+        my $ubic_fh;
+        my $lock;
+        my $instant_exit = sub {
+            my $status = shift;
+            close($ubic_fh) if $ubic_fh;
+            STDOUT->flush;
+            STDERR->flush;
+            undef $lock;
+            POSIX::_exit($status); # don't allow to lock to be released - this process was forked from unknown environment, don't want to run unknown destructors
+        };
 
-        if (xfork) {
-            exit; # let caller continue, last moment to check that most commands succeeded
-            # TODO - we could implement some protocol to ask running daemonizer if everything is ok... socket or something?
-        } else {
+        eval {
+            xclose($read_pipe);
+            # forking child - will reopen standard streams, daemonize itself, fork into daemon binary and wait for it
+
+            xfork() and POSIX::_exit(0); # detach from parent process
+
+            open STDOUT, ">>", $stdout or die "Can't write to '$stdout'";
+            open STDERR, ">>", $stderr or die "Can't write to '$stderr'";
+            open STDIN, "<", $stdin or die "Can't read from '$stdin'";
+            $ubic_fh = xopen(">>", $ubic_log);
+            $ubic_fh->autoflush(1);
+            $SIG{HUP} = 'ignore';
+            $0 = "ubic-daemon $bin";
+            setsid; # ubic-daemon gets it's own session
+            xprint($ubic_fh, "self name: $0\n");
+
+            xprint($ubic_fh, "[$$] getting lock...\n");
+            $lock = lockf($pidfile, {nonblocking => 1});
+            xprint($ubic_fh, "[$$] got lock\n");
+            my $pid_fh = xopen(">", $pidfile);
+            xprint($pid_fh, $$);
+            $pid_fh->flush;
+
             if (my $child = xfork) {
                 # daemonizer
-                my $lock = lockf($pidfile, {nonblocking => 1});
-                my $pid_fh = xopen(">", $pidfile);
-                xprint($pid_fh, $$);
-                $pid_fh->flush;
+
+                xclose($write_pipe);
                 xprint($ubic_fh, "daemonizer pid: $$\n");
                 xprint($ubic_fh, "daemon pid: $child\n");
 
@@ -121,24 +132,45 @@ sub start_daemon($) {
                     xprint($ubic_fh, "sending SIGKILL to $child\n");
                     kill -9 => $child; # TODO - should be "soft kill", "wait some time", "hard kill"
                     xprint($ubic_fh, "child probably killed\n");
-                    exit; # SIGTERM is a correct way to stop daemon
+                    $instant_exit->(0);
                 };
                 waitpid($child, 0);
                 if ($? > 0) {
-                    die "Daemon failed: $?";
+                    warn "Daemon failed: $?";
+                    $instant_exit->(1);
                 }
-                exit;
-            } else {
+                $instant_exit->(0);
+            }
+            else {
+                # daemon
+
                 # start new process group - became immune to kills at parent group and at the same time be able to kill all processes below
-                ### TODO - should we start process group twice - for daemonizer and for daemon?
-                ### daemonizer needs new group to be immune to various console signals
-                ### daemon needs group, because daemonizer want to "kill -9" it when desperate
                 setpgrp;
+
+                xprint($write_pipe, "xexecing into daemon\n");
+                xclose($write_pipe);
 
                 xexec($bin); # finally, run underlying binary
             }
+        };
+        if ($write_pipe) {
+            print {$write_pipe} "Error: $@\n";
         }
+        $instant_exit->(1);
     }
+    waitpid($child, 0); # child should've exited immediately
+    xclose($write_pipe);
+
+    my $out = '';
+    while ( my $data = <$read_pipe>) {
+        $out .= $data;
+    }
+    xclose($read_pipe);
+    if ($out =~ /xexecing into daemon/) {
+        # TODO - check daemon's name to make sure that xexec happened
+        return;
+    }
+    die "Failed to create daemon, out: '$out'";
 }
 
 =item B<check_daemon($pidfile)>
