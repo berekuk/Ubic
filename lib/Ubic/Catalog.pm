@@ -27,7 +27,7 @@ Additionally, you can check whether catalog contains service without instantiati
 use Carp;
 use Params::Validate qw(:all);
 
-=item C<service($name)>
+=item B<< service($name) >>
 
 Get service by name.
 
@@ -59,7 +59,7 @@ sub service($$) {
     return $service;
 }
 
-=item C<simple_service>
+=item B<< simple_service() >>
 
 This method should be implemented by subclass.
 
@@ -67,7 +67,7 @@ This method should be implemented by subclass.
 sub simple_service($$);
 
 
-=item C<has_service($name)>
+=item B<< has_service($name) >>
 
 Check whether service with specified name exists in this catalog.
 
@@ -89,14 +89,14 @@ sub has_service($$) {
     return $top_level->has_service(join '/', @parts[1..$#parts]);
 }
 
-=item C<has_simple_service>
+=item B<< has_simple_service($name) >>
 
 This method should be implemented by subclass.
 
 =cut
 sub has_simple_service($$);
 
-=item C<services()>
+=item B<< services() >>
 
 Construct all subservices. Because they are top-level, we don't need C<simple_services()>.
 
@@ -108,7 +108,7 @@ sub services($) {
     return @services;
 }
 
-=item C<service_names()>
+=item B<< service_names() >>
 
 Get list with names of all subservices.
 

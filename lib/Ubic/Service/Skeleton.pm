@@ -17,7 +17,7 @@ use base qw(Ubic::Service);
 
 =over
 
-=item C<status>
+=item B<< status() >>
 
 Get status of service.
 
@@ -31,7 +31,7 @@ sub status {
     return $status;
 }
 
-=item C<start>
+=item B<< start() >>
 
 Start service.
 
@@ -55,7 +55,7 @@ sub start {
     }
 }
 
-=item C<stop>
+=item B<< stop() >>
 
 Stop service.
 
