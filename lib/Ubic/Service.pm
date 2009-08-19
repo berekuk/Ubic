@@ -27,9 +27,6 @@ See L</"SEE ALSO"> for references to more specific (and useful) versions of serv
 
 =cut
 
-use Carp;
-use Ubic;
-
 =item B<name>
 
 Name of service.

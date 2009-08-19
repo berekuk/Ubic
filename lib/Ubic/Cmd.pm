@@ -190,12 +190,12 @@ sub print_status($$;$) {
         $service = Ubic->service($name);
     }
     else {
-        $service = Ubic->root_service; # beware, it's not a service
+        $service = Ubic->root_service;
     }
 
     if ($service->isa('Ubic::Catalog')) {
         for my $subname ($service->service_names) {
-            if ($service->can('name')) {
+            if ($service->name) { # not root service
                 $subname = $service->name."/".$subname;
             }
             $self->print_status($subname, $cached, $indent + 4);

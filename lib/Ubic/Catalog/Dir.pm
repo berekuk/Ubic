@@ -98,7 +98,7 @@ sub service_names($) {
 
 L<Ubic::Catalog> - base interface of this class.
 
-L<Ubic> - main ubic module uses this for root namespace of services.
+L<Ubic> - main ubic module uses this class as root namespace of services.
 
 =head1 AUTHOR
 

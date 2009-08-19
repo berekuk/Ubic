@@ -18,6 +18,8 @@ Catalog's interface consists of two fundamental methods: C<service($name)> to ge
 
 Additionally, you can check whether catalog contains service without instantiating it, using C<has_service($name)> method.
 
+Remember that catalog is a service too. (Currently it doesn't implement start/stop/status methods, but in future it will).
+
 =head1 METHODS
 
 =over
@@ -26,6 +28,7 @@ Additionally, you can check whether catalog contains service without instantiati
 
 use Carp;
 use Params::Validate qw(:all);
+use base qw(Ubic::Service);
 
 =item B<< service($name) >>
 
@@ -51,7 +54,7 @@ sub service($$) {
         }
         $service = $top_level->service(join '/', @parts[1..$#parts]);
     }
-    if ($self->isa('Ubic::Service')) { # multiservice, not most top-level
+    if ($self->name) { # multiservice, not most top-level
         $service->name($self->name."/".$service->name); # append upper-level class to name hierarhy
         # beware of services caching! we can accidentally do this twice.
         # would $service->name($name) be simpler solution?
@@ -126,6 +129,10 @@ Subclasses should usually override this method, C<services> uses it in default i
 sub service_names($);
 
 =back
+
+=head1 TODO
+
+Rename into Ubic::Service::Multi?
 
 =head1 AUTHOR
 

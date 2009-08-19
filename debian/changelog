@@ -1,3 +1,9 @@
+yandex-ubic (0.4.0) unstable; urgency=low
+
+  * Ubic::Catalog is a service now
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 19 Aug 2009 23:28:47 +0400
+
 yandex-ubic (0.3.7) unstable; urgency=low
 
   * Ubic::Catalog::Dir: don't fail on invalid services

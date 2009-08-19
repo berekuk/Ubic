@@ -8,7 +8,7 @@ use Yandex::Version '{{DEBIAN_VERSION}}';
 
 =head1 NAME
 
-Ubic - catalog of all ubic services
+Ubic - frontend to all ubic services
 
 =head1 SYNOPSIS
 
@@ -93,7 +93,7 @@ sub new {
         lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "/var/lib/ubic/lock" },
     });
     $self->{locks} = {};
-    $self->{catalog} = Ubic::Catalog::Dir->new($self->{service_dir});
+    $self->{root} = Ubic::Catalog::Dir->new($self->{service_dir});
     return bless $self => $class;
 }
 
@@ -264,7 +264,7 @@ sub is_enabled($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
 
-    die "Service '$name' not found" unless $self->{catalog}->has_service($name);
+    die "Service '$name' not found" unless $self->{root}->has_service($name);
     return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
 }
 
@@ -311,7 +311,7 @@ Get service _object by name.
 sub service($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} }); # this guarantees that : will be unambiguous separator in watchdog filename
-    return $self->{catalog}->service($name);
+    return $self->{root}->service($name);
 }
 
 =item B<services()>
@@ -321,17 +321,19 @@ Get list of all services.
 =cut
 sub services($) {
     my $self = _obj(shift);
-    return $self->{catalog}->services();
+    return $self->{root}->services();
 }
 
 =item B<root_service()>
 
-Get root service. (Although it's not a "service" by now, it's a Ubic::Catalog object... should probably fix it).
+Get root service.
+
+Root service doesn't have a name and returns all top-level services with C<services()> method. You can use it to traverse all services' tree.
 
 =cut
 sub root_service($) {
     my $self = _obj(shift);
-    return $self->{catalog};
+    return $self->{root};
 }
 
 =item B<set_cached_status($name, $status)>
