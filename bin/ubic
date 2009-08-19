@@ -37,13 +37,14 @@ if (($command eq 'status' or $command eq 'cached-status') and @ARGV == 1) {
         $cached = 1;
     }
     for my $service (Ubic->services) {
-        my $ubic_init = Ubic::Cmd->new({ name => $service->name });
-        $ubic_init->print_status($cached);
+        Ubic::Cmd->print_status($service->name, $cached);
     }
 }
 elsif (@ARGV == 2) {
-    my $ubic_init = Ubic::Cmd->new({ name => $ARGV[1], command => $command });
-    $ubic_init->run;
+    Ubic::Cmd->run({
+        name => $ARGV[1],
+        command => $command,
+    });
 }
 else {
     pod2usage(2);

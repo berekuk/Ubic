@@ -12,10 +12,6 @@ Ubic::Cmd - ubic methods with pretty printing.
     use Ubic::Cmd;
     Ubic::Cmd->start("aaa/bbb");
 
-    # /etc/init.d/something:
-    use Ubic::Cmd;
-    Ubic::Cmd->run;
-
 =head1 SYNOPSIS
 
 When using ubic from simple scripts, you want to print some output about what happened when starting/stopping service.
@@ -31,48 +27,162 @@ use Scalar::Util qw(blessed);
 
 use Ubic;
 
+=head1 CONSTRUCTOR
+
+=over
+
+=item C<< new($params) >>
+
+All methods of this class can be invoked as class methods, but you can construct your own instance if neccesary (although constructor doesn't have any options by now, so it is useless).
+
+=cut
 sub new {
     my $class = shift;
-    my $self = validate(@_, {
-        name => { type => SCALAR },
-        command => { type => SCALAR, optional => 1 },
-        args => { type => ARRAYREF, default => []},
-    });
+    my $self = validate(@_, {});
     return bless $self => $class;
 }
 
+=back
+
+=cut
+
 our $SINGLETON;
-sub obj {
+sub _obj {
     my ($param) = validate_pos(@_, 1);
     if (blessed($param)) {
         return $param;
     }
     if ($param eq 'Ubic::Cmd') {
         # method called as a class method => singleton
-        my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
-        my ($command, @args) = @ARGV;
-        $SINGLETON ||= Ubic::Cmd->new({
-            name => $name,
-            ($command ? (command => $command) : ()),
-            command => $command,
-            (@args ?  (args => \@args) : ()),
-        });
+        $SINGLETON ||= Ubic::Cmd->new();
         return $SINGLETON;
     }
     die "Unknown argument '$param'";
 }
 
+=head1 LSB METHODS
+
+All following methods do the same thing as methods in C<Ubic>, but they also print messages about their actions.
+
+=over
+
+=item C<< start($name) >>
+
+=cut
+sub start {
+    my $self = _obj(shift);
+    my $name = shift;
+
+    print "Starting $name... ";
+    my $result = Ubic->start($name);
+    print "$result\n";
+}
+
+=item C<< stop($name) >>
+
+=cut
+sub stop {
+    my $self = _obj(shift);
+    my $name = shift;
+
+    print "Stopping $name... ";
+    my $result = Ubic->stop($name);
+    print "$result\n";
+}
+
+=item C<< restart($name) >>
+
+=cut
+sub restart {
+    my $self = _obj(shift);
+    my $name = shift;
+
+    print "Restarting $name... ";
+    my $result = Ubic->restart($name);
+    print "$result\n";
+}
+
+=item C<< try_restart($name) >>
+
+=cut
+sub try_restart {
+    my $self = _obj(shift);
+    my $name = shift;
+
+    if (Ubic->is_enabled($name)) {
+        print "Restarting $name... ";
+        my $result = Ubic->try_restart($name);
+        print "$result\n";
+    }
+    else {
+        print "$name is down";
+    }
+}
+
+=item C<< reload($name) >>
+
+=cut
+sub reload {
+    my $self = _obj(shift);
+    my $name = shift;
+
+    if (Ubic->is_enabled($name)) {
+        print "Reloading $name... ";
+        my $result = Ubic->reload($name);
+        print "$result\n";
+        exit;
+    }
+    else {
+        print "$name is down";
+    }
+}
+
+=item C<< force_reload($name) >>
+
+=cut
+sub force_reload {
+    my $self = _obj(shift);
+    my $name = shift;
+
+    if (Ubic->is_enabled($name)) {
+        print "Reloading $name... ";
+        my $result = Ubic->force_reload($name);
+        print "$result\n";
+        exit;
+    }
+    else {
+        print "$name is down";
+    }
+}
+
+=back
+
+=head1 OTHER METHODS
+
+=over
+
+=item C<< usage($command) >>
+
+Print command's usage.
+
+WARNING: exits on invocation!
+
+=cut
 sub usage {
-    my $self = obj(shift);
-    print STDERR "Unknown command '$self->{command}'\n";
+    my $self = _obj(shift);
+    my $command = shift;
+    print STDERR "Unknown command '$command'\n";
     exit(2); # or exit(3)? see LSB for details
 }
 
-sub print_status($;$) {
-    my $self = obj(shift);
-    my ($cached) = @_;
+=item C<< print_status($name, $cached_flag) >>
 
-    my $name = $self->{name};
+Print status of given service. If C<$cached_flag> is true, prints status cached in watchdog file.
+
+=cut
+sub print_status($$;$) {
+    my $self = _obj(shift);
+    my ($name, $cached) = @_;
 
     my $enabled = Ubic->is_enabled($name);
     unless ($enabled) {
@@ -99,17 +209,22 @@ sub print_status($;$) {
 
 # FIXME - separate all command actions into different subs (or methods)
 sub run {
-    my $self = obj(shift);
-    my $command = $self->{command};
-    my @args = @{$self->{args}};
-    my $name = $self->{name};
+    my $self = _obj(shift);
+    my $params = validate(@_, {
+        name => { type => SCALAR },
+        command => { type => SCALAR, optional => 1 },
+        args => { type => ARRAYREF, default => []},
+    });
+    my $command = $params->{command};
+    my @args = @{$params->{args}};
+    my $name = $params->{name};
 
     unless (defined $command) {
         die "No command specified";
     }
 
     # commands have no arguments (yet)
-    $self->usage() if @args;
+    $self->usage($command) if @args;
 
     if ($command eq 'status' or $command eq 'cached-status') {
         my $cached;
@@ -120,7 +235,7 @@ sub run {
         if ($command eq 'cached-status') {
             $cached = 1;
         }
-        $self->print_status($cached);
+        $self->print_status($name, $cached);
         exit(0);
     }
 
@@ -130,61 +245,19 @@ sub run {
         exit(4); # see LSB
     }
 
-    if ($command eq 'start') {
-        print "Starting $name... ";
-        my $result = Ubic->start($name);
-        print "$result\n";
-        exit;
-    }
-    elsif ($command eq 'stop') {
-        print "Stopping $name... ";
-        my $result = Ubic->stop($name);
-        print "$result\n";
-        exit;
-    }
-    elsif ($command eq 'restart') {
-        print "Restarting $name... ";
-        my $result = Ubic->restart($name);
-        print "$result\n";
-        exit;
-    } # remaining commands should print "$name is down" if service is down; FIXME - get rid of copypaste
-    elsif ($command eq 'try-restart') {
-        if (Ubic->is_enabled($name)) {
-            print "Restarting $name... ";
-            my $result = Ubic->try_restart($name);
-            print "$result\n";
-            exit;
-        }
-        else {
-            print "$name is down";
-        }
-    }
-    elsif ($command eq 'reload') {
-        if (Ubic->is_enabled($name)) {
-            print "Reloading $name... ";
-            my $result = Ubic->reload($name);
-            print "$result\n";
-            exit;
-        }
-        else {
-            print "$name is down";
-        }
-    }
-    elsif ($command eq 'force-reload') {
-        if (Ubic->is_enabled($name)) {
-            print "Reloading $name... ";
-            my $result = Ubic->force_reload($name);
-            print "$result\n";
-            exit;
-        }
-        else {
-            print "$name is down";
-        }
+    my $method = $command;
+    $method =~ s/-/_/g;
+    if ($self->can($method)) {
+        # TODO - check that method is not a private
+        $self->$method($name);
+        exit; # TODO - methods should return exit code, as scalar or as blessed exception
     }
     else {
-        $self->usage();
+        $self->usage($command);
     }
 }
+
+=back
 
 =head1 AUTHOR
 

@@ -56,6 +56,8 @@ sub _obj {
 
 =item B<< Ubic->new({ ... }) >>
 
+All methods in this package can be invoked as class methods, but sometimes you may need to override some status dirs. In this case you should construct your own instance.
+
 Constructor options (all of them are optional):
 
 =over
