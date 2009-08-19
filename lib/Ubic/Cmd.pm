@@ -1,17 +1,28 @@
-package Ubic::Init;
+package Ubic::Cmd;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-Ubic::Init - helps to write /etc/init.d/ script which uses ubic
+Ubic::Cmd - ubic methods with pretty printing.
 
 =head1 SYNOPSIS
 
+    use Ubic::Cmd;
+    Ubic::Cmd->start("aaa/bbb");
+
     # /etc/init.d/something:
-    use Ubic::Init;
-    Ubic::Init->run;
+    use Ubic::Cmd;
+    Ubic::Cmd->run;
+
+=head1 SYNOPSIS
+
+When using ubic from simple scripts, you want to print some output about what happened when starting/stopping service.
+
+This package mostly conforms to C<Ubic> module API (i.e. to LSB init-script API).
+
+It also greatly simplifies writing /etc/init.d/ scripts (see synopsis).
 
 =cut
 
@@ -36,11 +47,11 @@ sub obj {
     if (blessed($param)) {
         return $param;
     }
-    if ($param eq 'Ubic::Init') {
+    if ($param eq 'Ubic::Cmd') {
         # method called as a class method => singleton
         my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
         my ($command, @args) = @ARGV;
-        $SINGLETON ||= Ubic::Init->new({
+        $SINGLETON ||= Ubic::Cmd->new({
             name => $name,
             ($command ? (command => $command) : ()),
             command => $command,
@@ -64,25 +75,25 @@ sub print_status($;$) {
     my $name = $self->{name};
 
     my $enabled = Ubic->is_enabled($name);
-    if ($enabled) {
-        my $status = ($cached ? Ubic->cached_status($name) : Ubic->status($name));
-        if ($status eq 'running') {
-            my $msg;
-            $msg .= "\e[32m" if -t STDOUT;
-            $msg .= "$name\t$status\n";
-            $msg .= "\e[0m" if -t STDOUT;
-            print $msg;
-        }
-        else {
-            my $msg;
-            $msg .= "\e[31m" if -t STDOUT;
-            $msg .= "$name\t$status\n";
-            $msg .= "\e[0m" if -t STDOUT;
-            print $msg;
-        }
+    unless ($enabled) {
+        print "$name\toff\n";
+        return;
+    }
+
+    my $status = ($cached ? Ubic->cached_status($name) : Ubic->status($name));
+    if ($status eq 'running') {
+        my $msg;
+        $msg .= "\e[32m" if -t STDOUT;
+        $msg .= "$name\t$status\n";
+        $msg .= "\e[0m" if -t STDOUT;
+        print $msg;
     }
     else {
-        print "$name\toff\n";
+        my $msg;
+        $msg .= "\e[31m" if -t STDOUT;
+        $msg .= "$name\t$status\n";
+        $msg .= "\e[0m" if -t STDOUT;
+        print $msg;
     }
 }
 
@@ -110,7 +121,7 @@ sub run {
             $cached = 1;
         }
         $self->print_status($cached);
-        return;
+        exit(0);
     }
 
     # all other commands should be running from root

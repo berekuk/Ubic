@@ -1,3 +1,9 @@
+yandex-ubic (0.3.4) unstable; urgency=low
+
+  * Ubic::Init renamed to Ubic::Cmd
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 19 Aug 2009 20:30:58 +0400
+
 yandex-ubic (0.3.3) unstable; urgency=low
 
   * ubic script can show status of one service

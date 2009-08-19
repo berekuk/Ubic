@@ -12,11 +12,17 @@ Ubic - catalog of all ubic services
 
 =head1 SYNOPSIS
 
-    Ubic->enable("yandex-something");
+    Ubic->start("yandex-something");
 
-    Ubic->disable("yandex-something");
+    Ubic->stop("yandex-something");
 
-    $something_enabled = Ubic->is_enabled("yandex-something");
+    $status = Ubic->status("yandex-something");
+
+=head1 DESCRIPTION
+
+Ubic allows you to easily implement secure services which will be monitored and checked automatically.
+
+This module is a main frontend to ubic's internals. You should use it when using ubic from perl. If you want to use ubic in command line scripts, check L<Ubic::Cmd> too.
 
 =cut
 

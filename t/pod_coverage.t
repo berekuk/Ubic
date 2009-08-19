@@ -18,7 +18,7 @@ my %modules = map { ($_ => 1) } @modules;
 
 my @bad_modules = qw(
     Ubic::Catalog::Dir
-    Ubic::Init
+    Ubic::Cmd
 );
 
 TODO: {

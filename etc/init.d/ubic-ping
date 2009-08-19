@@ -10,5 +10,5 @@
 # Description:       ubic-ping allows to get service status using http
 ### END INIT INFO
 
-use Ubic::Init;
-Ubic::Init->run;
+use Ubic::Cmd;
+Ubic::Cmd->run;

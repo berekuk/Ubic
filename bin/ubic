@@ -21,7 +21,7 @@ use Getopt::Long 2.33;
 use Pod::Usage;
 
 use Ubic;
-use Ubic::Init;
+use Ubic::Cmd;
 
 GetOptions() or pod2usage(2);
 
@@ -37,12 +37,12 @@ if (($command eq 'status' or $command eq 'cached-status') and @ARGV == 1) {
         $cached = 1;
     }
     for my $service (Ubic->services) {
-        my $ubic_init = Ubic::Init->new({ name => $service->name });
+        my $ubic_init = Ubic::Cmd->new({ name => $service->name });
         $ubic_init->print_status($cached);
     }
 }
 elsif (@ARGV == 2) {
-    my $ubic_init = Ubic::Init->new({ name => $ARGV[1], command => $command });
+    my $ubic_init = Ubic::Cmd->new({ name => $ARGV[1], command => $command });
     $ubic_init->run;
 }
 else {
