@@ -27,7 +27,7 @@ GetOptions() or pod2usage(2);
 
 my $command = $ARGV[0] or pod2usage(2);
 
-if ($command eq 'status' or $command eq 'cached-status' and @ARGV == 1) {
+if (($command eq 'status' or $command eq 'cached-status') and @ARGV == 1) {
     my $cached;
     if ($command eq 'status' and $>) {
         print "Not a root, printing cached statuses\n";
@@ -41,9 +41,12 @@ if ($command eq 'status' or $command eq 'cached-status' and @ARGV == 1) {
         $ubic_init->print_status($cached);
     }
 }
-else {
+elsif (@ARGV == 2) {
     my $ubic_init = Ubic::Init->new({ name => $ARGV[1], command => $command });
     $ubic_init->run;
+}
+else {
+    pod2usage(2);
 }
 
 =head1 AUTHOR

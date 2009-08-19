@@ -1,3 +1,9 @@
+yandex-ubic (0.3.3) unstable; urgency=low
+
+  * ubic script can show status of one service
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 19 Aug 2009 19:57:59 +0400
+
 yandex-ubic (0.3.2) unstable; urgency=low
 
   * Ubic::Init refactored into more OOP-styled module

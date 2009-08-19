@@ -97,8 +97,10 @@ sub run {
         die "No command specified";
     }
 
+    # commands have no arguments (yet)
+    $self->usage() if @args;
+
     if ($command eq 'status' or $command eq 'cached-status') {
-        @args == 1 or $self->usage();
         my $cached;
         if ($command eq 'status' and $>) {
             print "Not a root, printing cached statuses\n";
@@ -107,12 +109,9 @@ sub run {
         if ($command eq 'cached-status') {
             $cached = 1;
         }
-        $self->print_status($args[0], $cached);
+        $self->print_status($cached);
         return;
     }
-
-    # all other commands has no arguments
-    $self->usage() if @args;
 
     # all other commands should be running from root
     if ($>) {
