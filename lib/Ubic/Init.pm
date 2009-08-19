@@ -40,7 +40,7 @@ sub obj {
         # method called as a class method => singleton
         my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
         my ($command, @args) = @ARGV;
-        $SINGLETON ||= Ubic->new({
+        $SINGLETON ||= Ubic::Init->new({
             name => $name,
             ($command ? (command => $command) : ()),
             command => $command,
