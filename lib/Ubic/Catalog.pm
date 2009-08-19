@@ -104,7 +104,15 @@ By default, it uses C<service_names> to get list of services.
 =cut
 sub services($) {
     my $self = shift;
-    my @services = map { $self->service($_) } $self->service_names;
+    my @services;
+    for my $name ($self->service_names) {
+        my $service = eval {$self->service($name) };
+        if ($@) {
+            warn "Can't construct '$name': $@";
+            next;
+        }
+        push @services, $service;
+    }
     return @services;
 }
 

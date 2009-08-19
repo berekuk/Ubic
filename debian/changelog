@@ -1,3 +1,11 @@
+yandex-ubic (0.3.7) unstable; urgency=low
+
+  * Ubic::Catalog::Dir: don't fail on invalid services
+  * Ubic::Cmd: correctly concat parent and child names when asking for
+    subservice's status
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 19 Aug 2009 23:10:56 +0400
+
 yandex-ubic (0.3.6) unstable; urgency=low
 
   * root_service method in Ubic
