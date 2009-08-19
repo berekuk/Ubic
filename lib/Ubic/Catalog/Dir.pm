@@ -51,6 +51,7 @@ sub has_simple_service($$) {
     return(-e "$self->{catalog_dir}/$name");
 }
 
+my $eval_id = 1;
 sub simple_service($$) {
     my $self = shift;
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
@@ -59,6 +60,7 @@ sub simple_service($$) {
     if (-e $file) {
         my $content = slurp($file);
         $content = "# line 1 $file\n$content";
+        $content = "package UbicService".($eval_id++).";\n# line 1 $file\n$content";
         my $service = eval $content;
         if ($@) {
             die "Failed to eval '$file': $@";
