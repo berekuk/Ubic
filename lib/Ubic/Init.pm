@@ -16,16 +16,53 @@ Ubic::Init - helps to write /etc/init.d/ script which uses ubic
 =cut
 
 use Params::Validate qw(:all);
+use Scalar::Util qw(blessed);
 
 use Ubic;
 
+sub new {
+    my $class = shift;
+    my $self = validate(@_, {
+        name => { type => SCALAR },
+        command => { type => SCALAR, optional => 1 },
+        args => { type => ARRAYREF, default => []},
+    });
+    return bless $self => $class;
+}
+
+our $SINGLETON;
+sub obj {
+    my ($param) = validate_pos(@_, 1);
+    if (blessed($param)) {
+        return $param;
+    }
+    if ($param eq 'Ubic::Init') {
+        # method called as a class method => singleton
+        my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
+        my ($command, @args) = @ARGV;
+        $SINGLETON ||= Ubic->new({
+            name => $name,
+            ($command ? (command => $command) : ()),
+            command => $command,
+            (@args ?  (args => \@args) : ()),
+        });
+        return $SINGLETON;
+    }
+    die "Unknown argument '$param'";
+}
+
 sub usage {
-    print STDERR "Unknown command '$ARGV[0]'\n";
+    my $self = obj(shift);
+    print STDERR "Unknown command '$self->{command}'\n";
     exit(2); # or exit(3)? see LSB for details
 }
 
 sub print_status($;$) {
-    my ($name, $cached) = @_;
+    my $self = obj(shift);
+    my ($cached) = @_;
+
+    my $name = $self->{name};
+
     my $enabled = Ubic->is_enabled($name);
     if ($enabled) {
         my $status = ($cached ? Ubic->cached_status($name) : Ubic->status($name));
@@ -51,12 +88,17 @@ sub print_status($;$) {
 
 # FIXME - separate all command actions into different subs (or methods)
 sub run {
-    my ($class) = validate_pos(@_, 1);
+    my $self = obj(shift);
+    my $command = $self->{command};
+    my @args = @{$self->{args}};
+    my $name = $self->{name};
 
-    my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
-    my ($command, @args) = @ARGV;
+    unless (defined $command) {
+        die "No command specified";
+    }
+
     if ($command eq 'status' or $command eq 'cached-status') {
-        @args == 1 or usage();
+        @args == 1 or $self->usage();
         my $cached;
         if ($command eq 'status' and $>) {
             print "Not a root, printing cached statuses\n";
@@ -65,12 +107,12 @@ sub run {
         if ($command eq 'cached-status') {
             $cached = 1;
         }
-        print_status($args[0], $cached);
-        exit;
+        $self->print_status($args[0], $cached);
+        return;
     }
 
     # all other commands has no arguments
-    usage() if @args;
+    $self->usage() if @args;
 
     # all other commands should be running from root
     if ($>) {
@@ -130,7 +172,7 @@ sub run {
         }
     }
     else {
-        usage();
+        $self->usage();
     }
 }
 

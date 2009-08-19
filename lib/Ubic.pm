@@ -1,5 +1,6 @@
 package Ubic;
 
+
 use strict;
 use warnings;
 
@@ -29,7 +30,8 @@ use Scalar::Util qw(blessed);
 
 our $SINGLETON;
 
-sub obj {
+# singleton constructor
+sub _obj {
     my ($param) = validate_pos(@_, 1);
     if (blessed($param)) {
         return $param;
@@ -42,6 +44,31 @@ sub obj {
     die "Unknown argument '$param'";
 }
 
+=head1 CONSTRUCTOR
+
+=over
+
+=item B<< Ubic->new({ ... }) >>
+
+Constructor options (all of them are optional):
+
+=over
+
+=item I<watchdog_dir>
+
+Dir with persistent services' watchdogs.
+
+=item I<service_dir>
+
+Name of dir with service descriptions (for root services catalog's namespace).
+
+=item I<lock_dir>
+
+Dir with services' locks.
+
+=back
+
+=cut
 sub new {
     my $class = shift;
     my $self = validate(@_, {
@@ -54,37 +81,7 @@ sub new {
     return bless $self => $class;
 }
 
-sub plain_name($$) {
-    my $self = shift;
-    my ($name) = validate_pos(@_, { type => SCALAR });
-    $name =~ s{/}{:};
-    return $name;
-}
-
-sub watchdog_file($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
-    return "$self->{watchdog_dir}/".$self->plain_name($name);
-}
-
-sub watchdog($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->watchdog_file($name));
-}
-
-sub watchdog_ro($$) {
-    my $self = obj(shift);
-    my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->watchdog_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
-}
-
-sub lock($$) {
-    my ($self) = obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
-    $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$self->plain_name($name));
-    return lockf($self->{locks}{$name});
-}
+=back
 
 =head1 LSB METHODS
 
@@ -100,7 +97,7 @@ Start service.
 
 =cut
 sub start($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -116,7 +113,7 @@ Stop service.
 
 =cut
 sub stop($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -132,7 +129,7 @@ Restart service; start it if it's not running.
 
 =cut
 sub restart($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -149,7 +146,7 @@ Restart service if it is enabled.
 
 =cut
 sub try_restart($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -167,7 +164,7 @@ Reloads service if reloading is implemented; throw exception otherwise.
 
 =cut
 sub reload($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -192,7 +189,7 @@ Does nothing if service is disabled.
 
 =cut
 sub force_reload($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -212,7 +209,7 @@ Get service status.
 
 =cut
 sub status($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -233,7 +230,7 @@ Enabled service means that service *should* be running. It will be checked by wa
 
 =cut
 sub enable($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -248,7 +245,7 @@ Returns true value if service is enabled, false otherwise.
 
 =cut
 sub is_enabled($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
 
     die "Service '$name' not found" unless $self->{catalog}->has_service($name);
@@ -263,7 +260,7 @@ Disabled service means that service is ignored by ubic. It's state will no longe
 
 =cut
 sub disable($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
@@ -281,7 +278,7 @@ Unlike other methods, it doesn't require user to be root.
 
 =cut
 sub cached_status($$) {
-    my ($self) = obj(shift);
+    my ($self) = _obj(shift);
     my ($name) = validate_pos(@_, 1);
 
     unless ($self->is_enabled($name)) {
@@ -292,11 +289,11 @@ sub cached_status($$) {
 
 =item B<service($name)>
 
-Get service object by name.
+Get service _object by name.
 
 =cut
 sub service($$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} }); # this guarantees that : will be unambiguous separator in watchdog filename
     return $self->{catalog}->service($name);
 }
@@ -307,18 +304,88 @@ Get list of all services.
 
 =cut
 sub services($) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     return $self->{catalog}->services();
 }
 
+=item B<set_cached_status($name, $status)>
+
+Write new status into service's watchdog status file.
+
+=cut
 sub set_cached_status($$$) {
-    my $self = obj(shift);
+    my $self = _obj(shift);
     my ($name, $status) = validate_pos(@_, 1, {type => SCALAR});
     my $lock = $self->lock($name);
 
     my $watchdog = $self->watchdog($name);
     $watchdog->{status} = $status;
     $watchdog->commit;
+}
+
+=back
+
+=head1 INTERNAL METHODS
+
+You don't need to call these, usually.
+
+=over
+
+=item B<plain_name($name)>
+
+Transform service's name to one which can be used as file's name (services can contain slashes, you know, and files can't).
+
+=cut
+sub plain_name($$) {
+    my $self = shift;
+    my ($name) = validate_pos(@_, { type => SCALAR });
+    $name =~ s{/}{:};
+    return $name;
+}
+
+=item B<watchdog_file($name)>
+
+Get watchdog file name by service's name.
+
+=cut
+sub watchdog_file($$) {
+    my $self = _obj(shift);
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
+    return "$self->{watchdog_dir}/".$self->plain_name($name);
+}
+
+=item B<watchdog($name)>
+
+Get watchdog persistent object by service's name.
+
+=cut
+sub watchdog($$) {
+    my $self = _obj(shift);
+    my ($name) = validate_pos(@_, 1);
+    return Yandex::Persistent->new($self->watchdog_file($name));
+}
+
+=item B<watchdog_ro($name)>
+
+Get readonly, nonlocked watchdog persistent object by service's name.
+
+=cut
+sub watchdog_ro($$) {
+    my $self = _obj(shift);
+    my ($name) = validate_pos(@_, 1);
+    return Yandex::Persistent->new($self->watchdog_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
+}
+
+=item B<lock($name)>
+
+Lock given service.
+
+=cut
+sub lock($$) {
+    my ($self) = _obj(shift);
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
+    $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$self->plain_name($name));
+    return lockf($self->{locks}{$name});
 }
 
 =back

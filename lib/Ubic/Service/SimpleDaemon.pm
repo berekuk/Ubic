@@ -30,13 +30,29 @@ use Params::Validate qw(:all);
 
 our $PID_DIR = $ENV{UBIC_DAEMON_PID_DIR} || "/var/lib/ubic/simple-daemon/pid";
 
-sub pidfile {
-    my ($self) = @_;
-    my $name = $self->name or die "Can't start nameless SimpleDaemon";
-    $name =~ s{/}{:}; # plain_name from lib/Ubic; should this be somewhere in common library? should this be method of Ubic::Service? should we care, really?
-    return "$PID_DIR/$name";
-}
+=head1 METHODS
 
+=over
+
+=item C<< new($params) >>
+
+Constructor.
+
+Parameters:
+
+=over
+
+=item I<bin>
+
+Daemon binary.
+
+=item I<name>
+
+Service's name. Optional, will usually be set by ubic's catalog.
+
+=back
+
+=cut
 sub new {
     my $class = shift;
     my $params = validate(@_, {
@@ -45,6 +61,18 @@ sub new {
     });
 
     return bless {%$params} => $class;
+}
+
+=item C<< pidfile() >>
+
+Get pid filename. It will be concatenated from simple-daemon pid dir and service's name.
+
+=cut
+sub pidfile {
+    my ($self) = @_;
+    my $name = $self->name or die "Can't start nameless SimpleDaemon";
+    $name =~ s{/}{:}; # plain_name from lib/Ubic; should this be somewhere in common library? should this be method of Ubic::Service? should we care, really?
+    return "$PID_DIR/$name";
 }
 
 sub start_impl {
@@ -71,6 +99,8 @@ sub status_impl {
         return 'not running';
     }
 }
+
+=back
 
 =head1 SEE ALSO
 

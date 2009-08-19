@@ -83,10 +83,24 @@ sub has_service($$) {
 
 =item C<services()>
 
-Get all top-level services. Because they are top-level, we don't need C<simple_services()>. Subclasses must override this method.
+Construct all subservices. Because they are top-level, we don't need C<simple_services()>.
+
+By default, it uses C<service_names> to get list of services.
+=cut
+sub services($) {
+    my $self = shift;
+    my @services = map { $self->service($_) } $self->service_names;
+    return @services;
+}
+
+=item C<service_names()>
+
+Get list with names of all subservices.
+
+Subclasses should usually override this method, C<services> uses it in default implementation.
 
 =cut
-sub services($);
+sub service_names($);
 
 =back
 

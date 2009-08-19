@@ -1,3 +1,10 @@
+yandex-ubic (0.3.2) unstable; urgency=low
+
+  * Ubic::Init refactored into more OOP-styled module
+  * pod coverage tests
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 19 Aug 2009 19:47:56 +0400
+
 yandex-ubic (0.3.1) unstable; urgency=low
 
   * some naming issues of multiservices resolved

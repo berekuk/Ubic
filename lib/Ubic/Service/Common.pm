@@ -39,7 +39,9 @@ use Yandex::Persistent;
 
 =head1 CONSTRUCTOR
 
-C<< Ubic::Service::Common->new($params) >>
+=over
+
+=item C<< Ubic::Service::Common->new($params) >>
 
 Construct service object.
 
@@ -70,6 +72,8 @@ Service's name.
 =item I<port>
 
 Service's port.
+
+=back
 
 =back
 

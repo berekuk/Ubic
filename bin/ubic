@@ -37,13 +37,13 @@ if ($command eq 'status' or $command eq 'cached-status' and @ARGV == 1) {
         $cached = 1;
     }
     for my $service (Ubic->services) {
-        Ubic::Init::print_status($service->name, $cached);
+        my $ubic_init = Ubic::Init->new({ name => $service->name });
+        $ubic_init->print_status($cached);
     }
 }
 else {
-    $0 = "/etc/init.d/$ARGV[1]";
-    @ARGV = ($command);
-    Ubic::Init->run;
+    my $ubic_init = Ubic::Init->new({ name => $ARGV[1], command => $command });
+    $ubic_init->run;
 }
 
 =head1 AUTHOR

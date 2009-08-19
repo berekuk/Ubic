@@ -64,17 +64,17 @@ sub simple_service($$) {
     }
 }
 
-sub services($) {
+sub service_names($) {
     my $self = shift;
 
-    my @services;
+    my @names;
     for my $file (glob("$self->{catalog_dir}/*")) {
         next unless -f $file;
         # TODO - can $self->{catalog_dir} contain any subdirs?
         $file = basename($file);
-        push @services, $self->service($file);
+        push @names, $file;
     }
-    return @services;
+    return @names;
 }
 
 

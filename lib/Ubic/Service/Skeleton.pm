@@ -45,11 +45,11 @@ sub start {
     if ($status eq 'running') {
         return 'already running';
     } elsif ($status eq 'not running') {
-        return $self->do_start;
+        return $self->_do_start;
     } elsif ($status eq 'broken') {
-        # checks inside do_start and do_stop guarantee correct status
-        $self->do_stop;
-        return $self->do_start;
+        # checks inside _do_start and _do_stop guarantee correct status
+        $self->_do_stop;
+        return $self->_do_start;
     } else {
         die "Unknown status '$status'";
     }
@@ -72,9 +72,44 @@ sub stop {
         return 'not running';
     }
 
-    $self->do_stop;
+    $self->_do_stop;
     # TODO - check status
     return 'stopped';
+}
+
+=back
+
+=head1 OVERLOADABLE METHODS
+
+Subclass must overload following methods with simple status, start and stop implementations.
+
+=over
+
+=item I<status_impl>
+
+Status implentation.
+
+=cut
+sub status_impl {
+    die 'not implemented';
+}
+
+=item I<start_impl>
+
+Start implentation. It shouldn't check for current status, this base class will care about it itself.
+
+=cut
+sub start_impl {
+    die 'not implemented';
+}
+
+=item I<stop_impl>
+
+Stop implentation. It shouldn't check for current status, this base class will care about it itself.
+
+=cut
+sub stop_impl {
+    die 'not implemented';
 }
 
 =back
@@ -83,7 +118,7 @@ sub stop {
 
 ##### internal methods ######
 
-sub do_start {
+sub _do_start {
     my ($self) = @_;
     $self->start_impl;
     my $status = $self->status;
@@ -94,7 +129,7 @@ sub do_start {
     }
 }
 
-sub do_stop {
+sub _do_stop {
     my ($self) = @_;
     $self->stop_impl;
     my $status = $self->status;
@@ -105,21 +140,6 @@ sub do_stop {
         die "stop failed, current status: '$status'";
     }
 }
-
-# methods which must be overloaded
-
-sub status_impl {
-    die 'not implemented';
-}
-
-sub start_impl {
-    die 'not implemented';
-}
-
-sub stop_impl {
-    die 'not implemented';
-}
-
 
 =head1 AUTHOR
 
