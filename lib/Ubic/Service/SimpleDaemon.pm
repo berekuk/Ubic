@@ -34,7 +34,7 @@ our $PID_DIR = $ENV{UBIC_DAEMON_PID_DIR} || "/var/lib/ubic/simple-daemon/pid";
 
 =over
 
-=item C<< new($params) >>
+=item B<< new($params) >>
 
 Constructor.
 
@@ -63,7 +63,7 @@ sub new {
     return bless {%$params} => $class;
 }
 
-=item C<< pidfile() >>
+=item B<< pidfile() >>
 
 Get pid filename. It will be concatenated from simple-daemon pid dir and service's name.
 

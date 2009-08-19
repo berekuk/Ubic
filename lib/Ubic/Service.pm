@@ -15,6 +15,12 @@ Ubic::Service - interface and base class for any ubic service
     $service->restart;
     $status = $service->status;
 
+=head1 DESCRIPTION
+
+All ubic services must be subclasses of this package.
+
+See L</"SEE ALSO"> for references to more specific (and useful) versions of services.
+
 =head1 METHODS
 
 =over
@@ -113,6 +119,14 @@ sub check_period {
 }
 
 =back
+
+=head1 SEE ALSO
+
+L<Ubic::Service::Skeleton> - implement simple start/stop/status methods, and ubic will care about everything else.
+
+L<Ubic::Service::Common> - just like Skeleton, but all code can be passed to constructor as sub references.
+
+L<Ubic::Service::SimpleDaemon> - just give it any binary and it will make service from it.
 
 =head1 AUTHOR
 

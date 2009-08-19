@@ -20,7 +20,7 @@ use Scalar::Util qw(blessed);
 
 =over
 
-=item C<< new($dir) >>
+=item B<< new($dir) >>
 
 Constructor.
 
@@ -31,7 +31,7 @@ sub new($$) {
     return bless { catalog_dir => $dir } => $class;
 }
 
-=item C<< set_catalog_dir($dir) >>
+=item B<< set_catalog_dir($dir) >>
 
 Set catalog dir in runtime.
 

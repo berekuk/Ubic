@@ -31,7 +31,7 @@ use Ubic;
 
 =over
 
-=item C<< new($params) >>
+=item B<< new($params) >>
 
 All methods of this class can be invoked as class methods, but you can construct your own instance if neccesary (although constructor doesn't have any options by now, so it is useless).
 
@@ -66,7 +66,7 @@ All following methods do the same thing as methods in C<Ubic>, but they also pri
 
 =over
 
-=item C<< start($name) >>
+=item B<< start($name) >>
 
 =cut
 sub start {
@@ -78,7 +78,7 @@ sub start {
     print "$result\n";
 }
 
-=item C<< stop($name) >>
+=item B<< stop($name) >>
 
 =cut
 sub stop {
@@ -90,7 +90,7 @@ sub stop {
     print "$result\n";
 }
 
-=item C<< restart($name) >>
+=item B<< restart($name) >>
 
 =cut
 sub restart {
@@ -102,7 +102,7 @@ sub restart {
     print "$result\n";
 }
 
-=item C<< try_restart($name) >>
+=item B<< try_restart($name) >>
 
 =cut
 sub try_restart {
@@ -119,7 +119,7 @@ sub try_restart {
     }
 }
 
-=item C<< reload($name) >>
+=item B<< reload($name) >>
 
 =cut
 sub reload {
@@ -137,7 +137,7 @@ sub reload {
     }
 }
 
-=item C<< force_reload($name) >>
+=item B<< force_reload($name) >>
 
 =cut
 sub force_reload {
@@ -161,7 +161,7 @@ sub force_reload {
 
 =over
 
-=item C<< usage($command) >>
+=item B<< usage($command) >>
 
 Print command's usage.
 
@@ -175,7 +175,7 @@ sub usage {
     exit(2); # or exit(3)? see LSB for details
 }
 
-=item C<< print_status($name, $cached_flag) >>
+=item B<< print_status($name, $cached_flag) >>
 
 Print status of given service. If C<$cached_flag> is true, prints status cached in watchdog file.
 
@@ -223,7 +223,7 @@ sub print_status($$;$) {
     }
 }
 
-=item C<< run($params_hashref) >>
+=item B<< run($params_hashref) >>
 
 Run given command for given service and exit with LSB-compatible exit code.
 

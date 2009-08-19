@@ -41,7 +41,7 @@ use Yandex::Persistent;
 
 =over
 
-=item C<< Ubic::Service::Common->new($params) >>
+=item B<< Ubic::Service::Common->new($params) >>
 
 Construct service object.
 

@@ -20,9 +20,17 @@ Ubic - catalog of all ubic services
 
 =head1 DESCRIPTION
 
-Ubic allows you to easily implement secure services which will be monitored and checked automatically.
+Ubic allows you to implement safe services which will be monitored and checked automatically.
 
-This module is a main frontend to ubic's internals. You should use it when using ubic from perl. If you want to use ubic in command line scripts, check L<Ubic::Cmd> too.
+This module is a main frontend to ubic services.
+
+Further directions:
+
+if you want to manage ubic services from perl scripts, read this POD;
+
+if you want to use ubic from command line, see L<ubic(1)> and L<Ubic::Cmd>.
+
+if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Service::*> modules. Check out L<Ubic::Run> for integration with SysV init script system too.
 
 =cut
 
