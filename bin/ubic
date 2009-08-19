@@ -36,9 +36,7 @@ if (($command eq 'status' or $command eq 'cached-status') and @ARGV == 1) {
     if ($command eq 'cached-status') {
         $cached = 1;
     }
-    for my $service (Ubic->services) {
-        Ubic::Cmd->print_status($service->name, $cached);
-    }
+    Ubic::Cmd->print_status(undef, $cached);
 }
 elsif (@ARGV == 2) {
     Ubic::Cmd->run({

@@ -1,3 +1,10 @@
+yandex-ubic (0.3.6) unstable; urgency=low
+
+  * root_service method in Ubic
+  * printing multiservice's statuses correctly
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 19 Aug 2009 21:45:54 +0400
+
 yandex-ubic (0.3.5) unstable; urgency=low
 
   * Ubic::Run separated from Ubic::Cmd

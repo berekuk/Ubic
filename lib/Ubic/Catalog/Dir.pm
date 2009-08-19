@@ -16,13 +16,28 @@ use Perl6::Slurp;
 use File::Basename;
 use Scalar::Util qw(blessed);
 
+=head1 METHODS
+
+=over
+
+=item C<< new($dir) >>
+
+Constructor.
+
+=cut
 sub new($$) {
     my $class = shift;
     my ($dir) = validate_pos(@_, 1);
     return bless { catalog_dir => $dir } => $class;
 }
 
-# this class can be mixin to another service, in this case constructor will never be invoked
+=item C<< set_catalog_dir($dir) >>
+
+Set catalog dir in runtime.
+
+This class can be mixin to another service, in this case constructor will never be invoked.
+
+=cut
 sub set_catalog_dir {
     my $self = shift;
     my $dir = shift;
@@ -77,6 +92,7 @@ sub service_names($) {
     return @names;
 }
 
+=back
 
 =head1 SEE ALSO
 

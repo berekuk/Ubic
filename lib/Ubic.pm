@@ -316,6 +316,16 @@ sub services($) {
     return $self->{catalog}->services();
 }
 
+=item B<root_service()>
+
+Get root service. (Although it's not a "service" by now, it's a Ubic::Catalog object... should probably fix it).
+
+=cut
+sub root_service($) {
+    my $self = _obj(shift);
+    return $self->{catalog};
+}
+
 =item B<set_cached_status($name, $status)>
 
 Write new status into service's watchdog status file.

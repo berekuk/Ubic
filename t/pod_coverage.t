@@ -17,8 +17,6 @@ plan tests => scalar @modules;
 my %modules = map { ($_ => 1) } @modules;
 
 my @bad_modules = qw(
-    Ubic::Catalog::Dir
-    Ubic::Cmd
 );
 
 TODO: {

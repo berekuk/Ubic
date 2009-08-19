@@ -182,11 +182,27 @@ Print status of given service. If C<$cached_flag> is true, prints status cached 
 =cut
 sub print_status($$;$) {
     my $self = _obj(shift);
-    my ($name, $cached) = @_;
+    my ($name, $cached, $indent) = @_;
+    $indent ||= 0;
+
+    my $service;
+    if (defined $name) {
+        $service = Ubic->service($name);
+    }
+    else {
+        $service = Ubic->root_service; # beware, it's not a service
+    }
+
+    if ($service->isa('Ubic::Catalog')) {
+        for my $subname ($service->service_names) {
+            $self->print_status($subname, $cached, $indent + 4);
+        }
+        return; # TODO - print uplevel service's status?
+    }
 
     my $enabled = Ubic->is_enabled($name);
     unless ($enabled) {
-        print "$name\toff\n";
+        print((' ' x $indent)."$name\toff\n");
         return;
     }
 
@@ -196,18 +212,40 @@ sub print_status($$;$) {
         $msg .= "\e[32m" if -t STDOUT;
         $msg .= "$name\t$status\n";
         $msg .= "\e[0m" if -t STDOUT;
-        print $msg;
+        print((' ' x $indent).$msg);
     }
     else {
         my $msg;
         $msg .= "\e[31m" if -t STDOUT;
         $msg .= "$name\t$status\n";
         $msg .= "\e[0m" if -t STDOUT;
-        print $msg;
+        print((' ' x $indent).$msg);
     }
 }
 
-# FIXME - separate all command actions into different subs (or methods)
+=item C<< run($params_hashref) >>
+
+Run given command for given service and exit with LSB-compatible exit code.
+
+Parameters:
+
+=over
+
+=item I<name>
+
+Service's name.
+
+=item I<command>
+
+Command to execute.
+
+=item I<args>
+
+Optional arguments (unused by now).
+
+=back
+
+=cut
 sub run {
     my $self = _obj(shift);
     my $params = validate(@_, {

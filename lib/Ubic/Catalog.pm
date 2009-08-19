@@ -59,6 +59,14 @@ sub service($$) {
     return $service;
 }
 
+=item C<simple_service>
+
+This method should be implemented by subclass.
+
+=cut
+sub simple_service($$);
+
+
 =item C<has_service($name)>
 
 Check whether service with specified name exists in this catalog.
@@ -80,6 +88,13 @@ sub has_service($$) {
     }
     return $top_level->has_service(join '/', @parts[1..$#parts]);
 }
+
+=item C<has_simple_service>
+
+This method should be implemented by subclass.
+
+=cut
+sub has_simple_service($$);
 
 =item C<services()>
 
