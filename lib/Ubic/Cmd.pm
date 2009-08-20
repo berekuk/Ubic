@@ -10,7 +10,7 @@ Ubic::Cmd - ubic methods with pretty printing.
 =head1 SYNOPSIS
 
     use Ubic::Cmd;
-    Ubic::Cmd->start("aaa/bbb");
+    Ubic::Cmd->start("aaa.bbb");
 
 =head1 SYNOPSIS
 
@@ -177,26 +177,28 @@ sub usage {
 
 =item B<< print_status($name, $cached_flag) >>
 
-Print status of given service. If C<$cached_flag> is true, prints status cached in watchdog file.
+=item B<< print_status($service, $cached_flag) >>
+
+Print status of given service identified by name or by object. If C<$cached_flag> is true, prints status cached in watchdog file.
 
 =cut
 sub print_status($$;$) {
     my $self = _obj(shift);
-    my ($name, $cached, $indent) = @_;
+    my ($service, $cached, $indent) = @_;
     $indent ||= 0;
 
-    my $service;
-    if (defined $name) {
-        $service = Ubic->service($name);
-    }
-    else {
+    if (not defined $service) {
         $service = Ubic->root_service;
     }
+    elsif (not blessed($service)) {
+        $service = Ubic->service($service);
+    }
+    my $name = $service->full_name;
 
     if ($service->isa('Ubic::Catalog')) {
         for my $subname ($service->service_names) {
-            if ($service->name) { # not root service
-                $subname = $service->name."/".$subname;
+            if ($name) { # not root service
+                $subname = $name.".".$subname;
             }
             $self->print_status($subname, $cached, $indent + 4);
         }

@@ -27,13 +27,15 @@ See L</"SEE ALSO"> for references to more specific (and useful) versions of serv
 
 =cut
 
-=item B<name>
+=item B<name()>
+
+=item B<name($new_name)>
 
 Name of service.
 
-Each service should have an unique name.
+Each service with the same parent should have an unique name.
 
-In case of subservices, initial name should be the most lower-level name; it will be concatenated with names of it's parents *by* it's parents. (See L<Ubic::Catalog>'s code for more details).
+In case of subservices, name should be the most lower-level name; use C<full_name> method to get fully-qualified service name.
 
 =cut
 sub name($;$) {
@@ -43,6 +45,49 @@ sub name($;$) {
     }
     else {
         return $self->{name};
+    }
+}
+
+=item B<full_name>
+
+Fully qualified name of service.
+
+Each service should have an unique full_name.
+
+It is a concatenation of service's short C<name> and service's <parent_name>.
+
+Service's parent is responsible for setting it (to concatenation of it's own name and service's name) immediately after service's construction.
+
+In case of subservices, initial name should be the most lower-level name; it will be concatenated with names of it's parents *by* it's parents. (See L<Ubic::Catalog>'s code for more details).
+
+=cut
+sub full_name($) {
+    my ($self) = @_;
+    my $parent_name = $self->parent_name;
+    if (defined $parent_name) {
+        return $parent_name.".".$self->name;
+    }
+    else {
+        return $self->name;
+    }
+}
+
+=item B<parent_name()>
+
+=item B<parent_name($new_parent_name)>
+
+Get/set name of service's parent.
+
+Service's parent is responsible for calling it immediately after service's construction as C<< $service->parent_name($self->full_name) >>.
+
+=cut
+sub parent_name($;$) {
+    my ($self, $name) = @_;
+    if (defined $name) {
+        $self->{parent_name} = $name;
+    }
+    else {
+        return $self->{parent_name};
     }
 }
 

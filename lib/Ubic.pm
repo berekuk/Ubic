@@ -310,7 +310,7 @@ Get service _object by name.
 =cut
 sub service($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} }); # this guarantees that : will be unambiguous separator in watchdog filename
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} }); # this guarantees that : will be unambiguous separator in watchdog filename
     return $self->{root}->service($name);
 }
 
@@ -324,6 +324,16 @@ sub services($) {
     return $self->{root}->services();
 }
 
+=item B<service_names()>
+
+Get list of names of all services.
+
+=cut
+sub service_names($) {
+    my $self = _obj(shift);
+    return $self->{root}->service_names();
+}
+
 =item B<root_service()>
 
 Get root service.
@@ -334,6 +344,28 @@ Root service doesn't have a name and returns all top-level services with C<servi
 sub root_service($) {
     my $self = _obj(shift);
     return $self->{root};
+}
+
+=item B<compl_services($line)>
+
+Return list of autocompletion variants for given service prefix.
+
+=cut
+sub compl_services($$) {
+    my $self = _obj(shift);
+    my $line = shift;
+    my @parts = split /\./, $line;
+    if (@parts == 0) {
+        return $self->service_names;
+    }
+    my $node = $self->root_service;
+    while (@parts > 1) {
+        my $part = shift @parts;
+        return unless $node->has_service($part); # no such service
+        $node = $node->service($part);
+    }
+    my @variants = $node->service_names;
+    return grep { $_ =~ m{^\Q$line\E} } @variants;
 }
 
 =item B<set_cached_status($name, $status)>
@@ -359,18 +391,6 @@ You don't need to call these, usually.
 
 =over
 
-=item B<plain_name($name)>
-
-Transform service's name to one which can be used as file's name (services can contain slashes, you know, and files can't).
-
-=cut
-sub plain_name($$) {
-    my $self = shift;
-    my ($name) = validate_pos(@_, { type => SCALAR });
-    $name =~ s{/}{:};
-    return $name;
-}
-
 =item B<watchdog_file($name)>
 
 Get watchdog file name by service's name.
@@ -378,8 +398,8 @@ Get watchdog file name by service's name.
 =cut
 sub watchdog_file($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
-    return "$self->{watchdog_dir}/".$self->plain_name($name);
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    return "$self->{watchdog_dir}/".$name;
 }
 
 =item B<watchdog($name)>
@@ -411,8 +431,8 @@ Lock given service.
 =cut
 sub lock($$) {
     my ($self) = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
-    $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$self->plain_name($name));
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$name);
     return lockf($self->{locks}{$name});
 }
 

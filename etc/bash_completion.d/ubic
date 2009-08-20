@@ -18,7 +18,7 @@ _ubic()
         if [[ "x$prev" == "xlist" ]] ; then
             return 0
         fi
-        COMPREPLY=($(compgen -W "$(perl -MUbic -le 'print join "\n", map {$_->name} Ubic->services')" $cur))
+        COMPREPLY=( $(cur=$cur perl -MUbic -le 'print join "\n", Ubic->compl_services($ENV{cur})') )
     fi
 
     return 0

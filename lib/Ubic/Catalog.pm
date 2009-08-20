@@ -9,7 +9,7 @@ Ubic::Catalog - interface of catalog representing several named services
 
 =head1 SYNOPSIS
 
-    $service = $catalog->service("yandex/yandex-ppb-people-pt/meta-all");
+    $service = $catalog->service("yandex.yandex-ppb-people-pt.meta-all");
     @services = $catalog->services();
 
 =head1 DESCRIPTION
@@ -39,8 +39,8 @@ This class provides common implementation which can delegate searching of subser
 =cut
 sub service($$) {
     my $self = shift;
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
-    my @parts = split '/', $name;
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my @parts = split '\\.', $name;
 
     my $service;
     if (@parts == 1) {
@@ -52,13 +52,9 @@ sub service($$) {
         unless ($top_level->isa('Ubic::Catalog')) {
             croak "top-level service '$parts[0]' is not a multiservice";
         }
-        $service = $top_level->service(join '/', @parts[1..$#parts]);
+        $service = $top_level->service(join '.', @parts[1..$#parts]);
     }
-    if ($self->name) { # multiservice, not most top-level
-        $service->name($self->name."/".$service->name); # append upper-level class to name hierarhy
-        # beware of services caching! we can accidentally do this twice.
-        # would $service->name($name) be simpler solution?
-    }
+    $service->parent_name($self->name);
     return $service;
 }
 
@@ -79,8 +75,8 @@ Like C<service>, subclasses should usually implement C<has_simple_service> inste
 =cut
 sub has_service($$) {
     my $self = shift;
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w.-]+(?:/[\w.-]+)*$} });
-    my @parts = split '/', $name;
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my @parts = split '\\.', $name;
     if (@parts == 1) {
         return $self->has_simple_service($name);
     }
@@ -89,7 +85,7 @@ sub has_service($$) {
     unless ($top_level->isa('Ubic::Catalog')) {
         croak "top-level service '$parts[0]' is not a multiservice";
     }
-    return $top_level->has_service(join '/', @parts[1..$#parts]);
+    return $top_level->has_service(join '.', @parts[1..$#parts]);
 }
 
 =item B<< has_simple_service($name) >>

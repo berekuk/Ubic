@@ -1,3 +1,12 @@
+yandex-ubic (0.4.2) unstable; urgency=low
+
+  * dot is a new service separator instead of slash
+  * Service: "full_name" and "parent_name" methods; "name" method now returns
+    short name
+  * bash_completion works with multiservices
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 20 Aug 2009 18:37:32 +0400
+
 yandex-ubic (0.4.1) unstable; urgency=low
 
   * autoincrement id when loading ubic services from files

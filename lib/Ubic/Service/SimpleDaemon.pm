@@ -70,8 +70,7 @@ Get pid filename. It will be concatenated from simple-daemon pid dir and service
 =cut
 sub pidfile {
     my ($self) = @_;
-    my $name = $self->name or die "Can't start nameless SimpleDaemon";
-    $name =~ s{/}{:}; # plain_name from lib/Ubic; should this be somewhere in common library? should this be method of Ubic::Service? should we care, really?
+    my $name = $self->full_name or die "Can't start nameless SimpleDaemon";
     return "$PID_DIR/$name";
 }
 

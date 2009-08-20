@@ -28,7 +28,7 @@ my $service = Ubic::Service::Common->new({
             return 'not running';
         }
     },
-    name => 'some.service',
+    name => 'some-service',
 });
 is($service->start, 'started', 'start works');
 is($service->status, 'running', 'status after start');

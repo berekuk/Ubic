@@ -84,7 +84,7 @@ sub new {
         start       => { type => CODEREF },
         stop        => { type => CODEREF },
         status      => { type => CODEREF },
-        name        => { type => SCALAR, regex => qr/^[\w.-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
+        name        => { type => SCALAR, regex => qr/^[\w-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
         port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1},
     });
     my $self = bless {%$params} => $class;
