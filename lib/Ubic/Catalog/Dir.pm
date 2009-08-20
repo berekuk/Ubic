@@ -57,7 +57,13 @@ sub simple_service($$) {
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
 
     my $file = "$self->{catalog_dir}/$name";
-    if (-e $file) {
+    if (-d $file) {
+        # directory => multiservice
+        my $service = Ubic::Catalog::Dir->new($file);
+        $service->name($name);
+        return $service;
+    }
+    elsif (-e $file) {
         my $content = slurp($file);
         $content = "# line 1 $file\n$content";
         $content = "package UbicService".($eval_id++).";\n# line 1 $file\n$content";
@@ -86,9 +92,9 @@ sub service_names($) {
 
     my @names;
     for my $file (glob("$self->{catalog_dir}/*")) {
-        next unless -f $file;
-        # TODO - can $self->{catalog_dir} contain any subdirs?
+        next unless -f $file or -d $file;
         $file = basename($file);
+        next if $file !~ /^[\w-]+$/; # skip files with dots, for example old debian configs like yandex.dpkg-old
         push @names, $file;
     }
     return @names;

@@ -1,9 +1,0 @@
-# vim:syntax=perl
-package Ubic::Test::Multi;
-use base qw(Ubic::Service::SimpleDaemon Ubic::Catalog::Dir);
-
-my $service = __PACKAGE__->new({
-    bin => 'sleep 1000',
-});
-$service->set_catalog_dir('t/service/m');
-$service;

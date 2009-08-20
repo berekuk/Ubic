@@ -196,11 +196,15 @@ sub print_status($$;$) {
     my $name = $service->full_name;
 
     if ($service->isa('Ubic::Catalog')) {
+        if ($name) {
+            print((' ' x $indent).$name.":\n");
+            $indent += 4;
+        }
         for my $subname ($service->service_names) {
             if ($name) { # not root service
                 $subname = $name.".".$subname;
             }
-            $self->print_status($subname, $cached, $indent + 4);
+            $self->print_status($subname, $cached, $indent);
         }
         return; # TODO - print uplevel service's status?
     }
