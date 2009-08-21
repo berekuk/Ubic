@@ -121,8 +121,7 @@ sub start($$) {
     my $lock = $self->lock($name);
 
     $self->enable($name);
-    my $result = $self->service($name)->start;
-    $result = result($result);
+    my $result = $self->do_cmd($name, 'start');
     if ($result->status eq 'running') {
         $self->set_cached_status($name, 'running');
     }
@@ -140,8 +139,7 @@ sub stop($$) {
     my $lock = $self->lock($name);
 
     $self->disable($name);
-    my $result = $self->service($name)->stop;
-    $result = result($result);
+    my $result = $self->do_cmd($name, 'stop');
     # we can't save result in watchdog file - it doesn't exist when service is disabled...
     return $result;
 }
@@ -157,9 +155,9 @@ sub restart($$) {
     my $lock = $self->lock($name);
 
     $self->enable($name);
-    $self->service($name)->stop;
-    my $result = $self->service($name)->start;
-    $result = result($result);
+    my $result = $self->do_cmd($name, 'stop');
+    $result = $self->do_cmd($name, 'start');
+
     if ($result->status eq 'running') {
         $self->set_cached_status($name, 'running');
     }
@@ -179,8 +177,8 @@ sub try_restart($$) {
     unless ($self->is_enabled($name)) {
         return result('down');
     }
-    $self->service($name)->stop;
-    $self->service($name)->start;
+    $self->do_cmd($name, 'stop');
+    $self->do_cmd($name, 'start');
     return result('restarted');
 }
 
@@ -200,7 +198,7 @@ sub reload($$) {
 
     # if reload isn't implemented, do nothing
     # TODO - would it be better to execute reload as force-reload always? but it would be incompatible with LSB specification...
-    my $result = $self->service($name)->reload;
+    my $result = $self->do_cmd($name, 'reload');
     unless ($result->action eq 'restarted') {
         die result('unknown', 'reload not implemented');
     }
@@ -223,8 +221,7 @@ sub force_reload($$) {
         return result('down');
     }
 
-    my $result = $self->service($name)->reload;
-    $result = result($result);
+    my $result = $self->do_cmd($name, 'reload');
     return $result if $result->action eq 'restarted';
 
     $self->try_restart($name);
@@ -240,8 +237,7 @@ sub status($$) {
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
-    my $result = $self->service($name)->status;
-    return result($result);
+    return $self->do_cmd($name, 'status');
 }
 
 =back
@@ -451,6 +447,33 @@ sub lock($$) {
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
     $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$name);
     return lockf($self->{locks}{$name});
+}
+
+=item B<< do_sub($code) >>
+
+Run any code and wrap result into C<Ubic::Result::Class> object.
+
+=cut
+sub do_sub($$) {
+    my ($self, $code) = @_;
+    my $result = eval {
+        $code->();
+    }; if ($@) {
+        die result($@);
+    }
+    return result($result);
+}
+
+=item B<< do_cmd($name, $cmd) >>
+
+Run C<$cmd> method from service C<$name> and wrap result into C<Ubic::Result::Class> object.
+
+=cut
+sub do_cmd($$$) {
+    my ($self, $name, $cmd) = @_;
+    $self->do_sub(sub {
+        $self->service($name)->$cmd()
+    });
 }
 
 =back

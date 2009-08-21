@@ -25,6 +25,7 @@ Unlike L<Ubic::Service::Common>, this class allows you to specify only name and 
 use base qw(Ubic::Service::Skeleton);
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
+use Ubic::Result qw(result);
 
 use Params::Validate qw(:all);
 
@@ -97,10 +98,10 @@ sub stop_impl {
 sub status_impl {
     my ($self) = @_;
     if (check_daemon($self->pidfile)) {
-        return 'running';
+        return result('running');
     }
     else {
-        return 'not running';
+        return result('not running');
     }
 }
 

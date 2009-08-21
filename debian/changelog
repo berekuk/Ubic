@@ -1,3 +1,9 @@
+yandex-ubic (0.5.1) unstable; urgency=low
+
+  * all exceptions from Ubic are blessed too
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 21 Aug 2009 20:43:57 +0400
+
 yandex-ubic (0.5.0) unstable; urgency=low
 
   * Ubic methods are guaranteed to return instances of new class

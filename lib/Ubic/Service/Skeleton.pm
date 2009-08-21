@@ -53,7 +53,7 @@ sub start {
         $self->_do_stop;
         return $self->_do_start;
     } else {
-        die "Unknown status '$status'";
+        die result('unknown', "wrong status '$status'");
     }
 }
 
@@ -89,7 +89,7 @@ Subclass must overload following methods with simple status, start and stop impl
 
 =item I<status_impl>
 
-Status implentation.
+Status implentation. Should return result object or plain string which coerces to result object.
 
 =cut
 sub status_impl {
@@ -100,6 +100,8 @@ sub status_impl {
 
 Start implentation. It shouldn't check for current status, this base class will care about it itself.
 
+Return value will be ignored.
+
 =cut
 sub start_impl {
     die 'not implemented';
@@ -108,6 +110,8 @@ sub start_impl {
 =item I<stop_impl>
 
 Stop implentation. It shouldn't check for current status, this base class will care about it itself.
+
+Return value will be ignored.
 
 =cut
 sub stop_impl {
@@ -127,7 +131,7 @@ sub _do_start {
     if ($status eq 'running') {
         return 'started';
     } else {
-        die "start failed, status: '$status'";
+        die result($status, 'start failed');
     }
 }
 
@@ -139,7 +143,7 @@ sub _do_stop {
         return 'stopped';
     }
     else {
-        die "stop failed, current status: '$status'";
+        die result($status, 'stop failed');
     }
 }
 
