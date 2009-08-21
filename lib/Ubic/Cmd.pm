@@ -62,7 +62,7 @@ sub _obj {
 
 =head1 LSB METHODS
 
-All following methods do the same thing as methods in C<Ubic>, but they also print messages about their actions.
+All following methods do the same things as methods in C<Ubic>, but they also print messages about their actions.
 
 =over
 
@@ -76,6 +76,7 @@ sub start {
     print "Starting $name... ";
     my $result = Ubic->start($name);
     print "$result\n";
+    return $result;
 }
 
 =item B<< stop($name) >>
@@ -88,6 +89,7 @@ sub stop {
     print "Stopping $name... ";
     my $result = Ubic->stop($name);
     print "$result\n";
+    return $result;
 }
 
 =item B<< restart($name) >>
@@ -100,6 +102,7 @@ sub restart {
     print "Restarting $name... ";
     my $result = Ubic->restart($name);
     print "$result\n";
+    return $result;
 }
 
 =item B<< try_restart($name) >>
@@ -113,9 +116,11 @@ sub try_restart {
         print "Restarting $name... ";
         my $result = Ubic->try_restart($name);
         print "$result\n";
+        return $result;
     }
     else {
         print "$name is down";
+        return result('down');
     }
 }
 
@@ -130,10 +135,11 @@ sub reload {
         print "Reloading $name... ";
         my $result = Ubic->reload($name);
         print "$result\n";
-        exit;
+        return $result;
     }
     else {
-        print "$name is down";
+        print "$name is down\n";
+        return result('down');
     }
 }
 
@@ -148,10 +154,11 @@ sub force_reload {
         print "Reloading $name... ";
         my $result = Ubic->force_reload($name);
         print "$result\n";
-        exit;
+        return $result;
     }
     else {
-        print "$name is down";
+        print "$name is down\n";
+        return result('down');
     }
 }
 
@@ -206,13 +213,14 @@ sub print_status($$;$) {
             }
             $self->print_status($subname, $cached, $indent);
         }
-        return; # TODO - print uplevel service's status?
+        # TODO - print uplevel service's status?
+        return;
     }
 
     my $enabled = Ubic->is_enabled($name);
     unless ($enabled) {
         print((' ' x $indent)."$name\toff\n");
-        return;
+        return result('down');
     }
 
     my $status = ($cached ? Ubic->cached_status($name) : Ubic->status($name));
@@ -230,6 +238,7 @@ sub print_status($$;$) {
         $msg .= "\e[0m" if -t STDOUT;
         print((' ' x $indent).$msg);
     }
+    return $status;
 }
 
 =item B<< run($params_hashref) >>
@@ -282,8 +291,16 @@ sub run {
         if ($command eq 'cached-status') {
             $cached = 1;
         }
-        $self->print_status($name, $cached);
-        exit(0);
+        my $result = $self->print_status($name, $cached);
+        if ($result->status eq 'running') {
+            exit(0);
+        }
+        elsif ($result->status eq 'not running' or $result->status eq 'down') {
+            exit(3); # see LSB
+        }
+        else {
+            exit(150); # application-reserved code
+        }
     }
 
     # all other commands should be running from root
@@ -294,14 +311,22 @@ sub run {
 
     my $method = $command;
     $method =~ s/-/_/g;
-    if ($self->can($method)) {
-        # TODO - check that method is not a private
-        $self->$method($name);
-        exit; # TODO - methods should return exit code, as scalar or as blessed exception
-    }
-    else {
+    unless (grep { $_ eq $method } qw/ start stop restart try_restart reload force_reload /) {
         $self->usage($command);
     }
+
+    unless (Ubic->root_service->has_service($name)) {
+        print STDERR "Service '$name' not found\n";
+        exit(5);
+    }
+    eval {
+        $self->$method($name);
+    }; if ($@) {
+        print STDERR "'$name $method' error: $@\n";
+        exit(1); # generic error, TODO - more lsb-specific errors?
+
+    }
+    exit;
 }
 
 =back
