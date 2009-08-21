@@ -1,3 +1,12 @@
+yandex-ubic (0.5.3) unstable; urgency=low
+
+  * bugfixes, replaced name with full_name in two more places
+  * ping evals all content and returns 500 error in exception, not empty
+    answer
+  * ping searches in subservices when looking for a service by it's port
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 21 Aug 2009 21:53:09 +0400
+
 yandex-ubic (0.5.2) unstable; urgency=low
 
   * Ubic::Cmd more lsb-compatible and more consistent

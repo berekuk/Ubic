@@ -20,8 +20,8 @@ GetOptions() or pod2usage(2);
 my @services = Ubic->services;
 
 for my $service (@services) {
-    my $name = $service->name;
-    next unless Ubic->is_enabled($service->name); # don't check disabled services
+    my $name = $service->full_name;
+    next unless Ubic->is_enabled($service->full_name); # don't check disabled services
     # TODO - fork on each service, or at least set alarm
     my $status = $service->status;
     unless ($status eq 'running') {
