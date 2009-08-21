@@ -15,6 +15,10 @@ Ubic::Service - interface and base class for any ubic service
     $service->restart;
     $status = $service->status;
 
+=cut
+
+use Ubic::Result qw(result);
+
 =head1 DESCRIPTION
 
 All ubic services must be subclasses of this package.
