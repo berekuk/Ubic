@@ -198,8 +198,10 @@ sub start_daemon($) {
                 waitpid($child, 0);
                 if ($? > 0) {
                     warn "Daemon failed: $?";
+                    xprint($ubic_fh, "daemon failed: $?");
                     $instant_exit->(1);
                 }
+                xprint($ubic_fh, "daemon exited");
                 $instant_exit->(0);
             }
             else {
