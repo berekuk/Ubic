@@ -57,6 +57,7 @@ sub new {
     my $class = shift;
     my $params = validate(@_, {
         bin => { type => SCALAR },
+        user => { type => SCALAR, optional => 1 },
         name => { type => SCALAR, optional => 1 },
     });
 
@@ -76,12 +77,16 @@ sub pidfile {
 
 sub start_impl {
     my ($self) = @_;
-    start_daemon({
+    my $start_params = {
         pidfile => $self->pidfile,
+        bin => $self->{bin},
         stdout => "/dev/null",
         stderr => "/dev/null",
-        bin => $self->{bin},
-    }),
+    };
+    if ($self->{user}) {
+        $start_params->{user} = $self->{user};
+    }
+    start_daemon($start_params);
 }
 
 sub stop_impl {

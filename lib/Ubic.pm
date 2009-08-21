@@ -34,6 +34,7 @@ if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Se
 
 =cut
 
+use Ubic::Result qw(result);
 use Ubic::Catalog::Dir;
 use Params::Validate qw(:all);
 use Carp;
@@ -105,6 +106,8 @@ See L<http://refspecs.freestandards.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-gene
 
 Following functions are trying to conform, except that all dashes in method names are replaced with underscores.
 
+Unlike C<Ubic::Service> methods, these methods are guaranteed to return blessed versions of result, i.e. C<Ubic::Result::Class> objects.
+
 =over
 
 =item B<start($name)>
@@ -119,7 +122,10 @@ sub start($$) {
 
     $self->enable($name);
     my $result = $self->service($name)->start;
-    $self->set_cached_status($name, 'running');
+    $result = result($result);
+    if ($result->status eq 'running') {
+        $self->set_cached_status($name, 'running');
+    }
     return $result;
 }
 
@@ -135,6 +141,7 @@ sub stop($$) {
 
     $self->disable($name);
     my $result = $self->service($name)->stop;
+    $result = result($result);
     # we can't save result in watchdog file - it doesn't exist when service is disabled...
     return $result;
 }
@@ -151,9 +158,12 @@ sub restart($$) {
 
     $self->enable($name);
     $self->service($name)->stop;
-    $self->service($name)->start;
-    $self->set_cached_status($name, 'running');
-    return 'restarted';
+    my $result = $self->service($name)->start;
+    $result = result($result);
+    if ($result->status eq 'running') {
+        $self->set_cached_status($name, 'running');
+    }
+    return result('restarted'); # FIXME - should return original status
 }
 
 =item B<try_restart($name)>
@@ -167,11 +177,11 @@ sub try_restart($$) {
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
-        return 'down';
+        return result('down');
     }
     $self->service($name)->stop;
     $self->service($name)->start;
-    return 'restarted';
+    return result('restarted');
 }
 
 =item B<reload($name)>
@@ -185,16 +195,16 @@ sub reload($$) {
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
-        return 'down';
+        return result('down');
     }
 
     # if reload isn't implemented, do nothing
     # TODO - would it be better to execute reload as force-reload always? but it would be incompatible with LSB specification...
-    my $reloaded = $self->service($name)->reload;
-    unless ($reloaded) {
-        die 'reload not implemented';
+    my $result = $self->service($name)->reload;
+    unless ($result->action eq 'restarted') {
+        die result('unknown', 'reload not implemented');
     }
-    return $reloaded;
+    return $result;
 }
 
 =item B<force_reload($name)>
@@ -210,11 +220,12 @@ sub force_reload($$) {
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
-        return 'down';
+        return result('down');
     }
 
-    my $reloaded = $self->service($name)->reload;
-    return $reloaded if $reloaded;
+    my $result = $self->service($name)->reload;
+    $result = result($result);
+    return $result if $result->action eq 'restarted';
 
     $self->try_restart($name);
 }
@@ -229,7 +240,8 @@ sub status($$) {
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
 
-    $self->service($name)->status;
+    my $result = $self->service($name)->status;
+    return result($result);
 }
 
 =back
@@ -253,6 +265,7 @@ sub enable($$) {
     my $watchdog = $self->watchdog($name);
     $watchdog->{status} = 'unknown';
     $watchdog->commit;
+    return result('unknown');
 }
 
 =item B<is_enabled($name)>
@@ -298,9 +311,9 @@ sub cached_status($$) {
     my ($name) = validate_pos(@_, 1);
 
     unless ($self->is_enabled($name)) {
-        return 'disabled';
+        return result('disabled');
     }
-    return $self->watchdog_ro($name)->{status};
+    return result($self->watchdog_ro($name)->{status});
 }
 
 =item B<service($name)>
@@ -375,7 +388,11 @@ Write new status into service's watchdog status file.
 =cut
 sub set_cached_status($$$) {
     my $self = _obj(shift);
-    my ($name, $status) = validate_pos(@_, 1, {type => SCALAR});
+    my ($name, $status) = validate_pos(@_, 1, 1);
+    if (blessed $status) {
+        croak "Wrong status param '$status'" unless $status->isa('Ubic::Status::Class');
+        $status = $status->status;
+    }
     my $lock = $self->lock($name);
 
     my $watchdog = $self->watchdog($name);

@@ -1,3 +1,16 @@
+yandex-ubic (0.5.0) unstable; urgency=low
+
+  * Ubic methods are guaranteed to return instances of new class
+    Ubic::Reslt::Class; services can make use of it too.
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 21 Aug 2009 20:00:31 +0400
+
+yandex-ubic (0.4.4) unstable; urgency=low
+
+  * user parameter in Daemon and Service::SimpleDaemon
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 20 Aug 2009 20:35:57 +0400
+
 yandex-ubic (0.4.3) unstable; urgency=low
 
   * support directories in /etc/ubic/service

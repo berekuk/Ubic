@@ -34,7 +34,7 @@ use base qw(Ubic::Service);
 
 Get service by name.
 
-This class provides common implementation which can delegate searching of subservices to multiservices (don't panic!), do subclasses should implement C<simple_service> instead.
+This class provides common implementation which can delegate searching of subservices to multiservices (don't panic!), so subclasses should implement C<simple_service> instead.
 
 =cut
 sub service($$) {

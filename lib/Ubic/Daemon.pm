@@ -120,9 +120,10 @@ sub start_daemon($) {
         stdout => { type => SCALAR, default => '/dev/null' },
         stderr => { type => SCALAR, default => '/dev/null' },
         ubic_log => { type => SCALAR, default => '/dev/null' },
+        user => { type => SCALAR, optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -172,6 +173,14 @@ sub start_daemon($) {
             my $pid_fh = xopen(">", $pidfile);
             xprint($pid_fh, $$);
             $pid_fh->flush;
+
+            if (defined $user) {
+                my $id = getpwnam($user);
+                unless (defined $id) {
+                    die "User '$user' not found";
+                }
+                POSIX::setuid($id);
+            }
 
             if (my $child = xfork) {
                 # guardian

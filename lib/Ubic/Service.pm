@@ -19,6 +19,10 @@ Ubic::Service - interface and base class for any ubic service
 
 All ubic services must be subclasses of this package.
 
+Action methods (like C<start>, C<stop>, C<reload>) and C<status> should return L<Ubic::Result::Class> objects (usually constructed with C<result> method from L<Ubic::Result>).
+
+Or they can return plain strings, L<Ubic> will care about blessing them into result objects.
+
 See L</"SEE ALSO"> for references to more specific (and useful) versions of services.
 
 =head1 METHODS
@@ -131,12 +135,10 @@ sub status {
 
 Reload service, if possible.
 
-Should return true value if reload is implemented.
-
 =cut
 sub reload {
     my ($self) = @_;
-    return;
+    return result('unknown');
 }
 
 =item B<port>

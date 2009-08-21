@@ -10,6 +10,7 @@ Ubic::Service::Skeleton - skeleton of any service with common start/stop logic
 =cut
 
 use Yandex::Lockf;
+use Ubic::Result qw(result);
 
 use base qw(Ubic::Service);
 
@@ -26,9 +27,10 @@ Possible values: C<running>, C<not running>, C<unknown>, C<broken>.
 =cut
 sub status {
     my ($self) = @_;
-    my $status = $self->status_impl;
-    $status ||= 'unknown';
-    return $status;
+    my $result = $self->status_impl;
+    $result ||= 'unknown';
+    $result = result($result);
+    return $result;
 }
 
 =item B<< start() >>
