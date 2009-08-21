@@ -26,6 +26,7 @@ use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
 
 use Ubic;
+use Ubic::Result qw(result);
 
 =head1 CONSTRUCTOR
 
