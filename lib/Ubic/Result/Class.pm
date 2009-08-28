@@ -130,7 +130,12 @@ Get string representation.
 sub as_string {
     my $self = shift;
     if (defined $self->{msg}) {
-        return "$self->{type} ($self->{msg})";
+        if ($self->{type} eq 'unknown') {
+            return "$self->{msg}";
+        }
+        else {
+            return "$self->{type} ($self->{msg})";
+        }
     }
     else {
         return $self->type;

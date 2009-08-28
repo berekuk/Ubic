@@ -185,7 +185,6 @@ sub start_daemon($) {
             if (my $child = xfork) {
                 # guardian
 
-                xclose($write_pipe);
                 xprint($ubic_fh, "guardian pid: $$\n");
                 xprint($ubic_fh, "daemon pid: $child\n");
 
@@ -195,6 +194,8 @@ sub start_daemon($) {
                     xprint($ubic_fh, "child probably killed\n");
                     $instant_exit->(0);
                 };
+                xclose($write_pipe);
+
                 waitpid($child, 0);
                 if ($? > 0) {
                     warn "Daemon failed: $?";
@@ -240,7 +241,7 @@ sub start_daemon($) {
         # TODO - check daemon's name to make sure that xexec happened
         return;
     }
-    die "Failed to create daemon, out: '$out'";
+    die "Failed to create daemon: '$out'";
 }
 
 =item B<check_daemon($pidfile)>

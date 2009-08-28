@@ -1,3 +1,11 @@
+yandex-ubic (0.6.0-beta2) unstable; urgency=low
+
+  * using LOGNAME instead of USER - works inside debuild
+  * 777 and sticky bit for pid/lock/watchdog dirs
+  * changing effective uid fixed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 28 Aug 2009 21:40:26 +0400
+
 yandex-ubic (0.6.0-beta1) unstable; urgency=low
 
   * custom users supported

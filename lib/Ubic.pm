@@ -423,7 +423,7 @@ sub check_access($$) {
         if ($current_user ne 'root') {
             die result('unknown', "You are $current_user, and service ".$service->name." should be started from $user");
         }
-        $> = $<;
+        $> = getpwnam($user);
         if ($!) {
             die result('unknown', "Failed to change user from $> to $<: $!");
         }
