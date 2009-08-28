@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+BEGIN {
+    $0 = "/etc/init.d/sleeping-daemon";
+}
+
+use Ubic::Run;

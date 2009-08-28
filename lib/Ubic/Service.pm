@@ -156,6 +156,16 @@ sub port {
     # TODO - what will this method return when complex services which runs several daemons at once will be implemented?
 }
 
+=item B<user>
+
+Should return user from which the service can be controlled and will be running. Default is C<root>.
+
+=cut
+sub user {
+    my $self = shift;
+    return 'root';
+}
+
 =item B<check_period>
 
 Returns period of checking a service by watchdog in seconds.

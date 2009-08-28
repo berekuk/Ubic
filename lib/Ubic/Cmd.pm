@@ -304,12 +304,6 @@ sub run {
         }
     }
 
-    # all other commands should be running from root
-    if ($>) {
-        print STDERR "Permission denied\n";
-        exit(4); # see LSB
-    }
-
     my $method = $command;
     $method =~ s/-/_/g;
     unless (grep { $_ eq $method } qw/ start stop restart try_restart reload force_reload /) {

@@ -90,6 +90,11 @@ sub start_impl {
     start_daemon($start_params);
 }
 
+sub user {
+    my $self = shift;
+    return $self->{user} || 'root';
+}
+
 sub stop_impl {
     my ($self) = @_;
     stop_daemon($self->pidfile);
