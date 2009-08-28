@@ -131,7 +131,7 @@ sub as_string {
     my $self = shift;
     if (defined $self->{msg}) {
         if ($self->{type} eq 'unknown') {
-            return "$self->{msg}";
+            return "$self->{msg}\n";
         }
         else {
             return "$self->{type} ($self->{msg})";

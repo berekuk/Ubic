@@ -34,6 +34,7 @@ if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Se
 =cut
 
 use Ubic::Result qw(result);
+use Ubic::AccessGuard;
 use Ubic::Catalog::Dir;
 use Params::Validate qw(:all);
 use Carp;
@@ -117,7 +118,7 @@ Start service.
 sub start($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    $self->check_access($self->service($name));
+    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -125,7 +126,6 @@ sub start($$) {
     if ($result->status eq 'running') {
         $self->set_cached_status($name, 'running');
     }
-    $self->restore_access;
     return $result;
 }
 
@@ -137,13 +137,12 @@ Stop service.
 sub stop($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    $self->check_access($self->service($name));
+    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     $self->disable($name);
     my $result = $self->do_cmd($name, 'stop');
     # we can't save result in watchdog file - it doesn't exist when service is disabled...
-    $self->restore_access;
     return $result;
 }
 
@@ -155,7 +154,7 @@ Restart service; start it if it's not running.
 sub restart($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    $self->check_access($self->service($name));
+    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -165,7 +164,6 @@ sub restart($$) {
     if ($result->status eq 'running') {
         $self->set_cached_status($name, 'running');
     }
-    $self->restore_access;
     return result('restarted'); # FIXME - should return original status
 }
 
@@ -177,7 +175,7 @@ Restart service if it is enabled.
 sub try_restart($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    $self->check_access($self->service($name));
+    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -185,7 +183,6 @@ sub try_restart($$) {
     }
     $self->do_cmd($name, 'stop');
     $self->do_cmd($name, 'start');
-    $self->restore_access;
     return result('restarted');
 }
 
@@ -197,6 +194,7 @@ Reloads service if reloading is implemented; throw exception otherwise.
 sub reload($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
+    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -222,6 +220,7 @@ Does nothing if service is disabled.
 sub force_reload($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
+    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -410,39 +409,6 @@ sub set_cached_status($$$) {
 You don't need to call these, usually.
 
 =over
-
-=item B<< check_access($service) >>
-
-=cut
-sub check_access($$) {
-    my $self = _obj(shift);
-    my ($service) = validate_pos(@_, { isa => 'Ubic::Service' });
-    my $user = $service->user;
-    my $current_user = getpwuid($<);
-    if ($user ne $current_user) {
-        if ($current_user ne 'root') {
-            die result('unknown', "You are $current_user, and service ".$service->name." should be started from $user");
-        }
-        $> = getpwnam($user);
-        if ($!) {
-            die result('unknown', "Failed to change user from $> to $<: $!");
-        }
-    }
-}
-
-=item B<< restore_access() >>
-
-=cut
-sub restore_access($) {
-    my $self = _obj(shift);
-    if ($> != $<) {
-        $> = $<; # return effective id back to normal
-        if ($!) {
-            die result('unknown', "Failed to change user from $> to $<: $!");
-        }
-    }
-
-}
 
 =item B<watchdog_file($name)>
 
