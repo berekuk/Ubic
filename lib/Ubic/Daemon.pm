@@ -226,6 +226,7 @@ sub start_daemon($) {
         };
         if ($write_pipe) {
             print {$write_pipe} "Error: $@\n";
+            $write_pipe->flush;
         }
         $instant_exit->(1);
     }

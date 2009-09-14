@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 use Test::Exception;
 
 use lib 'lib';
@@ -61,4 +61,14 @@ ok(check_daemon("tfiles/pid"), 'daemon in callback mode started');
 sleep 4;
 ok(!(check_daemon("tfiles/pid")), 'callback daemon stopped after several seconds');
 
+throws_ok(sub {
+    start_daemon({
+        function => sub { sleep 2 },
+        name => 'abc',
+        stdout => '/forbidden.log',
+        pidfile => 'tfiles/pid',
+    })
+},
+qr{\QError: Can't write to '/forbidden.log'\E},
+'start_daemon reports correct errrors');
 
