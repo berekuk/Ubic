@@ -3,9 +3,11 @@ build:
 	mkdir -p man
 	for f in bin/*; do pod2man -n $$(basename $$f) $$f man/$$(basename $$f).1; done
 
-test:
+test_compile:
 	set -e; for f in bin/* www/*; do perl -Ilib -c $$f; done
 	set -e; for m in `find lib -name '*.pm'`; do perl -Ilib -c $$m; done
+
+test: test_compile
 	prove -v t/*.t
 
 install:

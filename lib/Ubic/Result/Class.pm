@@ -66,6 +66,8 @@ use overload '""' => sub {
     return $self->as_string;
 }, 'eq' => sub {
     return ("$_[0]" eq "$_[1]")
+}, 'ne' => sub {
+    return ("$_[0]" ne "$_[1]")
 };
 
 use Params::Validate qw(:all);

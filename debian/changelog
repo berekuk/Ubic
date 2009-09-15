@@ -1,3 +1,19 @@
+yandex-ubic (0.6.2) unstable; urgency=low
+
+  * ubic-watchdog improvements:
+   - parallel checking with forks
+   - verbose mode
+   - correctly check multiservices
+  * Ubic.pm locks fixed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 15 Sep 2009 18:51:48 +0400
+
+yandex-ubic (0.6.1) unstable; urgency=low
+
+  * overload "ne" in Ubic::Result::Class
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 15 Sep 2009 18:06:29 +0400
+
 yandex-ubic (0.6.0) unstable; urgency=low
 
   * Ubic::AccessGuard implemented
@@ -42,7 +58,7 @@ yandex-ubic (0.5.1) unstable; urgency=low
 yandex-ubic (0.5.0) unstable; urgency=low
 
   * Ubic methods are guaranteed to return instances of new class
-    Ubic::Reslt::Class; services can make use of it too.
+    Ubic::Result::Class; services can make use of it too.
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 21 Aug 2009 20:00:31 +0400
 

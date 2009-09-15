@@ -445,14 +445,44 @@ sub watchdog_ro($$) {
 
 =item B<lock($name)>
 
-Lock given service.
+Acquire lock object for given service.
+
+You can lock one object twice from the same process, but not from different processes.
 
 =cut
 sub lock($$) {
     my ($self) = _obj(shift);
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
-    $self->{locks}{$name} ||= xopen(">>", $self->{lock_dir}."/".$name);
-    return lockf($self->{locks}{$name});
+    unless ($self->{locks}{$name}) {
+        $self->{locks}{$name} = Ubic::Lock->new($name, $self);
+    }
+    return $self->{locks}{$name};
+}
+
+{
+    package Ubic::Lock;
+    use strict;
+    use warnings;
+    use Yandex::Lockf;
+    use Scalar::Util qw(weaken);
+    sub new {
+        my ($class, $name, $ubic) = @_;
+        my $ubic_ref = \$ubic;
+        my $self = bless { name => $name, ubic_ref => $ubic_ref, lock => lockf($ubic->{lock_dir}."/".$name) } => $class;
+        weaken($self->{ubic_ref});
+        return $self;
+    }
+    sub DESTROY {
+        my $self = shift;
+        my $ubic = ${$self->{ubic_ref}};
+        $ubic->_free_lock($self->{name});
+    }
+}
+
+sub _free_lock {
+    my $self = _obj(shift);
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    delete $self->{locks}{$name};
 }
 
 =item B<< do_sub($code) >>

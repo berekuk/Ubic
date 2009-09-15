@@ -224,7 +224,16 @@ sub print_status($$;$) {
         return result('down');
     }
 
-    my $status = ($cached ? Ubic->cached_status($name) : Ubic->status($name));
+    my $status;
+    if ($cached) {
+        $status = Ubic->cached_status($name);
+    }
+    else {
+        $status = eval { Ubic->status($name) };
+        if ($@) {
+            $status = result($@);
+        }
+    }
     if ($status eq 'running') {
         my $msg;
         $msg .= "\e[32m" if -t STDOUT;
