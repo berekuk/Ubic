@@ -1,3 +1,10 @@
+yandex-ubic (0.6.3) unstable; urgency=low
+
+  * Ubic::Service::Skeleton fixed to work when status has verbose message
+    attached
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 16 Sep 2009 02:03:13 +0400
+
 yandex-ubic (0.6.2) unstable; urgency=low
 
   * ubic-watchdog improvements:

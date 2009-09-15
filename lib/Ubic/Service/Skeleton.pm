@@ -44,11 +44,11 @@ sub start {
     my ($self) = @_;
 
     my $status = $self->status;
-    if ($status eq 'running') {
+    if ($status->status eq 'running') {
         return 'already running';
-    } elsif ($status eq 'not running') {
+    } elsif ($status->status eq 'not running') {
         return $self->_do_start;
-    } elsif ($status eq 'broken') {
+    } elsif ($status->status eq 'broken') {
         # checks inside _do_start and _do_stop guarantee correct status
         $self->_do_stop;
         return $self->_do_start;
@@ -70,7 +70,7 @@ sub stop {
     my ($self) = @_;
 
     my $status = $self->status;
-    if ($status eq 'not running') {
+    if ($status->status eq 'not running') {
         return 'not running';
     }
 
@@ -128,7 +128,7 @@ sub _do_start {
     my ($self) = @_;
     $self->start_impl;
     my $status = $self->status;
-    if ($status eq 'running') {
+    if ($status->status eq 'running') {
         return 'started';
     } else {
         die result($status, 'start failed');
@@ -139,7 +139,7 @@ sub _do_stop {
     my ($self) = @_;
     $self->stop_impl;
     my $status = $self->status;
-    if ($status eq 'not running') {
+    if ($status->status eq 'not running') {
         return 'stopped';
     }
     else {
