@@ -98,17 +98,17 @@ sub port {
 
 sub status_impl {
     my ($self) = @_;
-    $self->{status}->();
+    return $self->{status}->();
 }
 
 sub start_impl {
     my ($self) = @_;
-    $self->{start}->();
+    return $self->{start}->();
 }
 
 sub stop_impl {
     my ($self) = @_;
-    $self->{stop}->();
+    return $self->{stop}->();
 }
 
 =head1 AUTHOR

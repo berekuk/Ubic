@@ -16,17 +16,6 @@ my @modules = all_modules();
 plan tests => scalar @modules;
 my %modules = map { ($_ => 1) } @modules;
 
-my @bad_modules = qw(
-);
-
-TODO: {
-    local $TODO = 'not all Ubic modules are properly documented still';
-    for (@bad_modules) {
-        pod_coverage_ok($_, $trustparents);
-        delete $modules{$_};
-    }
-}
-
 for (keys %modules) {
     pod_coverage_ok($_, $trustparents);
 }

@@ -11,6 +11,7 @@ Ubic::Service::Skeleton - skeleton of any service with common start/stop logic
 
 use Yandex::Lockf;
 use Ubic::Result qw(result);
+use Scalar::Util qw(blessed);
 
 use base qw(Ubic::Service);
 
@@ -45,14 +46,17 @@ sub start {
 
     my $status = $self->status;
     if ($status->status eq 'running') {
-        return 'already running';
-    } elsif ($status->status eq 'not running') {
+        return 'already running'; # TODO - update $status field instead?
+    }
+    elsif ($status->status eq 'not running') {
         return $self->_do_start;
-    } elsif ($status->status eq 'broken') {
+    }
+    elsif ($status->status eq 'broken') {
         # checks inside _do_start and _do_stop guarantee correct status
         $self->_do_stop;
         return $self->_do_start;
-    } else {
+    }
+    else {
         die result('unknown', "wrong status '$status'");
     }
 }
@@ -74,9 +78,7 @@ sub stop {
         return 'not running';
     }
 
-    $self->_do_stop;
-    # TODO - check status
-    return 'stopped';
+    return $self->_do_stop;
 }
 
 =back
@@ -126,21 +128,40 @@ sub stop_impl {
 
 sub _do_start {
     my ($self) = @_;
-    $self->start_impl;
-    my $status = $self->status;
+
+    my $status;
+
+    my $start_result = $self->start_impl;
+    if (blessed($start_result) and $start_result->isa('Ubic::Result::Class')) {
+        $status = $start_result;
+    }
+    else {
+        $status = $self->status;
+    }
+
     if ($status->status eq 'running') {
         return 'started';
-    } else {
+    }
+    else {
         die result($status, 'start failed');
     }
 }
 
 sub _do_stop {
     my ($self) = @_;
-    $self->stop_impl;
-    my $status = $self->status;
+    my $status;
+
+    my $stop_result = $self->stop_impl;
+    if (blessed($stop_result) and $stop_result->isa('Ubic::Result::Class')) {
+        $status = $stop_result; # stop_impl can return status, in this case we don't want to recheck it
+    }
+    else {
+        $status = $self->status;
+        $status->type('stopped');
+    }
+
     if ($status->status eq 'not running') {
-        return 'stopped';
+        return $status;
     }
     else {
         die result($status, 'stop failed');
