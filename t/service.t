@@ -52,6 +52,7 @@ use Ubic::Service::Common;
     my $service = Ubic::Service::Common->new({
         start => sub {
             $running++;
+            return result('started', 'preved');
         },
         stop => sub {
             $running--;
@@ -66,7 +67,7 @@ use Ubic::Service::Common;
         },
         name => 'some-service',
     });
-    is($service->start, 'started', 'start works');
+    is($service->start, 'started (preved)', 'start works');
     is($service->status, 'running (hi)', 'status after start');
 
     is($service->stop, 'stopped (hello)', 'stop works');

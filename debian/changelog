@@ -1,3 +1,9 @@
+yandex-ubic (0.6.5) unstable; urgency=low
+
+  * propagate custom result from start_impl fixed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 16 Sep 2009 20:04:25 +0400
+
 yandex-ubic (0.6.4) unstable; urgency=low
 
   * Skeleton: propagate custom result statuses from start_impl and stop_impl
