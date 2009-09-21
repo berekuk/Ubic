@@ -1,3 +1,9 @@
+yandex-ubic (0.6.6) unstable; urgency=low
+
+  * logrotate redirects to force_reload 
+
+ -- Andrei Mishchenko <druxa@yandex-team.ru>  Mon, 21 Sep 2009 19:25:44 +0400
+
 yandex-ubic (0.6.5) unstable; urgency=low
 
   * propagate custom result from start_impl fixed

@@ -289,6 +289,8 @@ sub run {
         die "No command specified";
     }
 
+    $command = "force_reload" if $command eq "logrotate"; #FIXME: non LSB command? fix logrotate configs! (yandex-ppb-static-pt, etc...)
+
     # commands have no arguments (yet)
     $self->usage($command) if @args;
 
