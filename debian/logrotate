@@ -1,0 +1,6 @@
+/var/log/ubic/*.log {
+    rotate 7
+    daily
+    nocreate
+    missingok
+}
