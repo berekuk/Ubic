@@ -36,6 +36,7 @@ use base qw(Ubic::Service::Skeleton);
 
 use Yandex::Lockf;
 use Yandex::Persistent;
+use Carp;
 
 =head1 CONSTRUCTOR
 
@@ -85,30 +86,49 @@ sub new {
         stop        => { type => CODEREF },
         status      => { type => CODEREF },
         name        => { type => SCALAR, regex => qr/^[\w-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
-        port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1},
+        port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1 },
+        custom_commands => { type => HASHREF, default => {} },
     });
+    if ($params->{custom_commands}) {
+        for (keys %{$params->{custom_commands}}) {
+            ref($params->{custom_commands}{$_}) eq 'CODE' or croak "Callback expected at custom command $_";
+        }
+    }
     my $self = bless {%$params} => $class;
     return $self;
 }
 
 sub port {
-    my ($self) = @_;
+    my $self = shift;
     return $self->{port};
 }
 
 sub status_impl {
-    my ($self) = @_;
+    my $self = shift;
     return $self->{status}->();
 }
 
 sub start_impl {
-    my ($self) = @_;
+    my $self = shift;
     return $self->{start}->();
 }
 
 sub stop_impl {
-    my ($self) = @_;
+    my $self = shift;
     return $self->{stop}->();
+}
+
+sub custom_commands {
+    my $self = shift;
+    return keys %{$self->{custom_commands}};
+}
+
+sub do_custom_command {
+    my ($self, $command) = @_;
+    unless (exists $self->{custom_commands}{$command}) {
+        croak "Command '$command' not implemented";
+    }
+    $self->{custom_commands}{$command}->();
 }
 
 =head1 AUTHOR

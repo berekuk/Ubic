@@ -169,6 +169,18 @@ sub force_reload {
 
 =over
 
+=item B<< do_custom_command($name, $command) >>
+
+Do non-LSB command.
+
+=cut
+sub do_custom_command {
+    my $self = _obj(shift);
+    my ($name, $command) = @_;
+
+    Ubic->do_custom_command($name, $command);
+}
+
 =item B<< usage($command) >>
 
 Print command's usage.
@@ -315,16 +327,32 @@ sub run {
         }
     }
 
-    my $method = $command;
-    $method =~ s/-/_/g;
-    unless (grep { $_ eq $method } qw/ start stop restart try_restart reload force_reload /) {
-        $self->usage($command);
-    }
-
     unless (Ubic->root_service->has_service($name)) {
         print STDERR "Service '$name' not found\n";
         exit(5);
     }
+
+    my $service = Ubic->service($name); # FIXME - we're constructing service and drop it to reconstruct later
+
+    my $method = $command;
+    $method =~ s/-/_/g;
+    unless (grep { $_ eq $method } qw/ start stop restart try_restart reload force_reload /) {
+        if (grep { $_ eq $command } $service->custom_commands) {
+            eval {
+                $self->do_custom_command($name, $command);
+            }; if ($@) {
+                print STDERR "'$name $method' error: $@\n";
+                exit(1); # generic error, TODO - more lsb-specific errors?
+            }
+            else {
+                exit;
+            }
+        }
+        else {
+            $self->usage($command);
+        }
+    }
+
     eval {
         $self->$method($name);
     }; if ($@) {

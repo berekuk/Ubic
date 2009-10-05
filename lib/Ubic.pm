@@ -318,6 +318,23 @@ sub cached_status($$) {
     return result($self->watchdog_ro($name)->{status});
 }
 
+=item B<do_custom_command($name, $command)>
+
+=cut
+sub do_custom_command($$) {
+    my ($self) = _obj(shift);
+    my ($name, $command) = validate_pos(@_, 1, 1);
+
+    # TODO - do all custom commands require locks?
+    # they can be distinguished in future by some custom_commands_ext method which will provide hash { command => properties }, i think...
+    my $lock = $self->lock($name);
+
+    # TODO - check custom_command presence by custom_commands() method first?
+    $self->do_sub(sub {
+        $self->service($name)->do_custom_command($command); # can custom commands require custom arguments?
+    });
+}
+
 =item B<service($name)>
 
 Get service _object by name.
@@ -502,7 +519,7 @@ sub do_sub($$) {
 
 =item B<< do_cmd($name, $cmd) >>
 
-Run C<$cmd> method from service C<$name> and wrap result into C<Ubic::Result::Class> object.
+Run C<$cmd> method from service C<$name> and wrap any result or exception into C<Ubic::Result::Class> object.
 
 =cut
 sub do_cmd($$$) {

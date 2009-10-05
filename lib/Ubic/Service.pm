@@ -3,6 +3,8 @@ package Ubic::Service;
 use strict;
 use warnings;
 
+use Yandex::Version '{{DEBIAN_VERSION}}';
+
 =head1 NAME
 
 Ubic::Service - interface and base class for any ubic service
@@ -168,12 +170,32 @@ sub user {
 
 =item B<check_period>
 
-Returns period of checking a service by watchdog in seconds.
+Should return period of checking a service by watchdog in seconds.
+
+Default is 60 seconds and it is unused by ubic-watchdog currently, so don't bother to override it by now :)
 
 =cut
 sub check_period {
     my ($self) = @_;
     return 60;
+}
+
+=item B<custom_commands()>
+
+Can return list of service's custom commands, if such are exist.
+
+=cut
+sub custom_commands {
+    return ();
+}
+
+=item B<do_custom_command($command)>
+
+Should execute specified command, if it is supported.
+
+=cut
+sub do_custom_command {
+    die "No such command";
 }
 
 =back

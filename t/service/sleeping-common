@@ -1,0 +1,26 @@
+# vim: ft=perl
+use Ubic::Service::Common;
+use Ubic::Daemon qw(:all);
+
+my $pidfile = "tfiles/sleeping-common.pid";
+
+Ubic::Service::Common->new({
+    start => sub {
+        my $pid;
+        start_daemon({
+            function => sub { sleep 100 },
+            name => 'sleeping-common',
+            pidfile => $pidfile,
+        });
+    },
+    stop => sub {
+        stop_daemon($pidfile);
+    },
+    status => sub {
+        return check_daemon($pidfile);
+    },
+    custom_commands => {
+        '2plus2' => sub { return 4 },
+        '3plus3' => sub { return 6 },
+    }
+});

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4 + 4 + 4 + 6 + 1;
+use Test::More tests => 2 + 4 + 4 + 6 + 1 + 1;
 use Test::Exception;
 
 use lib 'lib';
@@ -27,16 +27,14 @@ $Ubic::SINGLETON = Ubic->new({
     service_dir => 't/service',
 });
 
-# services() method - also check that service_dir works, so these tests are first (4)
+# services() method - also check that service_dir works, so these tests are first (2)
 {
     my @services = Ubic->services;
-    is(scalar(@services), 4, 'all services returned by services() method');
+    is(scalar(@services), 5, 'all services returned by services() method');
 
-    @services = sort { $a->name cmp $b->name } @services;
+    my @service_names = sort map { $_->name } @services;
 
-    is($services[0]->name, 'multi', 'first service is multi');
-    is($services[1]->name, 'sleeping-daemon', 'second service is sleeping-daemon');
-    is($services[3]->name, 'sleeping-daemon2', 'fourth service is sleeping-daemon2');
+    is_deeply(\@service_names, ['multi', 'sleeping-common', 'sleeping-daemon', 'sleeping-daemon-root', 'sleeping-daemon2'], 'services list is correct');
 }
 
 # is_enabled, enable, disable (4)
@@ -72,6 +70,11 @@ $Ubic::SINGLETON = Ubic->new({
     is(Ubic->service('multi.sleep2')->status, 'running', 'multiservice can be started too');
     Ubic->stop('multi.sleep2');
     is(Ubic->service('multi.sleep2')->status, 'not running', 'multiservice can be stopped');
+}
+
+# custom commands (1)
+{
+    is(Ubic->do_custom_command('sleeping-common', '2plus2'), 4, 'do_custom_command method works');
 }
 
 # user

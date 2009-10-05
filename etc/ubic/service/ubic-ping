@@ -1,4 +1,4 @@
-# vim:ft=perl
+# vim: ft=perl
 use Ubic::Service::Common;
 use Ubic::Daemon qw(:all);
 use Yandex::Persistent;

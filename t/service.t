@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 16;
 
 use lib 'lib';
 
@@ -78,5 +78,32 @@ use Ubic::Service::Common;
 
     is($service->stop, 'stopped (hello)', 'stop after double start');
     is($service->stop, 'not running', 'double stop');
+}
+
+# custom_commands (2)
+{
+    my $running;
+    my $service = Ubic::Service::Common->new({
+        start => sub {
+            $running++;
+        },
+        stop => sub {
+            $running--;
+        },
+        status => sub {
+            if ($running) {
+                return 'running';
+            } else {
+                return 'not running';
+            }
+        },
+        name => 'some-service',
+        custom_commands => {
+            preved => sub { return 'medved' },
+            hitler => sub { return 'kaput' },
+        }
+    });
+    is_deeply([sort $service->custom_commands], [qw/ hitler preved /], 'custom_commands method works');
+    is_deeply(scalar($service->do_custom_command('preved')), 'medved', 'do_custom_command method works');
 }
 
