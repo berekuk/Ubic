@@ -301,8 +301,6 @@ sub run {
         die "No command specified";
     }
 
-    $command = "force_reload" if $command eq "logrotate"; #FIXME: non LSB command? fix logrotate configs! (yandex-ppb-static-pt, etc...)
-
     # commands have no arguments (yet)
     $self->usage($command) if @args;
 
@@ -332,25 +330,30 @@ sub run {
         exit(5);
     }
 
-    my $service = Ubic->service($name); # FIXME - we're constructing service and drop it to reconstruct later
+    # FIXME - we're constructing service and drop it to reconstruct later
+    # but we need to construct service to check it's custom commands
+    my $service = Ubic->service($name);
+
+    # yes, custom "start" command will override default "start" command, although it's not very useful :)
+    # but we need this because of current "logrotate" hack
+    if (grep { $_ eq $command } $service->custom_commands) {
+        eval {
+            $self->do_custom_command($name, $command);
+        }; if ($@) {
+            print STDERR "'$name $command' error: $@\n";
+            exit(1); # generic error, TODO - more lsb-specific errors?
+        }
+        else {
+            exit;
+        }
+    }
+
+    $command = "force_reload" if $command eq "logrotate"; #FIXME: non LSB command? fix logrotate configs! (yandex-ppb-static-pt, etc...)
 
     my $method = $command;
     $method =~ s/-/_/g;
     unless (grep { $_ eq $method } qw/ start stop restart try_restart reload force_reload /) {
-        if (grep { $_ eq $command } $service->custom_commands) {
-            eval {
-                $self->do_custom_command($name, $command);
-            }; if ($@) {
-                print STDERR "'$name $method' error: $@\n";
-                exit(1); # generic error, TODO - more lsb-specific errors?
-            }
-            else {
-                exit;
-            }
-        }
-        else {
-            $self->usage($command);
-        }
+        $self->usage($command);
     }
 
     eval {

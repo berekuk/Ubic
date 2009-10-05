@@ -1,3 +1,9 @@
+yandex-ubic (0.7.1) unstable; urgency=low
+
+  * logrotate can be custom command
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 05 Oct 2009 12:40:40 +0400
+
 yandex-ubic (0.7.0) unstable; urgency=low
 
   * service-specific commands
