@@ -19,11 +19,15 @@ use Ubic::Cmd;
 sub import {
     my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
     my ($command, @args) = @ARGV;
+    my @names;
     if (@args) {
-        $name = "$name.".join('.', @args);
+        @names = map { "$name.$_" } @args;
+    }
+    else {
+        @names = ($name);
     }
     Ubic::Cmd->run({
-        name => $name,
+        name => \@names,
         ($command ? (command => $command) : ()),
         command => $command,
     });

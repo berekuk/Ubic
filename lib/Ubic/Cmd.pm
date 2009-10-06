@@ -24,6 +24,8 @@ It also greatly simplifies writing /etc/init.d/ scripts (see synopsis).
 
 use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
+use List::MoreUtils qw(all);
+use List::Util qw(max);
 
 use Ubic;
 use Ubic::Result qw(result);
@@ -220,13 +222,24 @@ sub print_status($$;$) {
             print((' ' x $indent).$name.":\n");
             $indent += 4;
         }
+        my @results;
         for my $subname ($service->service_names) {
             if ($name) { # not root service
                 $subname = $name.".".$subname;
             }
-            $self->print_status($subname, $cached, $indent);
+            push @results, $self->print_status($subname, $cached, $indent);
         }
-        # TODO - print uplevel service's status?
+
+        # TODO - print actual uplevel service's status, it can be service-specific
+        if (all { $_->status eq 'running' } @results) {
+            return result('running');
+        }
+        elsif (all { $_->status eq 'down' } @results) {
+            return result('down');
+        }
+        else {
+            return result('not running'); # at least one subservice is not running
+        }
         return;
     }
 
@@ -273,15 +286,11 @@ Parameters:
 
 =item I<name>
 
-Service's name.
+Service's name or arrayref with names.
 
 =item I<command>
 
 Command to execute.
-
-=item I<args>
-
-Optional arguments (unused by now).
 
 =back
 
@@ -289,20 +298,33 @@ Optional arguments (unused by now).
 sub run {
     my $self = _obj(shift);
     my $params = validate(@_, {
+        name => 1,
+        command => { type => SCALAR },
+    });
+    my @names;
+    if (ref $params->{name} eq 'ARRAY') {
+        @names = @{$params->{name}};
+    }
+    else {
+        @names = ($params->{name});
+    }
+    my @exit_codes;
+    for my $name (@names) {
+        my $exit_code = $self->_run_impl({ name => $name, command => $params->{command} });
+        push @exit_codes, $exit_code;
+    }
+    exit max(@exit_codes);
+}
+
+# run and return exit code
+sub _run_impl {
+    my $self = _obj(shift);
+    my $params = validate(@_, {
         name => { type => SCALAR },
-        command => { type => SCALAR, optional => 1 },
-        args => { type => ARRAYREF, default => []},
+        command => { type => SCALAR },
     });
     my $command = $params->{command};
-    my @args = @{$params->{args}};
     my $name = $params->{name};
-
-    unless (defined $command) {
-        die "No command specified";
-    }
-
-    # commands have no arguments (yet)
-    $self->usage($command) if @args;
 
     if ($command eq 'status' or $command eq 'cached-status') {
         my $cached;
@@ -315,19 +337,19 @@ sub run {
         }
         my $result = $self->print_status($name, $cached);
         if ($result->status eq 'running') {
-            exit(0);
+            return 0;
         }
         elsif ($result->status eq 'not running' or $result->status eq 'down') {
-            exit(3); # see LSB
+            return 3; # see LSB
         }
         else {
-            exit(150); # application-reserved code
+            return 150; # application-reserved code
         }
     }
 
     unless (Ubic->root_service->has_service($name)) {
         print STDERR "Service '$name' not found\n";
-        exit(5);
+        return 5;
     }
 
     # FIXME - we're constructing service and drop it to reconstruct later
@@ -341,10 +363,10 @@ sub run {
             $self->do_custom_command($name, $command);
         }; if ($@) {
             print STDERR "'$name $command' error: $@\n";
-            exit(1); # generic error, TODO - more lsb-specific errors?
+            return 1; # generic error, TODO - more lsb-specific errors?
         }
         else {
-            exit;
+            return 0;
         }
     }
 
@@ -360,10 +382,10 @@ sub run {
         $self->$method($name);
     }; if ($@) {
         print STDERR "'$name $method' error: $@\n";
-        exit(1); # generic error, TODO - more lsb-specific errors?
+        return 1; # generic error, TODO - more lsb-specific errors?
 
     }
-    exit;
+    return 0;
 }
 
 =back
