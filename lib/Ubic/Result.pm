@@ -44,10 +44,10 @@ Construct C<Ubic::Result::Class> instance.
 =cut
 sub result {
     my ($str, $msg) = @_;
-    if (blessed $str) {
+    if (blessed $str and $str->isa('Ubic::Result::Class')) {
         return $str;
     }
-    return Ubic::Result::Class->new({ type => $str, msg => $msg });
+    return Ubic::Result::Class->new({ type => "$str", msg => $msg });
 }
 
 =back

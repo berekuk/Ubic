@@ -40,7 +40,7 @@ sub check {
     }
     eval {
         my $lock = Ubic->lock($name);
-        if ($service->isa('Ubic::Catalog')) {
+        if ($service->isa('Ubic::Multiservice')) {
             INFO "$name is multiservice, checking subservices\n" if $verbose;
             for my $service ($service->services) {
                 unless (xfork) {
@@ -64,7 +64,7 @@ sub check {
         $status = $service->status;
         if ($status ne 'running') {
             INFO "Failed to start $name";
-            Ubic->set_cached_status($service, $status);
+            Ubic->set_cached_status($service->full_name, $status);
         }
     }; if ($@) {
         ERROR "Failed to check ".$service->full_name.": $@";

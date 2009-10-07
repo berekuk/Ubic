@@ -49,7 +49,7 @@ Daemon binary.
 
 =item I<name>
 
-Service's name. Optional, will usually be set by ubic's catalog.
+Service's name. Optional, will usually be set by upper-level multiservice.
 
 =back
 

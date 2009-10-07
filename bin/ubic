@@ -10,10 +10,18 @@ ubic - simple viewer of ubic services
 
 =head1 SYNOPSIS
 
-    ubic status
-    ubic start SERVICE
-    ubic stop SERVICE
-    ubic restart SERVICE
+ ubic [-f] COMMAND [SERVICE]
+
+ Supported commands:
+    status
+    start
+    stop
+    restart
+    reload
+    force-reload
+    cached-status
+    try-restart
+    ...and any service-specific commands
 
 =cut
 
@@ -23,25 +31,19 @@ use Pod::Usage;
 use Ubic;
 use Ubic::Cmd;
 
-GetOptions() or pod2usage(2);
+my $force;
+GetOptions(
+    'f|force' => \$force,
+) or pod2usage(2);
 
 my $command = $ARGV[0] or pod2usage(2);
 
-if (($command eq 'status' or $command eq 'cached-status') and @ARGV == 1) {
-    my $cached;
-    if ($command eq 'status' and $>) {
-        print "Not a root, printing cached statuses\n";
-        $cached = 1;
-    }
-    if ($command eq 'cached-status') {
-        $cached = 1;
-    }
-    Ubic::Cmd->print_status(undef, $cached);
-}
-elsif (@ARGV == 2) {
+if (@ARGV == 2 or @ARGV == 1) {
+    my ($command, $name) = @ARGV;
     Ubic::Cmd->run({
-        name => $ARGV[1],
+        name => $name,
         command => $command,
+        force => $force,
     });
 }
 else {

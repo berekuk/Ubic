@@ -26,6 +26,8 @@ use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(all);
 use List::Util qw(max);
+use Term::ANSIColor qw(:constants);
+$Term::ANSIColor::AUTORESET = 1;
 
 use Ubic;
 use Ubic::Result qw(result);
@@ -69,81 +71,114 @@ All following methods do the same things as methods in C<Ubic>, but they also pr
 
 =over
 
-=item B<< start($name) >>
+=item B<< start($service) >>
 
 =cut
 sub start {
     my $self = _obj(shift);
-    my $name = shift;
+    my $service = shift;
 
-    print "Starting $name... ";
-    my $result = Ubic->start($name);
-    print "$result\n";
-    return $result;
+    my @results;
+    $self->traverse($service, sub {
+        my $service = shift;
+        print "Starting ".$service->full_name."... ";
+        my $result = eval { Ubic->start($service->full_name) } || result($@);
+        $self->print_result($result);
+        push @results, $result;
+    });
+    return $self->stat(\@results);
 }
 
-=item B<< stop($name) >>
+
+=item B<< stop($service) >>
 
 =cut
 sub stop {
     my $self = _obj(shift);
-    my $name = shift;
+    my $service = shift;
+    my @results;
 
-    print "Stopping $name... ";
-    my $result = Ubic->stop($name);
-    print "$result\n";
-    return $result;
+    $self->traverse($service, sub {
+        my $service = shift;
+        print "Stopping ".$service->full_name."... ";
+        my $result = eval { Ubic->stop($service->full_name) } || result($@);
+        $self->print_result($result);
+        push @results, $result;
+    });
+    return $self->stat(\@results);
 }
 
-=item B<< restart($name) >>
+=item B<< restart($service) >>
 
 =cut
 sub restart {
     my $self = _obj(shift);
-    my $name = shift;
+    my $service = shift;
 
-    print "Restarting $name... ";
-    my $result = Ubic->restart($name);
-    print "$result\n";
-    return $result;
+    my @results;
+    $self->traverse($service, sub {
+        my $service = shift;
+        print "Restarting ".$service->full_name."... ";
+        my $result = eval { Ubic->restart($service->full_name) } || result($@);
+        $self->print_result($result);
+        push @results, $result;
+    });
+    return $self->stat(\@results);
 }
 
-=item B<< try_restart($name) >>
+=item B<< try_restart($service) >>
 
 =cut
 sub try_restart {
     my $self = _obj(shift);
-    my $name = shift;
+    my $service = shift;
 
-    if (Ubic->is_enabled($name)) {
-        print "Restarting $name... ";
-        my $result = Ubic->try_restart($name);
-        print "$result\n";
-        return $result;
-    }
-    else {
-        print "$name is down";
-        return result('down');
-    }
+    my @results;
+    $self->traverse($service, sub {
+        my $service = shift;
+        my $name = $service->full_name;
+        if (Ubic->is_enabled($name)) {
+            print "Restarting $name... ";
+            my $result = eval { Ubic->try_restart($name) } || result($@);
+            $self->print_result($result);
+            push @results, $result;
+        }
+        else {
+            print "$name is down";
+            push @results, result('down');
+        }
+    });
+    return $self->stat(\@results);
 }
 
-=item B<< reload($name) >>
+=item B<< reload($service) >>
 
 =cut
 sub reload {
     my $self = _obj(shift);
-    my $name = shift;
+    my $service = shift;
 
-    if (Ubic->is_enabled($name)) {
-        print "Reloading $name... ";
-        my $result = Ubic->reload($name);
-        print "$result\n";
-        return $result;
+    my @results;
+    $self->traverse($service, sub {
+        my $service = shift;
+        my $name = $service->full_name;
+        if (Ubic->is_enabled($name)) {
+            print "Reloading $name... ";
+            my $result = eval { Ubic->reload($name) } || result($@);
+            $self->print_result($result);
+            push @results, $result;
+        }
+        else {
+            print "$name is down\n";
+            push @results, result('down');
+        }
+    });
+    for my $result (@results) {
+        if ($result->status eq 'broken') {
+            die $result;
+        }
     }
-    else {
-        print "$name is down\n";
-        return result('down');
-    }
+    return $self->stat(\@results);
 }
 
 =item B<< force_reload($name) >>
@@ -151,18 +186,24 @@ sub reload {
 =cut
 sub force_reload {
     my $self = _obj(shift);
-    my $name = shift;
+    my $service = shift;
 
-    if (Ubic->is_enabled($name)) {
-        print "Reloading $name... ";
-        my $result = Ubic->force_reload($name);
-        print "$result\n";
-        return $result;
-    }
-    else {
-        print "$name is down\n";
-        return result('down');
-    }
+    my @results;
+    $self->traverse($service, sub {
+        my $service = shift;
+        my $name = $service->full_name;
+        if (Ubic->is_enabled($name)) {
+            print "Reloading $name... ";
+            my $result = eval { Ubic->force_reload($name)} || result($@);
+            $self->print_result($result);
+            push @results, $result;
+        }
+        else {
+            print "$name is down\n";
+            push @results, result('down');
+        }
+    });
+    return $self->stat(\@results);
 }
 
 =back
@@ -171,16 +212,19 @@ sub force_reload {
 
 =over
 
-=item B<< do_custom_command($name, $command) >>
+=item B<< do_custom_command($service, $command) >>
 
 Do non-LSB command.
 
 =cut
 sub do_custom_command {
     my $self = _obj(shift);
-    my ($name, $command) = @_;
+    my ($service, $command) = @_;
 
-    Ubic->do_custom_command($name, $command);
+    $self->traverse($service, sub {
+        my $service = shift;
+        Ubic->do_custom_command($service->full_name, $command);
+    });
 }
 
 =item B<< usage($command) >>
@@ -197,16 +241,95 @@ sub usage {
     exit(2); # or exit(3)? see LSB for details
 }
 
-=item B<< print_status($name, $cached_flag) >>
+=item B<< print_red(@strings) >>
 
-=item B<< print_status($service, $cached_flag) >>
-
-Print status of given service identified by name or by object. If C<$cached_flag> is true, prints status cached in watchdog file.
+Print given strings in red color if stdout is terminal, and in plain text otherwise.
 
 =cut
-sub print_status($$;$) {
+sub print_red {
     my $self = _obj(shift);
-    my ($service, $cached, $indent) = @_;
+    if (-t STDOUT) {
+        print RED @_;
+    }
+    else {
+        print @_;
+    }
+}
+
+=item B<< print_green(@strings) >>
+
+Print given strings in green color if stdout is terminal, and in plain text otherwise.
+
+=cut
+sub print_green {
+    my $self = _obj(shift);
+    if (-t STDOUT) {
+        print GREEN @_;
+    }
+    else {
+        print @_;
+    }
+}
+
+=item B<< print_result($result) >>
+
+Print given C<Ubic::Result::Class> object.
+
+=cut
+sub print_result {
+    my $self = _obj(shift);
+    my $result = shift;
+    if ($result->status eq 'broken') {
+        my $str = "$result";
+        chomp $str;
+        $self->print_red("$str\n");
+    }
+    else {
+        $self->print_green("$result\n");
+    }
+}
+
+=item B<< stat(\@results) >>
+
+Print error if some of results are bad, and return correct exit code, understandable by C<_run_impl()>.
+
+=cut
+sub stat($$) {
+    my $self = _obj(shift);
+    my $results = shift;
+    my $error = 0;
+    if (@$results > 1) {
+        my $broken;
+        for my $result (@$results) {
+            if ($result->status eq 'broken') {
+                $broken++;
+            }
+        }
+        if ($broken) {
+            $self->print_red("Failed: $broken service(s)\n");
+            $error = 1;
+        }
+    }
+    elsif (@$results == 1) {
+        if ($results->[0]->status eq 'broken') {
+            die $results->[0];
+        }
+    }
+    else {
+        # no results, huh?
+        die "no services processed";
+    }
+    return $error;
+}
+
+=item B<< traverse($name, $callback) >>
+
+Process each subservice of C<$name> with C<$callback>, printing correct indentations.
+
+=cut
+sub traverse($$$) {
+    my $self = _obj(shift);
+    my ($service, $callback, $indent) = @_;
     $indent ||= 0;
 
     if (not defined $service) {
@@ -217,63 +340,72 @@ sub print_status($$;$) {
     }
     my $name = $service->full_name;
 
-    if ($service->isa('Ubic::Catalog')) {
-        if ($name) {
-            print((' ' x $indent).$name.":\n");
-            $indent += 4;
+    if ($service->isa('Ubic::Multiservice')) {
+        if ($service->full_name) {
+            print ' ' x $indent, $service->full_name, "\n";
+            $indent = $indent + 4;
         }
-        my @results;
-        for my $subname ($service->service_names) {
-            if ($name) { # not root service
-                $subname = $name.".".$subname;
-            }
-            push @results, $self->print_status($subname, $cached, $indent);
+        for my $subservice ($service->services) {
+            $self->traverse($subservice, $callback, $indent); # FIXME - rememeber result
+        }
+    }
+    else {
+        print(' ' x $indent);
+        return $callback->($service);
+    }
+}
+
+=item B<< print_status($name, $cached_flag) >>
+
+=item B<< print_status($service, $cached_flag) >>
+
+Print status of given service identified by name or by object. If C<$cached_flag> is true, prints status cached in watchdog file.
+
+=cut
+sub print_status($$) {
+    my $self = _obj(shift);
+    my ($service, $cached) = @_;
+
+    my @results;
+    $self->traverse($service, sub {
+        my $service = shift;
+        my $name = $service->full_name;
+        my $enabled = Ubic->is_enabled($name);
+        unless ($enabled) {
+            print "$name\toff\n";
+            push @results, result('down');
+            return;
         }
 
-        # TODO - print actual uplevel service's status, it can be service-specific
-        if (all { $_->status eq 'running' } @results) {
-            return result('running');
-        }
-        elsif (all { $_->status eq 'down' } @results) {
-            return result('down');
+        my $status;
+        if ($cached) {
+            $status = Ubic->cached_status($name);
         }
         else {
-            return result('not running'); # at least one subservice is not running
+            $status = eval { Ubic->status($name) };
+            if ($@) {
+                $status = result($@);
+            }
         }
-        return;
-    }
+        if ($status eq 'running') {
+            $self->print_green("$name\t$status\n");
+        }
+        else {
+            $self->print_red("$name\t$status\n");
+        }
+        push @results, $status;
+    });
 
-    my $enabled = Ubic->is_enabled($name);
-    unless ($enabled) {
-        print((' ' x $indent)."$name\toff\n");
+    # TODO - print actual uplevel service's status, it can be service-specific
+    if (all { $_->status eq 'running' } @results) {
+        return result('running');
+    }
+    elsif (all { $_->status eq 'down' } @results) {
         return result('down');
     }
-
-    my $status;
-    if ($cached) {
-        $status = Ubic->cached_status($name);
-    }
     else {
-        $status = eval { Ubic->status($name) };
-        if ($@) {
-            $status = result($@);
-        }
+        return result('not running'); # at least one subservice is not running
     }
-    if ($status eq 'running') {
-        my $msg;
-        $msg .= "\e[32m" if -t STDOUT;
-        $msg .= "$name\t$status\n";
-        $msg .= "\e[0m" if -t STDOUT;
-        print((' ' x $indent).$msg);
-    }
-    else {
-        my $msg;
-        $msg .= "\e[31m" if -t STDOUT;
-        $msg .= "$name\t$status\n";
-        $msg .= "\e[0m" if -t STDOUT;
-        print((' ' x $indent).$msg);
-    }
-    return $status;
 }
 
 =item B<< run($params_hashref) >>
@@ -300,6 +432,7 @@ sub run {
     my $params = validate(@_, {
         name => 1,
         command => { type => SCALAR },
+        force => 0,
     });
     my @names;
     if (ref $params->{name} eq 'ARRAY') {
@@ -310,7 +443,7 @@ sub run {
     }
     my @exit_codes;
     for my $name (@names) {
-        my $exit_code = $self->_run_impl({ name => $name, command => $params->{command} });
+        my $exit_code = $self->_run_impl({ name => $name, command => $params->{command}, force => $params->{force} });
         push @exit_codes, $exit_code;
     }
     exit max(@exit_codes);
@@ -320,8 +453,9 @@ sub run {
 sub _run_impl {
     my $self = _obj(shift);
     my $params = validate(@_, {
-        name => { type => SCALAR },
+        name => { type => SCALAR | UNDEF },
         command => { type => SCALAR },
+        force => 0,
     });
     my $command = $params->{command};
     my $name = $params->{name};
@@ -347,20 +481,36 @@ sub _run_impl {
         }
     }
 
-    unless (Ubic->root_service->has_service($name)) {
+    if ($name and not Ubic->root_service->has_service($name)) {
         print STDERR "Service '$name' not found\n";
         return 5;
     }
 
     # FIXME - we're constructing service and drop it to reconstruct later
     # but we need to construct service to check it's custom commands
-    my $service = Ubic->service($name);
+    my $service = $name ? Ubic->service($name) : Ubic->root_service;
+
+    if ($service->isa('Ubic::Multiservice')) {
+        my $screen_name = $name || 'root';
+        my $multiop = $service->multiop;
+        if ($multiop eq 'forbidden') {
+            die "$screen_name multiservice forbids $command";
+        }
+        elsif ($multiop eq 'protected') {
+            unless ($params->{force}) {
+                die "$screen_name is protected multiservice, specify --force if you know what you're doing";
+            }
+        }
+        elsif ($multiop ne 'allowed') {
+            die "$screen_name has strange multiop value '$multiop'";
+        }
+    }
 
     # yes, custom "start" command will override default "start" command, although it's not very useful :)
     # but we need this because of current "logrotate" hack
     if (grep { $_ eq $command } $service->custom_commands) {
         eval {
-            $self->do_custom_command($name, $command);
+            $self->do_custom_command($service, $command);
         }; if ($@) {
             print STDERR "'$name $command' error: $@\n";
             return 1; # generic error, TODO - more lsb-specific errors?
@@ -378,14 +528,19 @@ sub _run_impl {
         $self->usage($command);
     }
 
-    eval {
-        $self->$method($name);
+    my $code = eval {
+        $self->$method($service);
     }; if ($@) {
-        print STDERR "'$name $method' error: $@\n";
+        if ($name) {
+            print STDERR "'$name $method' error: $@\n";
+        }
+        else {
+            print STDERR "'$method' error: $@\n";
+        }
         return 1; # generic error, TODO - more lsb-specific errors?
 
     }
-    return 0;
+    return $code;
 }
 
 =back

@@ -1,3 +1,12 @@
+yandex-ubic (0.8.0) unstable; urgency=low
+
+  * Ubic::Catalog renamed to Ubic::Multiservice
+  * Ubic::Multiservice::Simple implemented
+  * ubic(1) supports start/stop/restart of multiservices
+  * some bugfixes in ubic-watchdog
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 07 Oct 2009 19:23:26 +0400
+
 yandex-ubic (0.7.3) unstable; urgency=low
 
   * Ubic::Service::ProcManager

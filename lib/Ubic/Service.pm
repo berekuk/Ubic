@@ -68,7 +68,7 @@ It is a concatenation of service's short C<name> and service's <parent_name>.
 
 Service's parent is responsible for setting it (to concatenation of it's own name and service's name) immediately after service's construction.
 
-In case of subservices, initial name should be the most lower-level name; it will be concatenated with names of it's parents *by* it's parents. (See L<Ubic::Catalog>'s code for more details).
+In case of subservices, initial name should be the most lower-level name; it will be concatenated with names of it's parents by it's parents. (See L<Ubic::Multiservice>'s code for more details).
 
 =cut
 sub full_name($) {

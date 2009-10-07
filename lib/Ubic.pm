@@ -35,7 +35,7 @@ if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Se
 
 use Ubic::Result qw(result);
 use Ubic::AccessGuard;
-use Ubic::Catalog::Dir;
+use Ubic::Multiservice::Dir;
 use Params::Validate qw(:all);
 use Carp;
 use Yandex::Persistent;
@@ -77,7 +77,7 @@ Dir with persistent services' watchdogs.
 
 =item I<service_dir>
 
-Name of dir with service descriptions (for root services catalog's namespace).
+Name of dir with service descriptions (which will be used to construct root Ubic::Multiservice::Dir object)
 
 =item I<lock_dir>
 
@@ -94,7 +94,7 @@ sub new {
         lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "/var/lib/ubic/lock" },
     });
     $self->{locks} = {};
-    $self->{root} = Ubic::Catalog::Dir->new($self->{service_dir});
+    $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
     return bless $self => $class;
 }
 
@@ -409,7 +409,7 @@ sub set_cached_status($$$) {
     my $self = _obj(shift);
     my ($name, $status) = validate_pos(@_, 1, 1);
     if (blessed $status) {
-        croak "Wrong status param '$status'" unless $status->isa('Ubic::Status::Class');
+        croak "Wrong status param '$status'" unless $status->isa('Ubic::Result::Class');
         $status = $status->status;
     }
     my $lock = $self->lock($name);

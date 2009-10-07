@@ -57,7 +57,7 @@ sub print_status($;$) {
 sub find_by_port {
     my ($service, $port) = validate_pos(@_, 1, { regex => qr/^\d+$/ });
     for $_ ($service->services) {
-        if ($_->isa('Ubic::Catalog')) {
+        if ($_->isa('Ubic::Multiservice')) {
             # multiservice
             my $found = find_by_port($_, $port);
             return $found if $found;
