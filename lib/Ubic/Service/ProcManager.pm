@@ -25,12 +25,6 @@ This service is a simplest ubic wrap for existing procmanager-based fcgi scripts
 
 It expects scripts to use "-pid X -child Y -s Z" convention, which all PPB scripts are using, because they are all COPYPASTED!
 
-=head1 FUTURE DIRECTIONS
-
-L<Ubic::Service::ProcManager2> will follow, which will do daemonization in proper way.
-
-And after that, L<Ubic::Service::FastCGI>, which will allow us to throw out ProcManager altogether.
-
 =cut
 
 use base qw(Ubic::Service);
@@ -38,6 +32,43 @@ use Params::Validate qw(:all);
 use Yandex::X;
 use POSIX;
 
+=head1 METHODS
+
+=over
+
+=item C<new($params)>
+
+Parameters (mandatory if not specified otherwise):
+
+=over
+
+=item I<pidfile>
+
+Pid file name.
+
+=item I<socket>
+
+Socket file name.
+
+=item I<child>
+
+Number of children.
+
+=item I<log>
+
+Procmanager log file name (stdout and stderr will both be redirected into it).
+
+=item I<bin>
+
+FastCGI script name. Script must support "-pid X -child Y -s Z" convention.
+
+=item I<user>
+
+User name. If specified, real and effective user identifiers will be changed before execing into fastcgi process (and even before opening I<log>).
+
+=back
+
+=cut
 sub new {
     my $class = shift;
     my $params = validate(@_, {
@@ -102,6 +133,14 @@ sub user {
     my $self = shift;
     return $self->{user} || 'root';
 }
+
+=back
+
+=head1 FUTURE DIRECTIONS
+
+L<Ubic::Service::ProcManager2> will follow, which will do daemonization in proper way.
+
+And after that, L<Ubic::Service::FastCGI>, which will allow us to throw out ProcManager altogether.
 
 =head1 AUTHOR
 

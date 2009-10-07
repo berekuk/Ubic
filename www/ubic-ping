@@ -79,7 +79,8 @@ sub handle_request {
             print "ok\n";
             return;
         }
-        elsif ($cgi->path_info =~ m{^/noc/(\d+)/?$}) {
+        elsif ( $cgi->path_info =~ m{^/noc/(\d+)/?$}) {
+            my $port = $1;
             my $service = find_by_port(Ubic->root_service, $port); # TODO - cache?
             unless (defined $service) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
@@ -89,7 +90,8 @@ sub handle_request {
             print_status($service, { noc => 1 });
             return;
         }
-        elsif (my ($port) = $cgi->path_info =~ m{^/status/port/(\d+)/?$}) {
+        elsif ($cgi->path_info =~ m{^/status/port/(\d+)/?$}) {
+            my $port = $1;
             my $service = find_by_port(Ubic->root_service, $port);
             unless (defined $service) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
