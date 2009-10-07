@@ -46,22 +46,30 @@ sub new {
             },
         }
     });
-    return bless $params => $class;
+    return bless { services => $params } => $class;
 }
 
 sub has_simple_service($$) {
     my ($self, $name) = @_;
-    return exists $self->{$name};
+    return exists $self->{services}{$name};
 }
 
 sub simple_service($$) {
     my ($self, $name) = @_;
-    return $self->{$name};
+    my $service = $self->{services}{$name};
+    unless (defined $service->name) {
+        $service->name($name);
+    }
+    return $service;
 }
 
 sub service_names($) {
     my $self = shift;
-    return keys %{$self};
+    return keys %{ $self->{services} };
+}
+
+sub multiop {
+    return 'allowed'; # simple multiservices are usually simple enough to allow multiservice-wide actions by default
 }
 
 =back

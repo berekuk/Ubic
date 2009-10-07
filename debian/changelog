@@ -1,3 +1,9 @@
+yandex-ubic (0.8.1) unstable; urgency=low
+
+  * Ubic::Multiservice::Simple critical bugfixes
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 07 Oct 2009 22:27:45 +0400
+
 yandex-ubic (0.8.0) unstable; urgency=low
 
   * Ubic::Catalog renamed to Ubic::Multiservice
