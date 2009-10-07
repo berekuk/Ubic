@@ -1,3 +1,10 @@
+yandex-ubic (0.7.2) unstable; urgency=low
+
+  * Ubic::Service::ProcManager
+  * ubic-ping supports /noc/ handle
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 07 Oct 2009 16:10:26 +0400
+
 yandex-ubic (0.7.1) unstable; urgency=low
 
   * logrotate can be custom command
