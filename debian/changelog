@@ -1,9 +1,16 @@
-yandex-ubic (0.7.2) unstable; urgency=low
+yandex-ubic (0.7.3) unstable; urgency=low
 
   * Ubic::Service::ProcManager
   * ubic-ping supports /noc/ handle
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 07 Oct 2009 16:10:26 +0400
+
+yandex-ubic (0.7.2) unstable; urgency=low
+
+  * Ubic::Run can process several services on one invocation
+  * Ubic::Cmd correctly shows status for multiservices
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 06 Oct 2009 18:45:28 +0400
 
 yandex-ubic (0.7.1) unstable; urgency=low
 

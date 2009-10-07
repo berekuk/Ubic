@@ -21,6 +21,7 @@ Ubic::AccessGuard - class for temporarily change effective uid into someone else
 =cut
 
 use Params::Validate;
+use Ubic::Result qw(result);
 
 =item C<< new($service) >>
 
