@@ -33,14 +33,16 @@ if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Se
 
 =cut
 
+use POSIX qw();
 use Ubic::Result qw(result);
-use Ubic::AccessGuard;
 use Ubic::Multiservice::Dir;
+use Ubic::AccessGuard;
 use Params::Validate qw(:all);
 use Carp;
+use Storable qw(freeze thaw);
 use Yandex::Persistent;
 use Yandex::Lockf;
-use Yandex::X qw(xopen);
+use Yandex::X qw(xopen xclose xfork);
 use Scalar::Util qw(blessed);
 
 our $SINGLETON;
@@ -92,6 +94,7 @@ sub new {
         watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdog" },
         service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
         lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "/var/lib/ubic/lock" },
+        tmp_dir =>  { type => SCALAR, default => $ENV{UBIC_TMP_DIR} || "/var/lib/ubic/tmp" },
     });
     $self->{locks} = {};
     $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
@@ -118,7 +121,6 @@ Start service.
 sub start($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -137,7 +139,6 @@ Stop service.
 sub stop($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     $self->disable($name);
@@ -154,7 +155,6 @@ Restart service; start it if it's not running.
 sub restart($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -175,7 +175,6 @@ Restart service if it is enabled.
 sub try_restart($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -194,7 +193,6 @@ Reloads service if reloading is implemented; throw exception otherwise.
 sub reload($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -220,7 +218,6 @@ Does nothing if service is disabled.
 sub force_reload($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    my $access = Ubic::AccessGuard->new($self->service($name));
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -263,6 +260,7 @@ sub enable($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
+    my $guard = Ubic::AccessGuard->new($self->service($name));
 
     my $watchdog = $self->watchdog($name);
     $watchdog->{status} = 'unknown';
@@ -294,6 +292,7 @@ sub disable($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
     my $lock = $self->lock($name);
+    my $guard = Ubic::AccessGuard->new($self->service($name));
 
     if ($self->is_enabled($name)) {
         unlink $self->watchdog_file($name) or die "Can't unlink '".$self->watchdog_file($name)."'";
@@ -408,6 +407,8 @@ Write new status into service's watchdog status file.
 sub set_cached_status($$$) {
     my $self = _obj(shift);
     my ($name, $status) = validate_pos(@_, 1, 1);
+    my $guard = Ubic::AccessGuard->new($self->service($name));
+
     if (blessed $status) {
         croak "Wrong status param '$status'" unless $status->isa('Ubic::Result::Class');
         $status = $status->status;
@@ -484,8 +485,14 @@ sub lock($$) {
     use Scalar::Util qw(weaken);
     sub new {
         my ($class, $name, $ubic) = @_;
+
+        my $lock = do {
+            my $guard = Ubic::AccessGuard->new($ubic->service($name));
+            lockf($ubic->{lock_dir}."/".$name);
+        };
+
         my $ubic_ref = \$ubic;
-        my $self = bless { name => $name, ubic_ref => $ubic_ref, lock => lockf($ubic->{lock_dir}."/".$name) } => $class;
+        my $self = bless { name => $name, ubic_ref => $ubic_ref, lock => $lock } => $class;
         weaken($self->{ubic_ref});
         return $self;
     }
@@ -525,8 +532,75 @@ Run C<$cmd> method from service C<$name> and wrap any result or exception into C
 sub do_cmd($$$) {
     my ($self, $name, $cmd) = @_;
     $self->do_sub(sub {
-        $self->service($name)->$cmd()
+        my $service = $self->service($name);
+        my $user = $service->user;
+        my $service_uid = getpwnam($user);
+        unless (defined $service_uid) {
+            die "user $user not found";
+        }
+        if ($service_uid == $> and $service_uid == $<) {
+            $service->$cmd();
+        }
+        else {
+            # locking all service operations inside fork with correct real and effective uids
+            # setting just effective uid is not enough, and tainted mode requires too careful coding
+            $self->forked_call(sub {
+                POSIX::setuid($service_uid);
+                $service->$cmd();
+            });
+        }
     });
+}
+
+=item B<< forked_call($callback) >>
+
+Run C<$callback> inside fork and return its return value.
+
+Interaction happens through temporary file in C<$ubic->{tmp_dir}> dir.
+
+=cut
+sub forked_call {
+    my ($self, $callback) = @_;
+    my $tmp_file = $self->{tmp_dir}."/".time.".".rand(1000000);
+    my $child;
+    unless ($child = xfork) {
+        my $result = eval {
+            $callback->();
+        };
+        if ($@) {
+            $result = { error => $@ };
+        }
+        else {
+            $result = { ok => $result };
+        }
+        eval {
+            my $fh = xopen(">", "$tmp_file.tmp");
+            print {$fh} freeze($result);
+            xclose($fh);
+            STDOUT->flush;
+            STDERR->flush;
+            rename "$tmp_file.tmp", $tmp_file;
+            POSIX::_exit(0); # don't allow to lock to be released - this process was forked from unknown environment, don't want to run unknown destructors
+        }; if ($@) {
+            # probably tmp_file is not writtable
+            POSIX::_exit(1);
+        }
+    }
+    waitpid($child, 0);
+    unless (-e $tmp_file) {
+        die "temp file not found after fork (probably failed write to $self->{tmp_dir})";
+    }
+    my $fh = xopen('<', $tmp_file);
+    my $content = do { local $/; <$fh>; };
+    xclose($fh);
+    unlink $tmp_file;
+    my $result = thaw($content);
+    if ($result->{error}) {
+        die $result->{error};
+    }
+    else {
+        return $result->{ok};
+    }
 }
 
 =back

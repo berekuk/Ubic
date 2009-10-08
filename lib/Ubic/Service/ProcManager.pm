@@ -106,7 +106,7 @@ sub start {
 
 sub stop {
     my $self = shift;
-    return unless -e $self->{pidfile};
+    return 'not running' unless -e $self->{pidfile};
     chomp(my $pid = qx(cat $self->{pidfile}));
     #print "Killing $self->{pidfile} (pid $pid)\n";
     kill 15 => $pid; # never SIGKILL procmanager, it's dangerous!

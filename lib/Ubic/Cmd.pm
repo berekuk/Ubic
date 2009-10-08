@@ -83,7 +83,7 @@ sub start {
         my $service = shift;
         print "Starting ".$service->full_name."... ";
         my $result = eval { Ubic->start($service->full_name) } || result($@);
-        $self->print_result($result);
+        $self->print_result($result, $@ ? 'red' : ());
         push @results, $result;
     });
     return $self->stat(\@results);
@@ -102,7 +102,7 @@ sub stop {
         my $service = shift;
         print "Stopping ".$service->full_name."... ";
         my $result = eval { Ubic->stop($service->full_name) } || result($@);
-        $self->print_result($result);
+        $self->print_result($result, $@ ? 'red' : ());
         push @results, $result;
     });
     return $self->stat(\@results);
@@ -120,7 +120,7 @@ sub restart {
         my $service = shift;
         print "Restarting ".$service->full_name."... ";
         my $result = eval { Ubic->restart($service->full_name) } || result($@);
-        $self->print_result($result);
+        $self->print_result($result, $@ ? 'red' : ());
         push @results, $result;
     });
     return $self->stat(\@results);
@@ -140,7 +140,7 @@ sub try_restart {
         if (Ubic->is_enabled($name)) {
             print "Restarting $name... ";
             my $result = eval { Ubic->try_restart($name) } || result($@);
-            $self->print_result($result);
+            $self->print_result($result, $@ ? 'red' : ());
             push @results, $result;
         }
         else {
@@ -165,7 +165,7 @@ sub reload {
         if (Ubic->is_enabled($name)) {
             print "Reloading $name... ";
             my $result = eval { Ubic->reload($name) } || result($@);
-            $self->print_result($result);
+            $self->print_result($result, $@ ? 'red' : ());
             push @results, $result;
         }
         else {
@@ -195,7 +195,7 @@ sub force_reload {
         if (Ubic->is_enabled($name)) {
             print "Reloading $name... ";
             my $result = eval { Ubic->force_reload($name)} || result($@);
-            $self->print_result($result);
+            $self->print_result($result, $@ ? 'red' : ());
             push @results, $result;
         }
         else {
@@ -273,13 +273,18 @@ sub print_green {
 
 =item B<< print_result($result) >>
 
+=item B<< print_result($result, $color) >>
+
 Print given C<Ubic::Result::Class> object.
+
+If C<$color> is specified, it is taken into consideration, otherwise result is printed in green color ("correct") unless it is "broken".
 
 =cut
 sub print_result {
     my $self = _obj(shift);
-    my $result = shift;
-    if ($result->status eq 'broken') {
+    my ($result, $color) = @_;
+    $color ||= '';
+    if ($result->status eq 'broken' or $color eq 'red') {
         my $str = "$result";
         chomp $str;
         $self->print_red("$str\n");

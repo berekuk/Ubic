@@ -5,14 +5,14 @@ use warnings;
 
 =head1 NAME
 
-Ubic::AccessGuard - class for temporarily change effective uid into someone else
+Ubic::AccessGuard - class which guards all service operations
 
 =head1 SYNOPSIS
 
     use Ubic::AccessGuard;
 
-    $guard = Ubic::AccessGuard->new($service); # become $service->user
-    undef $guard; # become back who we were
+    $guard = Ubic::AccessGuard->new($service); # take lock under $service->user
+    undef $guard; # free lock
 
 =head1 METHODS
 
@@ -35,8 +35,12 @@ sub new {
     my ($service) = validate_pos(@_, { isa => 'Ubic::Service' });
 
     my $user = $service->user;
-    my $current_user = getpwuid($<);
-    my $self = bless {} => $class;
+    my $current_user = getpwuid($>);
+
+    my $self = bless {
+        old_uid => $<, # why do we care about real uid?
+        old_euid => $>,
+    } => $class;
 
     if ($user ne $current_user) {
         if ($current_user ne 'root') {
@@ -47,7 +51,6 @@ sub new {
         if ($!) {
             die result('unknown', "Failed to change user from $> to $new_uid: $!");
         }
-        $self->{user} = $current_user;
     }
 
     return $self;
@@ -56,11 +59,10 @@ sub new {
 sub DESTROY {
     my $self = shift;
 
-    if (exists $self->{user}) {
-        my $old_uid = getpwnam($self->{user});
-        $> = $old_uid; # return effective id back to normal
+    if ($< != $self->{old_uid} or $> != $self->{old_euid}) {
+        ($<, $>) = ($self->{old_uid}, $self->{old_euid}); # return uids back to normal
         if ($!) {
-            die result('unknown', "Failed to change user from $> to $old_uid: $!");
+            die result('unknown', "Failed to restore uids: $!");
         }
     }
 }

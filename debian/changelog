@@ -1,3 +1,12 @@
+yandex-ubic (0.8.2) unstable; urgency=low
+
+  * Ubic::AccessGuard: more cautiously restore uid and euid
+  * Ubic::Service::ProcManager: don't fail on double stop
+  * Ubic: do all operations with service inside fork, if service has different
+    user from current user
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 08 Oct 2009 18:13:39 +0400
+
 yandex-ubic (0.8.1) unstable; urgency=low
 
   * Ubic::Multiservice::Simple critical bugfixes

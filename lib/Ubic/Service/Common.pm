@@ -88,6 +88,7 @@ sub new {
         name        => { type => SCALAR, regex => qr/^[\w-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
         port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1 },
         custom_commands => { type => HASHREF, default => {} },
+        user        => { type => SCALAR, default => 'root' },
     });
     if ($params->{custom_commands}) {
         for (keys %{$params->{custom_commands}}) {
@@ -121,6 +122,11 @@ sub stop_impl {
 sub custom_commands {
     my $self = shift;
     return keys %{$self->{custom_commands}};
+}
+
+sub user {
+    my $self = shift;
+    return $self->{user};
 }
 
 sub do_custom_command {

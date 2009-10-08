@@ -14,9 +14,11 @@ BEGIN {
     xsystem('mkdir tfiles/watchdog');
     xsystem('mkdir tfiles/lock');
     xsystem('mkdir tfiles/pid');
+    xsystem('mkdir tfiles/tmp');
 
     $ENV{UBIC_DAEMON_PID_DIR} = 'tfiles/pid';
     $ENV{UBIC_WATCHDOG_DIR} = 'tfiles/watchdog';
+    $ENV{UBIC_TMP_DIR} = 'tfiles/tmp';
     $ENV{UBIC_LOCK_DIR} = 'tfiles/lock';
     $ENV{UBIC_SERVICE_DIR} = 't/service';
     $ENV{PERL5LIB} = 'lib';

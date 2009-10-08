@@ -16,8 +16,10 @@ BEGIN {
     xsystem('mkdir tfiles/watchdog');
     xsystem('mkdir tfiles/lock');
     xsystem('mkdir tfiles/pid');
+    xsystem('mkdir tfiles/tmp');
 
     $ENV{UBIC_DAEMON_PID_DIR} = 'tfiles/pid';
+    $ENV{UBIC_TMP_DIR} = 'tfiles/tmp';
 }
 
 use Ubic;
