@@ -1,3 +1,9 @@
+yandex-ubic (0.8.3) unstable; urgency=low
+
+  * creating tmp dir in postinst
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 08 Oct 2009 22:09:18 +0400
+
 yandex-ubic (0.8.2) unstable; urgency=low
 
   * Ubic::AccessGuard: more cautiously restore uid and euid
