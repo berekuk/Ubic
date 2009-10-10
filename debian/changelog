@@ -1,3 +1,11 @@
+yandex-ubic (0.8.4) unstable; urgency=low
+
+  * Ubic:
+   - using IO::Handle, fixing start with fork when it's not loaded
+   - trying to print internal error when fork desperately fails
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 09 Oct 2009 23:55:31 +0400
+
 yandex-ubic (0.8.3) unstable; urgency=low
 
   * creating tmp dir in postinst

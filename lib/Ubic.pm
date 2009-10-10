@@ -39,6 +39,7 @@ use Ubic::Multiservice::Dir;
 use Ubic::AccessGuard;
 use Params::Validate qw(:all);
 use Carp;
+use IO::Handle;
 use Storable qw(freeze thaw);
 use Yandex::Persistent;
 use Yandex::Lockf;
@@ -583,6 +584,7 @@ sub forked_call {
             POSIX::_exit(0); # don't allow to lock to be released - this process was forked from unknown environment, don't want to run unknown destructors
         }; if ($@) {
             # probably tmp_file is not writtable
+            warn $@;
             POSIX::_exit(1);
         }
     }
