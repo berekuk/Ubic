@@ -1,3 +1,9 @@
+yandex-ubic (0.8.5) unstable; urgency=low
+
+  * Ubic: set_ubic_dir and set_service_dir methods
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 10 Oct 2009 20:10:59 +0400
+
 yandex-ubic (0.8.4) unstable; urgency=low
 
   * don't fail if some of multiservice's parts don't support custom command

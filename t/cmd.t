@@ -9,26 +9,13 @@ use lib 'lib';
 
 use Ubic::Cmd;
 
-BEGIN {
-    use Yandex::X;
-    xsystem('rm -rf tfiles');
-    xsystem('mkdir tfiles');
-    xsystem('mkdir tfiles/watchdog');
-    xsystem('mkdir tfiles/lock');
-    xsystem('mkdir tfiles/pid');
-    xsystem('mkdir tfiles/tmp');
-
-    $ENV{UBIC_DAEMON_PID_DIR} = 'tfiles/pid';
-    $ENV{UBIC_TMP_DIR} = 'tfiles/tmp';
-}
+use Yandex::X;
+xsystem('rm -rf tfiles');
+xsystem('mkdir tfiles');
 
 use Ubic;
-
-$Ubic::SINGLETON = Ubic->new({
-    watchdog_dir => 'tfiles/watchdog',
-    lock_dir => 'tfiles/lock',
-    service_dir => 't/service',
-});
+Ubic->set_ubic_dir('tfiles/ubic');
+Ubic->set_service_dir('t/service');
 
 my $out = '';
 my $fh = xopen('>', \$out);

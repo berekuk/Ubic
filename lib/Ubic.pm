@@ -90,11 +90,12 @@ Dir with services' locks.
 =cut
 sub new {
     my $class = shift;
+    my $ubic_dir = $ENV{UBIC_DIR} || '/var/lib/ubic';
     my $self = validate(@_, {
-        watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "/var/lib/ubic/watchdog" },
         service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
-        lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "/var/lib/ubic/lock" },
-        tmp_dir =>  { type => SCALAR, default => $ENV{UBIC_TMP_DIR} || "/var/lib/ubic/tmp" },
+        watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "$ubic_dir/watchdog" },
+        lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "$ubic_dir/lock" },
+        tmp_dir =>  { type => SCALAR, default => $ENV{UBIC_TMP_DIR} || "$ubic_dir/tmp" },
     });
     $self->{locks} = {};
     $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
@@ -418,6 +419,53 @@ sub set_cached_status($$$) {
     my $watchdog = $self->watchdog($name);
     $watchdog->{status} = $status;
     $watchdog->commit;
+}
+
+=item B<< set_ubic_dir($dir) >>
+
+Create and set ubic dir.
+
+Ubic dir is a directory with service statuses and locks. By default, ubic dir is C</var/lib/ubic> and it is packaged in ubic distribution, but in tests you may want to change it.
+
+These settings will be propagated into subprocesses using environment, so you can write in comments following code:
+
+    Ubic->set_ubic_dir('tfiles/ubic');
+    Ubic->set_service_dir('etc/ubic/service');
+    xsystem('ubic start some_service');
+    xsystem('ubic stop some_service');
+
+=cut
+sub set_ubic_dir($$) {
+    my $self = _obj(shift);
+    my ($dir) = validate_pos(@_, 1);
+    unless (-d $dir) {
+        mkdir $dir or die "mkdir $dir failed: $!";
+    }
+
+    # TODO - chmod 777, chmod +t?
+    # TODO - call this method from postinst too?
+    mkdir "$dir/lock" or die "mkdir $dir/lock failed: $!" unless -d "$dir/lock";
+    mkdir "$dir/watchdog" or die "mkdir $dir/watchdog failed: $!" unless -d "$dir/watchdog";
+    mkdir "$dir/tmp" or die "mkdir $dir/tmp failed: $!" unless -d "$dir/tmp";
+    mkdir "$dir/pid" or die "mkdir $dir/pid failed: $!" unless -d "$dir/pid"; # Ubic don't use /pid/, but Ubic::Daemon does
+
+    $self->{lock_dir} = "$dir/lock"; $ENV{UBIC_LOCK_DIR} = $self->{lock_dir};
+    $self->{watchdog_dir} = "$dir/watchdog"; $ENV{UBIC_WATCHDOG_DIR} = $self->{watchdog_dir};
+    $self->{tmp_dir} = "$dir/tmp"; $ENV{UBIC_TMP_DIR} = $self->{tmp_dir};
+    $ENV{UBIC_DAEMON_PID_DIR} = "$dir/pid";
+}
+
+=item B<< set_service_dir($dir) >>
+
+Set ubic services dir.
+
+=cut
+sub set_service_dir($$) {
+    my $self = _obj(shift);
+    my ($dir) = validate_pos(@_, 1);
+    $self->{service_dir} = $dir;
+    $ENV{UBIC_SERVICE_DIR} = $dir;
+    $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir}); # FIXME - copy-paste from constructor!
 }
 
 =back
