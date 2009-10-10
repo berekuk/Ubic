@@ -1,3 +1,9 @@
+yandex-ubic (0.8.4) unstable; urgency=low
+
+  * don't fail if some of multiservice's parts don't support custom command
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 10 Oct 2009 19:37:09 +0400
+
 yandex-ubic (0.8.3) unstable; urgency=low
 
   * creating tmp dir in postinst

@@ -221,10 +221,31 @@ sub do_custom_command {
     my $self = _obj(shift);
     my ($service, $command) = @_;
 
+    my $count = 0;
     $self->traverse($service, sub {
         my $service = shift;
-        Ubic->do_custom_command($service->full_name, $command);
+
+        # Imagine we have multiservice X with subservices X.A, X.B and X.C.
+        # X may want to support custom command CC by implementing it in X.A and X.B but not in X.C.
+        # In this case X.A->CC and X.B->CC will be called, and X.C will be skipped.
+        if (grep { $_ eq $command } $service->custom_commands) {
+            Ubic->do_custom_command($service->full_name, $command);
+            $count++;
+        }
     });
+    unless ($count) {
+        # But if none of X subservices support our custom command, something is obviously wrong.
+        if ($service->isa('Ubic::Multiservice')) {
+            die "None of subservices support $command";
+        }
+        else {
+            # it is unlikely that this error will happen, because we already checked that $service supports $command
+            die "$command unsupported";
+        }
+    }
+
+    # TODO - what if X want to implement custom command itself?
+    # should custom commands have different types, "try to call me in each subservice" and "call me for multiservice itself"?
 }
 
 =item B<< usage($command) >>
