@@ -101,7 +101,7 @@ sub start {
         xexec(qq#sh -c "true; $self->{bin} -child $self->{child} -s $self->{socket} -pid $self->{pidfile}"#);
     }
     sleep 1; # wait for managers to start workers (FIXME!!)
-    return 'started';
+    return 'started'; # FIXME - check that process actually started!
 }
 
 sub stop {

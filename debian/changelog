@@ -1,4 +1,4 @@
-yandex-ubic (0.8.6) unstable; urgency=low
+yandex-ubic (0.8.7) unstable; urgency=low
 
   * bugfix: Ubic::Multiservice sets parent_name correctly for deeply nested
     services
@@ -6,17 +6,26 @@ yandex-ubic (0.8.6) unstable; urgency=low
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 10 Oct 2009 21:24:33 +0400
 
-yandex-ubic (0.8.5) unstable; urgency=low
+yandex-ubic (0.8.6) unstable; urgency=low
 
   * Ubic: set_ubic_dir and set_service_dir methods
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 10 Oct 2009 20:10:59 +0400
 
-yandex-ubic (0.8.4) unstable; urgency=low
+yandex-ubic (0.8.5) unstable; urgency=low
 
   * don't fail if some of multiservice's parts don't support custom command
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 10 Oct 2009 19:37:09 +0400
+
+yandex-ubic (0.8.4) unstable; urgency=low
+
+  * Ubic:
+   - using IO::Handle, fixing start with fork when it's not loaded
+   - trying to print internal error when fork desperately fails
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 09 Oct 2009 23:55:31 +0400
+>>>>>>> 04c0d7006ce0da8dc2648fb8e8ad0587c31c9261:debian/changelog
 
 yandex-ubic (0.8.3) unstable; urgency=low
 
