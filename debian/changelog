@@ -1,3 +1,11 @@
+yandex-ubic (0.8.6) unstable; urgency=low
+
+  * bugfix: Ubic::Multiservice sets parent_name correctly for deeply nested
+    services
+  * Ubic::Multiservice sets name of simple service if it's not already defined
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 10 Oct 2009 21:24:33 +0400
+
 yandex-ubic (0.8.5) unstable; urgency=low
 
   * Ubic: set_ubic_dir and set_service_dir methods

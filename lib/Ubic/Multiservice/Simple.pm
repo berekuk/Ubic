@@ -56,11 +56,7 @@ sub has_simple_service($$) {
 
 sub simple_service($$) {
     my ($self, $name) = @_;
-    my $service = $self->{services}{$name};
-    unless (defined $service->name) {
-        $service->name($name);
-    }
-    return $service;
+    return $self->{services}{$name};
 }
 
 sub service_names($) {
