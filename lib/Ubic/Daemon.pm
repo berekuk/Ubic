@@ -48,8 +48,16 @@ Stop daemon which was started with $pidfile.
 sub stop_daemon($) {
     my ($pidfile) = validate_pos(@_, 1);
 
+    unless (-e $pidfile) {
+        return 'not running';
+    }
+
     my $fh = xopen('<', $pidfile);
-    chomp(my $pid = <$fh>);
+    my $pid = <$fh>;
+    unless (defined $pid) {
+        die "Can't read anything from $pidfile";
+    }
+    chomp $pid;
 
     my $killed;
     for my $trial (1..5) {
@@ -171,8 +179,9 @@ sub start_daemon($) {
             $lock = lockf($pidfile, {nonblocking => 1});
             xprint($ubic_fh, "[$$] got lock\n");
             my $pid_fh = xopen(">", $pidfile);
-            xprint($pid_fh, $$);
+            xprint($pid_fh, "$$\n");
             $pid_fh->flush;
+            xclose($pid_fh);
 
             if (defined $user) {
                 my $id = getpwnam($user);
@@ -254,6 +263,9 @@ Returns true if it is so.
 =cut
 sub check_daemon {
     my ($pidfile) = @_;
+    unless (-e $pidfile) {
+        return;
+    }
     eval {
         lockf($pidfile, {nonblocking => 1});
     };

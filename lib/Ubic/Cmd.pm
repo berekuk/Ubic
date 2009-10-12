@@ -26,11 +26,9 @@ use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(all);
 use List::Util qw(max);
-use Term::ANSIColor qw(:constants);
-$Term::ANSIColor::AUTORESET = 1;
-
 use Ubic;
 use Ubic::Result qw(result);
+use Ubic::Cmd::Results;
 
 =head1 CONSTRUCTOR
 
@@ -78,15 +76,14 @@ sub start {
     my $self = _obj(shift);
     my $service = shift;
 
-    my @results;
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         print "Starting ".$service->full_name."... ";
         my $result = eval { Ubic->start($service->full_name) } || result($@);
-        $self->print_result($result, $@ ? 'red' : ());
-        push @results, $result;
+        $results->print($result, $@ ? 'bad' : ());
     });
-    return $self->stat(\@results);
+    return $results->finish();
 }
 
 
@@ -96,16 +93,15 @@ sub start {
 sub stop {
     my $self = _obj(shift);
     my $service = shift;
-    my @results;
 
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         print "Stopping ".$service->full_name."... ";
         my $result = eval { Ubic->stop($service->full_name) } || result($@);
-        $self->print_result($result, $@ ? 'red' : ());
-        push @results, $result;
+        $results->print($result, $@ ? 'bad' : ());
     });
-    return $self->stat(\@results);
+    return $results->finish();
 }
 
 =item B<< restart($service) >>
@@ -115,15 +111,14 @@ sub restart {
     my $self = _obj(shift);
     my $service = shift;
 
-    my @results;
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         print "Restarting ".$service->full_name."... ";
         my $result = eval { Ubic->restart($service->full_name) } || result($@);
-        $self->print_result($result, $@ ? 'red' : ());
-        push @results, $result;
+        $results->print($result, $@ ? 'bad' : ());
     });
-    return $self->stat(\@results);
+    return $results->finish();
 }
 
 =item B<< try_restart($service) >>
@@ -133,22 +128,21 @@ sub try_restart {
     my $self = _obj(shift);
     my $service = shift;
 
-    my @results;
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         my $name = $service->full_name;
         if (Ubic->is_enabled($name)) {
             print "Restarting $name... ";
             my $result = eval { Ubic->try_restart($name) } || result($@);
-            $self->print_result($result, $@ ? 'red' : ());
-            push @results, $result;
+            $results->print($result, $@ ? 'bad' : ());
         }
         else {
             print "$name is down";
-            push @results, result('down');
+            $results->add(result('down'));
         }
     });
-    return $self->stat(\@results);
+    return $results->finish();
 }
 
 =item B<< reload($service) >>
@@ -158,27 +152,21 @@ sub reload {
     my $self = _obj(shift);
     my $service = shift;
 
-    my @results;
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         my $name = $service->full_name;
         if (Ubic->is_enabled($name)) {
             print "Reloading $name... ";
             my $result = eval { Ubic->reload($name) } || result($@);
-            $self->print_result($result, $@ ? 'red' : ());
-            push @results, $result;
+            $results->print($result, $@ ? 'bad' : ());
         }
         else {
             print "$name is down\n";
-            push @results, result('down');
+            $results->add(result('down'));
         }
     });
-    for my $result (@results) {
-        if ($result->status eq 'broken') {
-            die $result;
-        }
-    }
-    return $self->stat(\@results);
+    return $results->finish();
 }
 
 =item B<< force_reload($name) >>
@@ -188,22 +176,21 @@ sub force_reload {
     my $self = _obj(shift);
     my $service = shift;
 
-    my @results;
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         my $name = $service->full_name;
         if (Ubic->is_enabled($name)) {
             print "Reloading $name... ";
             my $result = eval { Ubic->force_reload($name)} || result($@);
-            $self->print_result($result, $@ ? 'red' : ());
-            push @results, $result;
+            $results->print($result, $@ ? 'bad' : ());
         }
         else {
             print "$name is down\n";
-            push @results, result('down');
+            $results->add(result('down'));
         }
     });
-    return $self->stat(\@results);
+    return $results->finish();
 }
 
 =back
@@ -262,91 +249,6 @@ sub usage {
     exit(2); # or exit(3)? see LSB for details
 }
 
-=item B<< print_red(@strings) >>
-
-Print given strings in red color if stdout is terminal, and in plain text otherwise.
-
-=cut
-sub print_red {
-    my $self = _obj(shift);
-    if (-t STDOUT) {
-        print RED @_;
-    }
-    else {
-        print @_;
-    }
-}
-
-=item B<< print_green(@strings) >>
-
-Print given strings in green color if stdout is terminal, and in plain text otherwise.
-
-=cut
-sub print_green {
-    my $self = _obj(shift);
-    if (-t STDOUT) {
-        print GREEN @_;
-    }
-    else {
-        print @_;
-    }
-}
-
-=item B<< print_result($result) >>
-
-=item B<< print_result($result, $color) >>
-
-Print given C<Ubic::Result::Class> object.
-
-If C<$color> is specified, it is taken into consideration, otherwise result is printed in green color ("correct") unless it is "broken".
-
-=cut
-sub print_result {
-    my $self = _obj(shift);
-    my ($result, $color) = @_;
-    $color ||= '';
-    if ($result->status eq 'broken' or $color eq 'red') {
-        my $str = "$result";
-        chomp $str;
-        $self->print_red("$str\n");
-    }
-    else {
-        $self->print_green("$result\n");
-    }
-}
-
-=item B<< stat(\@results) >>
-
-Print error if some of results are bad, and return correct exit code, understandable by C<_run_impl()>.
-
-=cut
-sub stat($$) {
-    my $self = _obj(shift);
-    my $results = shift;
-    my $error = 0;
-    if (@$results > 1) {
-        my $broken;
-        for my $result (@$results) {
-            if ($result->status eq 'broken') {
-                $broken++;
-            }
-        }
-        if ($broken) {
-            $self->print_red("Failed: $broken service(s)\n");
-            $error = 1;
-        }
-    }
-    elsif (@$results == 1) {
-        if ($results->[0]->status eq 'broken') {
-            die $results->[0];
-        }
-    }
-    else {
-        # no results, huh?
-        die "no services processed";
-    }
-    return $error;
-}
 
 =item B<< traverse($name, $callback) >>
 
@@ -392,14 +294,15 @@ sub print_status($$) {
     my $self = _obj(shift);
     my ($service, $cached) = @_;
 
-    my @results;
+    my $results = Ubic::Cmd::Results->new;
     $self->traverse($service, sub {
         my $service = shift;
         my $name = $service->full_name;
+        print "$name\t";
         my $enabled = Ubic->is_enabled($name);
         unless ($enabled) {
-            print "$name\toff\n";
-            push @results, result('down');
+            print "off\n";
+            $results->add(result('down'));
             return;
         }
 
@@ -414,19 +317,18 @@ sub print_status($$) {
             }
         }
         if ($status eq 'running') {
-            $self->print_green("$name\t$status\n");
+            $results->print($status);
         }
         else {
-            $self->print_red("$name\t$status\n");
+            $results->print($status, 'bad'); # up and not running is always bad
         }
-        push @results, $status;
     });
 
     # TODO - print actual uplevel service's status, it can be service-specific
-    if (all { $_->status eq 'running' } @results) {
+    if (all { $_->status eq 'running' } $results->results) {
         return result('running');
     }
-    elsif (all { $_->status eq 'down' } @results) {
+    elsif (all { $_->status eq 'down' } $results->results) {
         return result('down');
     }
     else {

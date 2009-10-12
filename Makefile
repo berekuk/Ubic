@@ -8,7 +8,7 @@ test_compile:
 	set -e; for m in `find lib -name '*.pm'`; do perl -Ilib -c $$m; done
 
 test: test_compile
-	prove -v t/*.t
+	prove t/*.t
 
 install:
 	# executable

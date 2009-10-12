@@ -1,3 +1,22 @@
+yandex-ubic (0.8.9) unstable; urgency=low
+
+  * Ubic::Cmd refactored:
+   - pretty printing moved to Ubic::Cmd::Results
+   - return non-zero error code if any of results was "bad", not only "broken"
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 12 Oct 2009 00:38:22 +0400
+
+yandex-ubic (0.8.8) unstable; urgency=low
+
+  * Ubic::Daemon:
+   - don't create empty pidfile on check_daemon()
+   - add "\n" to pidfile content
+   - explicitly close pidfile
+  * Ubic::Service::Skeleton: bugfix, start could fail and Skeleton could still
+    report that it works
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sun, 11 Oct 2009 23:30:10 +0400
+
 yandex-ubic (0.8.7) unstable; urgency=low
 
   * bugfix: Ubic::Multiservice sets parent_name correctly for deeply nested
@@ -25,7 +44,6 @@ yandex-ubic (0.8.4) unstable; urgency=low
    - trying to print internal error when fork desperately fails
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 09 Oct 2009 23:55:31 +0400
->>>>>>> 04c0d7006ce0da8dc2648fb8e8ad0587c31c9261:debian/changelog
 
 yandex-ubic (0.8.3) unstable; urgency=low
 

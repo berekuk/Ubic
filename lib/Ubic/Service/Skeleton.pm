@@ -137,7 +137,9 @@ sub _do_start {
     }
     else {
         $status = $self->status;
-        $status->type('started');
+        if ($status->status eq 'running') {
+            $status->type('started'); # fake status to report correct action (hopefully)
+        }
     }
 
     if ($status->status eq 'running') {

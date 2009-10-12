@@ -26,7 +26,7 @@ $ENV{PERL5LIB} = 'lib';
     like($result, qr/sleeping-daemon \s+ running/x, 'Ubic::Run works, sleeping-daemon is running');
 
     use Test::Exception;
-    dies_ok(sub { xsystem("t/bin/sleeping-init blah") }, "Ubic::Run dies encountering an unknown command");
+    dies_ok(sub { xsystem("t/bin/sleeping-init blah 2>>tfiles/blah.stderr") }, "Ubic::Run dies encountering an unknown command");
     lives_ok(sub { xsystem("t/bin/sleeping-init logrotate") }, "logrotate command implemented"); #FIXME: better fix logrotate configs!
 
     $result = qx(t/bin/sleeping-init stop);
