@@ -1,3 +1,18 @@
+yandex-ubic (0.8.12) unstable; urgency=low
+
+  * critical bugfix: ubic-watchdog could restart service from root instead of
+    service's user
+  * Ubic locks fixed, correctly release lock when it's destroyed
+  * ubic-watchdog tests
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 13 Oct 2009 18:39:04 +0400
+
+yandex-ubic (0.8.11) unstable; urgency=low
+
+  * Ubic::Cmd considers down services as ok when checking status
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 13 Oct 2009 17:36:12 +0400
+
 yandex-ubic (0.8.10) unstable; urgency=low
 
   * ubic-ping:

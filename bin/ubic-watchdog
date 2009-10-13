@@ -51,23 +51,23 @@ sub check {
             1 while wait() > 0;
             return;
         }
-        unless (Ubic->is_enabled($service->full_name)) {
+        unless (Ubic->is_enabled($name)) {
             INFO "$name disabled\n" if $verbose;
             return;
         }
         # TODO - alarm?
-        my $status = $service->status;
+        my $status = Ubic->_obj->do_cmd($name, 'status'); # FIXME - violating Ubic's encapsulation!
         unless ($status eq 'running') {
             INFO "$name is broken, restarting";
-            $service->start;
+            Ubic->_obj->do_cmd($name, 'start'); # FIXME - violating Ubic's encapsulation!
         }
         $status = $service->status;
         if ($status ne 'running') {
             INFO "Failed to start $name";
-            Ubic->set_cached_status($service->full_name, $status);
+            Ubic->set_cached_status($name, $status);
         }
     }; if ($@) {
-        ERROR "Failed to check ".$service->full_name.": $@";
+        ERROR "Failed to check $name: $@";
     }
     if ($verbose) {
         INFO "$name checked\n";

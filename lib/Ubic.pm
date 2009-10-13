@@ -520,10 +520,17 @@ You can lock one object twice from the same process, but not from different proc
 sub lock($$) {
     my ($self) = _obj(shift);
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
-    unless ($self->{locks}{$name}) {
-        $self->{locks}{$name} = Ubic::Lock->new($name, $self);
+
+    if ($self->{locks}{$name}) {
+        warn "selected existing ref\n";
+        return ${ $self->{locks}{$name} };
     }
-    return $self->{locks}{$name};
+
+    my $lock = Ubic::Lock->new($name, $self);
+    use Scalar::Util qw(weaken);
+    weaken($lock);
+    $self->{locks}{$name} = $lock;
+    return $lock;
 }
 
 {
@@ -531,7 +538,7 @@ sub lock($$) {
     use strict;
     use warnings;
     use Yandex::Lockf;
-    use Scalar::Util qw(weaken);
+    use Carp qw(longmess);
     sub new {
         my ($class, $name, $ubic) = @_;
 
@@ -542,13 +549,14 @@ sub lock($$) {
 
         my $ubic_ref = \$ubic;
         my $self = bless { name => $name, ubic_ref => $ubic_ref, lock => $lock } => $class;
-        weaken($self->{ubic_ref});
         return $self;
     }
     sub DESTROY {
         my $self = shift;
         my $ubic = ${$self->{ubic_ref}};
-        $ubic->_free_lock($self->{name});
+        if (defined $ubic) {
+            $ubic->_free_lock($self->{name});
+        }
     }
 }
 

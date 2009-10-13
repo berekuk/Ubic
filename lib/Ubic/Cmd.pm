@@ -325,15 +325,10 @@ sub print_status($$) {
     });
 
     # TODO - print actual uplevel service's status, it can be service-specific
-    if (all { $_->status eq 'running' } $results->results) {
-        return result('running');
+    if (any { $_->status ne 'running' and $_->status ne 'down' } $results->results) {
+        return 3; # some services are not running when they should be
     }
-    elsif (all { $_->status eq 'down' } $results->results) {
-        return result('down');
-    }
-    else {
-        return result('not running'); # at least one subservice is not running
-    }
+    return 0; # all services are down or running
 }
 
 =item B<< run($params_hashref) >>
@@ -397,16 +392,13 @@ sub _run_impl {
         if ($command eq 'cached-status') {
             $cached = 1;
         }
-        my $result = $self->print_status($name, $cached);
-        if ($result->status eq 'running') {
-            return 0;
+        my $result = eval {
+            $self->print_status($name, $cached);
+        };
+        if ($@) {
+            return 4; # status is unknown, internal error
         }
-        elsif ($result->status eq 'not running' or $result->status eq 'down') {
-            return 3; # see LSB
-        }
-        else {
-            return 150; # application-reserved code
-        }
+        exit $result;
     }
 
     if ($name and not Ubic->root_service->has_service($name)) {
