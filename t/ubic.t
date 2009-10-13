@@ -19,11 +19,9 @@ Ubic->set_service_dir('t/service');
 # services() method - also check that service_dir works, so these tests are first (2)
 {
     my @services = Ubic->services;
-    is(scalar(@services), 5, 'all services returned by services() method');
+    cmp_ok(scalar(@services), '>', 5, 'enough services returned by services() method');
 
-    my @service_names = sort map { $_->name } @services;
-
-    is_deeply(\@service_names, ['multi', 'sleeping-common', 'sleeping-daemon', 'sleeping-daemon-root', 'sleeping-daemon2'], 'services list is correct');
+    ok(scalar(grep { $_->name eq 'sleeping-daemon' } @services), 'sleeping-daemon is presented in services list');
 }
 
 # is_enabled, enable, disable (4)

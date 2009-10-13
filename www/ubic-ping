@@ -54,17 +54,39 @@ sub print_status($;$) {
     }
 }
 
-sub find_by_port {
-    my ($service, $port) = validate_pos(@_, 1, { regex => qr/^\d+$/ });
+my %port2service; # cache, will be rebuilded every 10 seconds
+my $port2service_ts;
+
+sub port2service_rebuild {
+    my $service = shift() || Ubic->root_service;
     for $_ ($service->services) {
         if ($_->isa('Ubic::Multiservice')) {
             # multiservice
-            my $found = find_by_port($_, $port);
-            return $found if $found;
+            port2service_rebuild($_);
         }
         else {
-            return $_ if $_->port == $port;
+            my $port = $_->port;
+            next unless $port;
+            push @{ $port2service{$port} }, $_;
         }
+    }
+    return;
+}
+
+# get service by port
+# if there are several services with one port, it will try to find enabled service among them
+sub port2service {
+    my ($port) = validate_pos(@_, { regex => qr/^\d+$/ });
+    if (not defined $port2service_ts or $port2service_ts < time - 10) {
+        %port2service = ();
+        port2service_rebuild(Ubic->root_service);
+        $port2service_ts = time;
+    }
+    return unless exists $port2service{$port};
+    my @services = @{ $port2service{$port} };
+    while (my $service = shift @services) {
+        return $service unless @services; # return last service even if it's disabled
+        return $service if Ubic->is_enabled($service->full_name);
     }
     return;
 }
@@ -81,7 +103,7 @@ sub handle_request {
         }
         elsif ( $cgi->path_info =~ m{^/noc/(\d+)/?$}) {
             my $port = $1;
-            my $service = find_by_port(Ubic->root_service, $port); # TODO - cache?
+            my $service = port2service($port);
             unless (defined $service) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
                 print "Service at port '$port' not found\n";
@@ -92,7 +114,7 @@ sub handle_request {
         }
         elsif ($cgi->path_info =~ m{^/status/port/(\d+)/?$}) {
             my $port = $1;
-            my $service = find_by_port(Ubic->root_service, $port);
+            my $service = port2service($port);
             unless (defined $service) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
                 print "Service at port '$port' not found\n";

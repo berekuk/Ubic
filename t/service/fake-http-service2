@@ -1,0 +1,21 @@
+# vim: ft=perl
+
+use strict;
+use warnings;
+
+use Ubic::Service::Common;
+use Yandex::Persistent;
+
+return Ubic::Service::Common->new({
+    start => sub {
+        Yandex::Persistent->new('tfiles/fake-http-service2.status')->{status} = 'running';
+    },
+    stop => sub {
+        Yandex::Persistent->new('tfiles/fake-http-service2.status')->{status} = 'not running';
+    },
+    status => sub {
+        Yandex::Persistent->new('tfiles/fake-http-service2.status')->{status};
+    },
+    port => 12347, # conflicts with fake-http-service2
+    user => $ENV{LOGNAME},
+});

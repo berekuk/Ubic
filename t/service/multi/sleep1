@@ -1,4 +1,4 @@
-# vim:syntax=perl
+# vim:ft=perl
 use Ubic::Service::SimpleDaemon;
 
 Ubic::Service::SimpleDaemon->new({

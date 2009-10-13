@@ -4,10 +4,14 @@ use Ubic::Daemon qw(:all);
 use Yandex::Persistent;
 use LWP::Simple;
 use POSIX;
-require "/usr/share/ubic/ubic-ping";
 
-my $port = 12345;
-my $pidfile = "/var/lib/ubic/ubic-ping.pid";
+my $code = $ENV{UBIC_SERVICE_PING_CODE} || '/usr/share/ubic/ubic-ping';
+require $code;
+
+# ugly; i really need to write Yandex::Catalog...
+my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
+my $pidfile = $ENV{UBIC_SERVICE_PING_PID} || "/var/lib/ubic/ubic-ping.pid";
+my $user = $ENV{UBIC_SERVICE_PING_USER} || 'root';
 
 Ubic::Service::Common->new({
     start => sub {
@@ -31,4 +35,5 @@ Ubic::Service::Common->new({
         ) ? 'running' : 'broken');
     },
     port => $port,
+    user => $user,
 });
