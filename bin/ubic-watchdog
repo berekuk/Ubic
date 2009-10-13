@@ -56,10 +56,10 @@ sub check {
             return;
         }
         # TODO - alarm?
-        my $status = Ubic->_obj->do_cmd($name, 'status'); # FIXME - violating Ubic's encapsulation!
+        my $status = Ubic->status($name);
         unless ($status eq 'running') {
             INFO "$name is broken, restarting";
-            Ubic->_obj->do_cmd($name, 'start'); # FIXME - violating Ubic's encapsulation!
+            Ubic->start($name);
         }
         $status = $service->status;
         if ($status ne 'running') {
