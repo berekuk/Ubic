@@ -1,3 +1,10 @@
+yandex-ubic (0.8.14) unstable; urgency=low
+
+  * bugfix: Ubic->reload and Ubic->force_reload correctly distinguish
+    "not implemented" and other failures
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 22 Oct 2009 18:49:42 +0400
+
 yandex-ubic (0.8.13) unstable; urgency=low
 
   * ubic-watchdog doesn't violate Ubic.pm privacy
