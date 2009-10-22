@@ -200,8 +200,11 @@ sub reload($$) {
     # if reload isn't implemented, do nothing
     # TODO - would it be better to execute reload as force-reload always? but it would be incompatible with LSB specification...
     my $result = $self->do_cmd($name, 'reload');
-    unless ($result->action eq 'restarted') {
-        die result('unknown', 'reload not implemented');
+    if ($result->{msg} eq 'not implemented') {
+        die $result;
+    }
+    unless ($result->action eq 'reloaded') {
+        die $result;
     }
     return $result;
 }
@@ -223,7 +226,7 @@ sub force_reload($$) {
     }
 
     my $result = $self->do_cmd($name, 'reload');
-    return $result if $result->action eq 'restarted';
+    return $result if $result->action eq 'reloaded';
 
     $self->try_restart($name);
 }

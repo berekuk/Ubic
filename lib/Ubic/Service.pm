@@ -144,7 +144,7 @@ Reload service, if possible.
 =cut
 sub reload {
     my ($self) = @_;
-    return result('unknown');
+    return result('unknown', 'not implemented');
 }
 
 =item B<port>
