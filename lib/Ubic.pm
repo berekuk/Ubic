@@ -495,6 +495,8 @@ sub watchdog_file($$) {
 
 Get watchdog persistent object by service's name.
 
+It's a bad idea to call this from any other class than C<Ubic>, but if you'll ever want to do this, at least don't forget to create C<Ubic::AccessGuard> first.
+
 =cut
 sub watchdog($$) {
     my $self = _obj(shift);

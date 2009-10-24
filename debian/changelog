@@ -1,3 +1,12 @@
+yandex-ubic (0.8.15) unstable; urgency=low
+
+  * Ubic::AccessGuard improvements:
+   - manage only effective uid
+   - keep weak ref to already existing objects and check that only one service
+   is guarded at the same time
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 24 Oct 2009 17:55:30 +0400
+
 yandex-ubic (0.8.14) unstable; urgency=low
 
   * bugfix: Ubic->reload and Ubic->force_reload correctly distinguish
