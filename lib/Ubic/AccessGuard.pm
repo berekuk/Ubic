@@ -88,8 +88,8 @@ sub DESTROY {
 
     if ($> != $self->{old_euid}) {
         $> = $self->{old_euid}; # return euid back to normal
-        if ($!) {
-            die result('unknown', "Failed to restore euid: $!");
+        if ($> != $self->{old_euid}) {
+            die result('unknown', "Failed to restore euid from $> to $self->{old_euid}: $!");
         }
     }
 }

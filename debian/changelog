@@ -1,3 +1,21 @@
+yandex-ubic (0.8.18) unstable; urgency=low
+
+  * reload: 'Use of uninitialized value' fix
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 28 Oct 2009 16:04:21 +0300
+
+yandex-ubic (0.8.17) unstable; urgency=low
+
+  * one more reload fix - understand result('reloaded') as correct reload
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 28 Oct 2009 16:00:34 +0300
+
+yandex-ubic (0.8.16) unstable; urgency=low
+
+  * Ubic::AccessGuard: correctly check whether restoring euid failed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sat, 24 Oct 2009 18:30:11 +0400
+
 yandex-ubic (0.8.15) unstable; urgency=low
 
   * Ubic::AccessGuard improvements:
