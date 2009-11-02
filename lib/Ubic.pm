@@ -411,17 +411,32 @@ sub compl_services($$) {
     my $self = _obj(shift);
     my $line = shift;
     my @parts = split /\./, $line;
+    if ($line =~ /\.$/) {
+        push @parts, '';
+    }
     if (@parts == 0) {
         return $self->service_names;
     }
     my $node = $self->root_service;
+    my $is_subservice = (@parts > 1);
     while (@parts > 1) {
+        unless ($node->isa('Ubic::Multiservice')) {
+            return;
+        }
         my $part = shift @parts;
         return unless $node->has_service($part); # no such service
         $node = $node->service($part);
     }
+
     my @variants = $node->service_names;
-    return grep { $_ =~ m{^\Q$line\E} } @variants;
+    return
+        map {
+            ( $is_subservice ? $node->full_name.".".$_ : $_ )
+        }
+        grep {
+            $_ =~ m{^\Q$parts[0]\E}
+        }
+        @variants;
 }
 
 =item B<set_cached_status($name, $status)>

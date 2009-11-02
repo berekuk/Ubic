@@ -1,3 +1,12 @@
+yandex-ubic (0.9.1) unstable; urgency=low
+
+  * portmap bugfixes:
+   - cleanup portmap before rebuilding
+   - save full_name in portmap
+  * bash_completion for subservices fixed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 02 Nov 2009 23:03:54 +0300
+
 yandex-ubic (0.9.0) unstable; urgency=low
 
   * cache services - less memory leaks in long runs

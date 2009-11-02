@@ -43,7 +43,7 @@ sub update {
     my $portmap = Yandex::Persistent->new(_portmap_file(), { auto_commit => 0 });
     my %port2service;
 
-   my $process_tree;
+    my $process_tree;
     $process_tree = sub {
         my $service = shift() || Ubic->root_service;
         for $_ ($service->services) {
@@ -55,7 +55,7 @@ sub update {
                 eval {
                     my $port = $_->port;
                     if ($port) {
-                        push @{ $portmap->{$port} }, $_->name;
+                        push @{ $portmap->{$port} }, $_->full_name;
                     }
                 };
                 if ($@) {
@@ -66,10 +66,13 @@ sub update {
         return;
     };
 
+    for (keys %{$portmap}) {
+        next unless /^\d+$/;
+        delete $portmap->{$_};
+    }
     $process_tree->();
-
     $portmap->commit();
-    undef $portmap;
+    undef $portmap; # memory leak bug in perl! closure doesn't allow local variable to be destroyed
 
     return;
 }
