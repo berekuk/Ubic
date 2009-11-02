@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+=head1 NAME
+
+ubic-update - update ubic metadata
+
+=head1 SYNOPSIS
+
+    ubic-date [--help]
+
+=head1 DESCRIPTION
+
+This script maintains ubic portmap - small database which allows to get service by port without full traversing of all services.
+
+In future it probably maintain other ubic metadata as well.
+
+=cut
+
+use Getopt::Long 2.33;
+use Pod::Usage;
+
+GetOptions() or pod2usage(2);
+pod2usage(2) if @ARGV;
+
+use Ubic::PortMap;
+
+Ubic::PortMap::update();
+

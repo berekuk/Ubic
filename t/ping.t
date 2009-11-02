@@ -10,6 +10,7 @@ use lib 'lib';
 use PPB::Test::TFiles;
 use LWP::UserAgent;
 use Ubic;
+use Ubic::PortMap;
 
 Ubic->set_ubic_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
@@ -27,6 +28,7 @@ $ENV{UBIC_SERVICE_PING_CODE} = 'www/ubic-ping';
 my $another_port = Ubic->service('fake-http-service')->port;
 
 Ubic->start('ubic-ping');
+Ubic::PortMap::update;
 
 my $ua = LWP::UserAgent->new;
 

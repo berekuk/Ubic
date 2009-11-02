@@ -1,9 +1,21 @@
+yandex-ubic (0.9.0) unstable; urgency=low
+
+  * cache services - less memory leaks in long runs
+  * ubic-update script and Ubic::PortMap class - maintaining port-to-service
+    mapping
+  * ubic-ping don't construct services at all and using Ubic::PortMap
+  * /var/lib/ubic/watchdog renamed to /var/lib/ubic/status (upgrade from
+    pre-0.9 versions require some untrivial manipulations because of this)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 02 Nov 2009 22:29:47 +0300
+
 yandex-ubic (0.8.14) unstable; urgency=low
 
   * bugfix: Ubic->reload and Ubic->force_reload correctly distinguish
     "not implemented" and other failures
+  * ubic-watchdog set cached_status in all cases
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 22 Oct 2009 18:49:42 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 22 Oct 2009 18:56:09 +0400
 
 yandex-ubic (0.8.13) unstable; urgency=low
 

@@ -74,9 +74,9 @@ Constructor options (all of them are optional):
 
 =over
 
-=item I<watchdog_dir>
+=item I<status_dir>
 
-Dir with persistent services' watchdogs.
+Dir with persistent services' statuses.
 
 =item I<service_dir>
 
@@ -94,12 +94,13 @@ sub new {
     my $ubic_dir = $ENV{UBIC_DIR} || '/var/lib/ubic';
     my $self = validate(@_, {
         service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
-        watchdog_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "$ubic_dir/watchdog" },
+        status_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "$ubic_dir/status" },
         lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "$ubic_dir/lock" },
         tmp_dir =>  { type => SCALAR, default => $ENV{UBIC_TMP_DIR} || "$ubic_dir/tmp" },
     });
     $self->{locks} = {};
     $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
+    $self->{service_cache} = {};
     return bless $self => $class;
 }
 
@@ -143,7 +144,7 @@ sub stop($$) {
 
     $self->disable($name);
     my $result = $self->do_cmd($name, 'stop');
-    # we can't save result in watchdog file - it doesn't exist when service is disabled...
+    # we can't save result in status file - it doesn't exist when service is disabled...
     return $result;
 }
 
@@ -254,7 +255,7 @@ sub status($$) {
 
 Enable service.
 
-Enabled service means that service *should* be running. It will be checked by watchdog and marked as broken if it's enabled but not running.
+Enabled service means that service *should* be running. It will be checked by status and marked as broken if it's enabled but not running.
 
 =cut
 sub enable($$) {
@@ -263,9 +264,10 @@ sub enable($$) {
     my $lock = $self->lock($name);
     my $guard = Ubic::AccessGuard->new($self->service($name));
 
-    my $watchdog = $self->watchdog($name);
-    $watchdog->{status} = 'unknown';
-    $watchdog->commit;
+    my $status_obj = $self->status_obj($name);
+    $status_obj->{status} = 'unknown';
+    $status_obj->{enabled} = 1;
+    $status_obj->commit;
     return result('unknown');
 }
 
@@ -279,7 +281,13 @@ sub is_enabled($$) {
     my ($name) = validate_pos(@_, 1);
 
     die "Service '$name' not found" unless $self->{root}->has_service($name);
-    return (-e $self->watchdog_file($name)); # watchdog presence means service is running or should be running
+    return unless -e $self->status_file($name);
+
+    my $status_obj = $self->status_obj_ro($name);
+    if ($status_obj->{enabled} or not exists $status_obj->{enabled}) {
+        return 1;
+    }
+    return;
 }
 
 =item B<disable($name)>
@@ -295,9 +303,9 @@ sub disable($$) {
     my $lock = $self->lock($name);
     my $guard = Ubic::AccessGuard->new($self->service($name));
 
-    if ($self->is_enabled($name)) {
-        unlink $self->watchdog_file($name) or die "Can't unlink '".$self->watchdog_file($name)."'";
-    }
+    my $status_obj = $self->status_obj($name);
+    delete $status_obj->{status};
+    $status_obj->{enabled} = 0;
 }
 
 
@@ -315,7 +323,7 @@ sub cached_status($$) {
     unless ($self->is_enabled($name)) {
         return result('disabled');
     }
-    return result($self->watchdog_ro($name)->{status});
+    return result($self->status_obj_ro($name)->{status});
 }
 
 =item B<do_custom_command($name, $command)>
@@ -342,8 +350,27 @@ Get service _object by name.
 =cut
 sub service($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} }); # this guarantees that : will be unambiguous separator in watchdog filename
-    return $self->{root}->service($name);
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    # this guarantees that : will be unambiguous separator in status filename (what??)
+    unless ($self->{service_cache}{$name}) {
+        # Service construction is a memory-leaking operation (because of package name randomization in Ubic::Multiservice::Dir),
+        # so we need to cache each service which we create.
+        $self->{service_cache}{$name} = $self->{root}->service($name);
+    }
+    return $self->{service_cache}{$name};
+}
+
+=item B<< has_service($name) >>
+
+Check whether service C<$name> exists.
+
+=cut
+sub has_service($$) {
+    my $self = _obj(shift);
+    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    # TODO - it would be safer to do this check without actual service construction
+    # but it would require cron-based script which maintains list of all services
+    return $self->{root}->has_service($name);
 }
 
 =item B<services()>
@@ -402,7 +429,7 @@ sub compl_services($$) {
 
 =item B<set_cached_status($name, $status)>
 
-Write new status into service's watchdog status file.
+Write new status into service's status file.
 
 =cut
 sub set_cached_status($$$) {
@@ -416,9 +443,9 @@ sub set_cached_status($$$) {
     }
     my $lock = $self->lock($name);
 
-    my $watchdog = $self->watchdog($name);
-    $watchdog->{status} = $status;
-    $watchdog->commit;
+    my $status_obj = $self->status_obj($name);
+    $status_obj->{status} = $status;
+    $status_obj->commit;
 }
 
 =item B<< set_ubic_dir($dir) >>
@@ -445,13 +472,14 @@ sub set_ubic_dir($$) {
     # TODO - chmod 777, chmod +t?
     # TODO - call this method from postinst too?
     mkdir "$dir/lock" or die "mkdir $dir/lock failed: $!" unless -d "$dir/lock";
-    mkdir "$dir/watchdog" or die "mkdir $dir/watchdog failed: $!" unless -d "$dir/watchdog";
+    mkdir "$dir/status" or die "mkdir $dir/status failed: $!" unless -d "$dir/status";
     mkdir "$dir/tmp" or die "mkdir $dir/tmp failed: $!" unless -d "$dir/tmp";
     mkdir "$dir/pid" or die "mkdir $dir/pid failed: $!" unless -d "$dir/pid"; # Ubic don't use /pid/, but Ubic::Daemon does
 
-    $self->{lock_dir} = "$dir/lock"; $ENV{UBIC_LOCK_DIR} = $self->{lock_dir};
-    $self->{watchdog_dir} = "$dir/watchdog"; $ENV{UBIC_WATCHDOG_DIR} = $self->{watchdog_dir};
-    $self->{tmp_dir} = "$dir/tmp"; $ENV{UBIC_TMP_DIR} = $self->{tmp_dir};
+    $self->{lock_dir} = "$dir/lock";
+    $self->{status_dir} = "$dir/status";
+    $self->{tmp_dir} = "$dir/tmp";
+    $ENV{UBIC_DIR} = $dir;
     $ENV{UBIC_DAEMON_PID_DIR} = "$dir/pid";
 }
 
@@ -476,37 +504,37 @@ You don't need to call these, usually.
 
 =over
 
-=item B<watchdog_file($name)>
+=item B<status_file($name)>
 
-Get watchdog file name by service's name.
+Get status file name by service's name.
 
 =cut
-sub watchdog_file($$) {
+sub status_file($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
-    return "$self->{watchdog_dir}/".$name;
+    return "$self->{status_dir}/".$name;
 }
 
-=item B<watchdog($name)>
+=item B<status_obj($name)>
 
-Get watchdog persistent object by service's name.
+Get status persistent object by service's name.
 
 =cut
-sub watchdog($$) {
+sub status_obj($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->watchdog_file($name));
+    return Yandex::Persistent->new($self->status_file($name));
 }
 
-=item B<watchdog_ro($name)>
+=item B<status_obj_ro($name)>
 
-Get readonly, nonlocked watchdog persistent object by service's name.
+Get readonly, nonlocked status persistent object by service's name.
 
 =cut
-sub watchdog_ro($$) {
+sub status_obj_ro($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->watchdog_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
+    return Yandex::Persistent->new($self->status_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
 }
 
 =item B<lock($name)>

@@ -4,6 +4,7 @@ use Ubic::Daemon qw(:all);
 use Yandex::Persistent;
 use LWP::Simple;
 use POSIX;
+use Time::HiRes qw(sleep);
 
 my $code = $ENV{UBIC_SERVICE_PING_CODE} || '/usr/share/ubic/ubic-ping';
 require $code;
@@ -21,6 +22,7 @@ Ubic::Service::Common->new({
             name => 'ubic-ping',
             pidfile => $pidfile,
         });
+        sleep 0.05; # sorry :(
     },
     stop => sub {
         stop_daemon($pidfile);

@@ -42,6 +42,10 @@ sub service($$) {
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
     my @parts = split '\\.', $name;
 
+    if ($self->{service_cache}{$name}) {
+        return $self->{service_cache}{$name};
+    }
+
     my $service;
     if (@parts == 1) {
         $service = $self->simple_service($name);
@@ -62,6 +66,8 @@ sub service($$) {
         $top_level->parent_name($self->full_name);
         $service = $top_level->service(join '.', @parts[1..$#parts]);
     }
+
+    $self->{service_cache}{$name} = $service;
     return $service;
 }
 
@@ -112,7 +118,7 @@ sub services($) {
     my $self = shift;
     my @services;
     for my $name ($self->service_names) {
-        my $service = eval {$self->service($name) };
+        my $service = eval { $self->service($name) };
         if ($@) {
             warn "Can't construct '$name': $@";
             next;

@@ -8,9 +8,7 @@ use Test::Exception;
 
 use lib 'lib';
 
-use Yandex::X;
-xsystem('rm -rf tfiles');
-xsystem('mkdir tfiles');
+use PPB::Test::TFiles;
 
 use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');

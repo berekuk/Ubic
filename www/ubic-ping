@@ -13,14 +13,15 @@ ubic-ping - http server which returns service status by it's name or port
 =cut
 
 use Ubic;
+use Ubic::PortMap;
 use Params::Validate qw(:all);
 
 use base qw(HTTP::Server::Simple::CGI);
 
 sub print_status($;$) {
-    my ($service, $options) = validate_pos(@_, 1, { type => HASHREF, default => {} });
+    my ($name, $options) = validate_pos(@_, 1, { type => HASHREF, default => {} });
 
-    unless (Ubic->is_enabled($service->full_name)) {
+    unless (Ubic->is_enabled($name)) {
         if ($options->{noc}) {
             print "HTTP/1.0 500 Disabled\r\n\r\n";
         }
@@ -30,7 +31,7 @@ sub print_status($;$) {
         print "disabled\n";
         return;
     }
-    my $status = Ubic->cached_status($service->full_name); # should read status from static file on disk
+    my $status = Ubic->cached_status($name); # should read status from static file on disk
     if ($status eq 'running') {
         print "HTTP/1.0 200 OK\r\n\r\n";
         print "ok\n";
@@ -54,43 +55,6 @@ sub print_status($;$) {
     }
 }
 
-my %port2service; # cache, will be rebuilded every 10 seconds
-my $port2service_ts;
-
-sub port2service_rebuild {
-    my $service = shift() || Ubic->root_service;
-    for $_ ($service->services) {
-        if ($_->isa('Ubic::Multiservice')) {
-            # multiservice
-            port2service_rebuild($_);
-        }
-        else {
-            my $port = $_->port;
-            next unless $port;
-            push @{ $port2service{$port} }, $_;
-        }
-    }
-    return;
-}
-
-# get service by port
-# if there are several services with one port, it will try to find enabled service among them
-sub port2service {
-    my ($port) = validate_pos(@_, { regex => qr/^\d+$/ });
-    if (not defined $port2service_ts or $port2service_ts < time - 10) {
-        %port2service = ();
-        port2service_rebuild(Ubic->root_service);
-        $port2service_ts = time;
-    }
-    return unless exists $port2service{$port};
-    my @services = @{ $port2service{$port} };
-    while (my $service = shift @services) {
-        return $service unless @services; # return last service even if it's disabled
-        return $service if Ubic->is_enabled($service->full_name);
-    }
-    return;
-}
-
 sub handle_request {
     my ($self, $cgi) = @_;
 
@@ -103,35 +67,33 @@ sub handle_request {
         }
         elsif ( $cgi->path_info =~ m{^/noc/(\d+)/?$}) {
             my $port = $1;
-            my $service = port2service($port);
-            unless (defined $service) {
+            my $name = Ubic::PortMap::port2name($port);
+            unless (defined $name) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
                 print "Service at port '$port' not found\n";
                 return;
             }
-            print_status($service, { noc => 1 });
+            print_status($name, { noc => 1 });
             return;
         }
         elsif ($cgi->path_info =~ m{^/status/port/(\d+)/?$}) {
             my $port = $1;
-            my $service = port2service($port);
-            unless (defined $service) {
+            my $name = Ubic::PortMap::port2name($port);
+            unless (defined $name) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
                 print "Service at port '$port' not found\n";
                 return;
             }
-            print_status($service);
+            print_status($name);
             return;
         }
         elsif (my ($name) = $cgi->path_info =~ m{^/status/service/(.+?)/?$}) {
-            my $service = eval {
-                Ubic->service($name);
-            }; if ($@) {
+            unless (Ubic->has_service($name)) {
                 print "HTTP/1.0 404 Not found\r\n\r\n";
                 print "Service with name '$name' not found\n";
                 return;
             }
-            print_status($service);
+            print_status($name);
         }
         else {
             print "HTTP/1.0 404 Not found\r\n\r\n";

@@ -1,13 +1,30 @@
 #!/bin/sh
 set -e
 
-for dir in /var/lib/ubic/watchdog /var/lib/ubic/simple-daemon/pid /var/lib/ubic/lock /var/lib/ubic/ubic-daemon /var/lib/ubic/tmp; do
-    chmod 777 $dir
-    chmod +t $dir
-done
+if [ "$1" = "configure" ]; then
 
-if [ -x "/etc/init.d/ubic-ping" ]; then
-    update-rc.d ubic-ping defaults >/dev/null
+    if [ -n "$2" ]; then
+        if perl -e 'shift =~ /^0\.[1-8]/ or exit 1' "$2"; then
+            echo 'pre-0.9 version detected'
+            echo 'temporarily disabling ubic-watchdog...'
+            mv /etc/cron.d/yandex-ubic /etc/cron.d/yandex-ubic.tmp
+            echo 'running ubic-watchdog to make sure that no ubic-watchdog is currently running...'
+            ubic-watchdog || true
+            echo 'renaming /var/lib/ubic/watchdog to /var/lib/ubic/status...'
+            rm -rf /var/lib/ubic/status && mv /var/lib/ubic/watchdog /var/lib/ubic/status
+            echo 'enabling ubic-watchdog again...'
+            mv /etc/cron.d/yandex-ubic.tmp /etc/cron.d/yandex-ubic
+            echo 'updating portmap'
+            ubic-update
+        fi
+    else
+        # first installation
+        for dir in /var/lib/ubic/status /var/lib/ubic/simple-daemon/pid /var/lib/ubic/lock /var/lib/ubic/ubic-daemon /var/lib/ubic/tmp; do
+            chmod 777 $dir
+            chmod +t $dir
+        done
+        update-rc.d ubic-ping defaults >/dev/null
+    fi
     invoke-rc.d ubic-ping start || exit $?
 fi
 
