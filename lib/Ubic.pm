@@ -201,9 +201,6 @@ sub reload($$) {
     # if reload isn't implemented, do nothing
     # TODO - would it be better to execute reload as force-reload always? but it would be incompatible with LSB specification...
     my $result = $self->do_cmd($name, 'reload');
-    if ($result->{msg} eq 'not implemented') {
-        die $result;
-    }
     unless ($result->action eq 'reloaded') {
         die $result;
     }
@@ -518,6 +515,8 @@ sub status_file($$) {
 =item B<status_obj($name)>
 
 Get status persistent object by service's name.
+
+It's a bad idea to call this from any other class than C<Ubic>, but if you'll ever want to do this, at least don't forget to create C<Ubic::AccessGuard> first.
 
 =cut
 sub status_obj($$) {

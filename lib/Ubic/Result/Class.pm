@@ -97,7 +97,7 @@ Get status, see above for possible values.
 =cut
 sub status {
     my $self = shift;
-    if (grep { $_ eq $self->{type} } ('running', 'already running', 'started', 'already started', 'restarted')) {
+    if (grep { $_ eq $self->{type} } ('running', 'already running', 'started', 'already started', 'restarted', 'reloaded')) {
         return 'running';
     }
     elsif (grep { $_ eq $self->{type} } ('not running', 'stopped', 'down')) {
