@@ -548,7 +548,7 @@ Get readonly, nonlocked status persistent object by service's name.
 sub status_obj_ro($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->status_file($name), {lock => 0}); # lock => 0 should allow to construct persistent even without writing rights on it
+    return Yandex::Persistent->new($self->status_file($name), { lock => 0, auto_commt => 0 }); # lock => 0 should allow to construct persistent even without writing rights on it
 }
 
 =item B<lock($name)>
