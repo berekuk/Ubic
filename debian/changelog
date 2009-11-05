@@ -1,3 +1,9 @@
+yandex-ubic (0.9.2.1) unstable; urgency=high
+
+  * 'auto_commt' typo fixed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 05 Nov 2009 20:05:09 +0300
+
 yandex-ubic (0.9.2) unstable; urgency=low
 
   * bugfix: don't construct status file from root
