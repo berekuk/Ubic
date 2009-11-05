@@ -1,3 +1,9 @@
+yandex-ubic (0.9.3) UNRELEASED; urgency=low
+
+  * status exit code fixed
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 05 Nov 2009 20:49:47 +0300
+
 yandex-ubic (0.9.2.1) unstable; urgency=high
 
   * 'auto_commt' typo fixed

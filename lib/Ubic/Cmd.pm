@@ -24,7 +24,7 @@ It also greatly simplifies writing /etc/init.d/ scripts (see synopsis).
 
 use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
-use List::MoreUtils qw(all);
+use List::MoreUtils qw(any);
 use List::Util qw(max);
 use Ubic;
 use Ubic::Result qw(result);
@@ -396,6 +396,7 @@ sub _run_impl {
             $self->print_status($name, $cached);
         };
         if ($@) {
+            print STDERR $@;
             return 4; # status is unknown, internal error
         }
         exit $result;
