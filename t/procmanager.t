@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More tests => 4;
 
 use lib 'lib';
 
@@ -27,6 +27,12 @@ is($service->status, 'running', 'start works');
 
 $service->stop;
 is($service->status, 'not running', 'stop works');
+
+$service->start;
+is($service->status, 'running', 'another start works');
+
+$service->stop;
+is($service->status, 'not running', 'another stop works');
 
 # TODO - check more thoroughly start/stop return values and that fastcgi process is actually works
 

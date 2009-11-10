@@ -10,6 +10,7 @@ use lib 'lib';
 use Ubic::Cmd;
 
 use PPB::Test::TFiles;
+use Yandex::X;
 
 use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');

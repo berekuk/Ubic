@@ -1,3 +1,12 @@
+yandex-ubic (0.9.4) unstable; urgency=low
+
+  * Ubic::Service::ProcManager:
+   - always put fastcgi processes in new process group
+   - remove pidfile if process with saved pid doesn't exist
+   - kill -9 whole group if procmanager don't want to stop on SIGTERM
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 10 Nov 2009 19:38:15 +0300
+
 yandex-ubic (0.9.3) UNRELEASED; urgency=low
 
   * status exit code fixed

@@ -31,6 +31,7 @@ use base qw(Ubic::Service);
 use Params::Validate qw(:all);
 use Yandex::X;
 use POSIX;
+use Ubic::Result qw(result);
 
 =head1 METHODS
 
@@ -85,13 +86,10 @@ sub new {
 sub start {
     my $self = shift;
     $self->stop() if -e $self->{pidfile};
+
     unless (xfork) {
         # daemonize
-        if ($self->{user}) {
-            my $uid = getpwnam($self->{user});
-            POSIX::setuid($uid);
-            POSIX::setsid();
-        }
+        POSIX::setsid();
         open STDIN, '/dev/null';
         open STDOUT, ">>", $self->{log} or die "Can't write to $self->{log}: $!";
         open STDERR, ">>", $self->{log} or die "Can't write to $self->{log}: $!"; # TODO - different logs?
@@ -100,6 +98,7 @@ sub start {
         # calling two processes as "sh" argument forces sh to fork into child and not exec
         xexec(qq#sh -c "true; $self->{bin} -child $self->{child} -s $self->{socket} -pid $self->{pidfile}"#);
     }
+
     sleep 1; # wait for managers to start workers (FIXME!!)
     return 'started'; # FIXME - check that process actually started!
 }
@@ -108,20 +107,32 @@ sub stop {
     my $self = shift;
     return 'not running' unless -e $self->{pidfile};
     chomp(my $pid = qx(cat $self->{pidfile}));
+    if (not -d "/proc/$pid") {
+        unlink $self->{pidfile};
+        print "Process with pid $pid not found, pidfile removed\n";
+        return result('not running', 'pidfile removed');
+    }
     #print "Killing $self->{pidfile} (pid $pid)\n";
-    kill 15 => $pid; # never SIGKILL procmanager, it's dangerous!
-    for (1..7) {
+    kill 15 => $pid;
+    for my $t (1..7) {
         # procmanager removes pidfile first, then waits for children to finish
         # i've never seen it to hang if it received signal, so it should be ok
-        return 'stopped' unless -e $self->{pidfile};
+        return result('stopped', "after $t seconds") unless -e $self->{pidfile};
         sleep 1;
     }
-    die "Can't stop, procmanager don't want to exit";
+    kill -9 => -$pid; # killing whole process group
+    unlink $self->{pidfile};
+    return result('stopped', 'SIGKILL - failed to stop after 7 seconds');
 }
 
 sub status {
     my $self = shift;
     if (-e $self->{pidfile}) {
+        chomp(my $pid = qx(cat $self->{pidfile}));
+        if (not -d "/proc/$pid") {
+            unlink $self->{pidfile};
+            return result('not running', 'pidfile removed');
+        }
         return 'running';
     }
     else {
