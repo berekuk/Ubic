@@ -40,6 +40,58 @@ our %EXPORT_TAGS = (
 
 use Params::Validate qw(:all);
 
+# clean pidfile, actually
+# this method should be called only when pidfile is locked (check before removing?)
+sub _remove_pidfile($) {
+    my ($file) = validate_pos(@_, { type => SCALAR });
+    xopen('>', $file); # we can't unlink pidfile - Yandex::Lockf can cause race conditions in that case
+}
+
+# write guardian pid and started timestamp to pidfile
+sub _write_pidfile($) {
+    my ($file) = validate_pos(@_, { type => SCALAR });
+    my ($pid, $ts) = ($$, time);
+    my $fh = xopen('>', $file);
+    print {$fh} "pid $pid\n";
+    print {$fh} "started $ts\n";
+    $fh->flush;
+    xclose($fh);
+}
+
+# append daemon's pid to pidfile
+sub _append_pidfile($) {
+    my ($file) = validate_pos(@_, { type => SCALAR });
+    my $pid = $$;
+    my $fh = xopen('>>', $file);
+    print {$fh} "daemon $pid\n";
+    $fh->flush;
+    xclose($fh);
+}
+
+sub _read_pidfile($) {
+    my ($file) = validate_pos(@_, { type => SCALAR });
+    my $fh = xopen('<', $file);
+    my $content = join '', <$fh>;
+    if ($content =~ /\A (\d+) \Z/x) {
+        # old format
+        return { pid => $1, format => 'old' };
+    }
+    elsif ($content =~ /\A pid \s+ (\d+) \n started \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
+        # new format
+        return { pid => $1, started => $2, daemon => $3, format => 'new' };
+    }
+    else {
+        # broken pidfile
+        return;
+    }
+}
+
+sub _log {
+    my $fh = shift;
+    return unless defined $fh;
+    xprint($fh, '[', scalar(localtime), "]\t$$\t", @_, "\n");
+}
+
 =item B<stop_daemon($pidfile)>
 
 Stop daemon which was started with $pidfile.
@@ -48,16 +100,15 @@ Stop daemon which was started with $pidfile.
 sub stop_daemon($) {
     my ($pidfile) = validate_pos(@_, 1);
 
-    unless (-e $pidfile) {
+    unless (-s $pidfile) {
         return 'not running';
     }
 
-    my $fh = xopen('<', $pidfile);
-    my $pid = <$fh>;
-    unless (defined $pid) {
-        die "Can't read anything from $pidfile";
+    my $piddata = _read_pidfile($pidfile);
+    unless ($piddata) {
+        die "Can't read $pidfile"; # or silently remove?
     }
-    chomp $pid;
+    my $pid = $piddata->{pid};
 
     my $killed;
     for my $trial (1..5) {
@@ -142,6 +193,10 @@ sub start_daemon($) {
         $name = $bin || 'anonymous';
     }
 
+    if (check_daemon($pidfile)) {
+        croak "Daemon with pidfile $pidfile already running, can't start";
+    }
+
     my $stdin = '/dev/null';
 
     pipe my ($read_pipe, $write_pipe) or die "pipe failed";
@@ -173,15 +228,12 @@ sub start_daemon($) {
             $SIG{HUP} = 'ignore';
             $0 = "ubic-guardian $name";
             setsid; # ubic-daemon gets it's own session
-            xprint($ubic_fh, "self name: $0\n");
+            _log($ubic_fh, "self name: $0");
 
-            xprint($ubic_fh, "[$$] getting lock...\n");
+            _log($ubic_fh, "[$$] getting lock...");
             $lock = lockf($pidfile, {nonblocking => 1});
-            xprint($ubic_fh, "[$$] got lock\n");
-            my $pid_fh = xopen(">", $pidfile);
-            xprint($pid_fh, "$$\n");
-            $pid_fh->flush;
-            xclose($pid_fh);
+            _log($ubic_fh, "[$$] got lock");
+            _write_pidfile($pidfile);
 
             if (defined $user) {
                 my $id = getpwnam($user);
@@ -194,13 +246,14 @@ sub start_daemon($) {
             if (my $child = xfork) {
                 # guardian
 
-                xprint($ubic_fh, "guardian pid: $$\n");
-                xprint($ubic_fh, "daemon pid: $child\n");
+                _log($ubic_fh, "guardian pid: $$");
+                _log($ubic_fh, "daemon pid: $child");
 
                 $SIG{TERM} = sub {
-                    xprint($ubic_fh, "sending SIGKILL to $child\n");
+                    _log($ubic_fh, "sending SIGKILL to $child");
                     kill -9 => $child; # TODO - should be "soft kill", "wait some time", "hard kill"
-                    xprint($ubic_fh, "child probably killed\n");
+                    _log($ubic_fh, "child probably killed");
+                    _remove_pidfile($pidfile);
                     $instant_exit->(0);
                 };
                 xclose($write_pipe);
@@ -208,18 +261,22 @@ sub start_daemon($) {
                 waitpid($child, 0);
                 if ($? > 0) {
                     warn "Daemon failed: $?";
-                    xprint($ubic_fh, "daemon failed: $?");
+                    _log($ubic_fh, "daemon failed: $?");
+                    _remove_pidfile($pidfile);
                     $instant_exit->(1);
                 }
-                xprint($ubic_fh, "daemon exited");
+                _log($ubic_fh, "daemon exited");
+                _remove_pidfile($pidfile);
                 $instant_exit->(0);
             }
             else {
                 # daemon
 
-                # start new process group - became immune to kills at parent group and at the same time be able to kill all processes below
+                # start new process group - become immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
                 $0 = "ubic-daemon $name";
+
+                _append_pidfile($pidfile);
 
                 xprint($write_pipe, "xexecing into daemon\n");
                 xclose($write_pipe);
@@ -263,21 +320,58 @@ Returns true if it is so.
 =cut
 sub check_daemon {
     my ($pidfile) = @_;
-    unless (-e $pidfile) {
-        return;
+    unless (-s $pidfile) {
+        return 0;
     }
-    eval {
-        lockf($pidfile, {nonblocking => 1});
-    };
-    unless ($@) {
-        return;
+    my $lock = eval { lockf($pidfile, {nonblocking => 1}) };
+    unless ($lock) {
+        if ($@ =~ /temporarily unavailable/) {
+            # locked => daemon is alive
+            return 1;
+        }
+        else {
+            die "Failed to take lock: $@"; # other lock failure, probably incorrect file mode
+        }
     }
-    if ($@ =~ /temporarily unavailable/) {
-        return 1;
+    # acquired lock when pidfile exists
+    # checking whether just ubic-guardian died or whole process group
+    my $piddata = _read_pidfile($pidfile);
+    if ($piddata->{format} eq 'old') {
+        # ok, old-style pidfile, can't check daemon, let's just pretend that everything is ok
+        _read_pidfile($pidfile);
+        return 0;
     }
-    else {
-        die "Failed to take lock: $@";
+    unless ($piddata->{daemon}) {
+        die "pidfile $pidfile exists, but daemon pid is not saved in it, so existing unguarded daemon can't be killed";
     }
+    unless (-d "/proc/$piddata->{daemon}") {
+        _remove_pidfile($pidfile);
+        print "pidfile $pidfile removed - daemon with cached pid $piddata->{daemon} not found\n";
+        return 0;
+    }
+    my $daemon_cmd_fh = xopen('<', "/proc/$piddata->{daemon}/cmdline");
+    my $daemon_cmd = <$daemon_cmd_fh>;
+    $daemon_cmd =~ s/\x{00}$//;
+    $daemon_cmd =~ s/\x{00}/ /g;
+
+    xclose($daemon_cmd_fh);
+    my @procdir_stat = stat("/proc/$piddata->{daemon}");
+    unless (@procdir_stat) {
+        print "daemon '$daemon_cmd' from $pidfile just disappeared\n";
+        return 0;
+    }
+    if ($procdir_stat[8] < $piddata->{started} + 3) {
+        warn "killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile\n";
+        kill -9 => $piddata->{daemon};
+        _remove_pidfile($pidfile);
+        print "pidfile $pidfile removed\n";
+        return 0;
+    }
+    print "daemon pid $piddata->{daemon} cached in pidfile $pidfile, ubic-guardian not found\n";
+    print "current process '$daemon_cmd' with that pid looks too fresh and will not be killed\n";
+    print "pidfile $pidfile removed\n";
+    _remove_pidfile($pidfile);
+    return 0;
 }
 
 =back

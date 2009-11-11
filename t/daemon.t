@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 17;
 use Test::Exception;
 
 use lib 'lib';
@@ -72,3 +72,63 @@ throws_ok(sub {
 qr{\QError: Can't write to '/forbidden.log'\E},
 'start_daemon reports correct errrors');
 
+# reviving after kill -9 on ubic-guardian (4)
+{
+    start_daemon({
+        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
+        pidfile => 'tfiles/pid',
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ubic_log => 'tfiles/ubic.log',
+    });
+    ok(check_daemon("tfiles/pid"), 'daemon started');
+
+    chomp(my $piddata = xqx('cat tfiles/pid'));
+    my ($pid) = $piddata =~ /pid\s+(\d+)/ or die "Unknown pidfile content '$piddata'";
+    kill -9 => $pid;
+    sleep 1;
+    ok(!check_daemon("tfiles/pid"), 'ubic-guardian is dead');
+
+    start_daemon({
+        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
+        pidfile => 'tfiles/pid',
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ubic_log => 'tfiles/ubic.log',
+    });
+    sleep 1;
+    ok(check_daemon("tfiles/pid"), 'daemon started again');
+    stop_daemon('tfiles/pid');
+    ok(!check_daemon("tfiles/pid"), 'daemon stopped');
+}
+
+# old format compatibility (5)
+{
+    start_daemon({
+        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
+        pidfile => 'tfiles/pid',
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ubic_log => 'tfiles/ubic.log',
+    });
+    ok(check_daemon("tfiles/pid"), 'daemon with pidfile in new format started');
+
+    chomp(my $piddata = xqx('cat tfiles/pid'));
+    my ($pid) = $piddata =~ /pid\s+(\d+)/ or die "Unknown pidfile content '$piddata'";
+    xqx("echo $pid >tfiles/pid"); # replacing pidfile with content in old format (pid only)
+    ok(check_daemon("tfiles/pid"), 'daemon with pidfile in old format is still alive');
+
+    stop_daemon('tfiles/pid');
+    ok(!check_daemon("tfiles/pid"), 'daemon with pidfile in old format stopped');
+
+    start_daemon({
+        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
+        pidfile => 'tfiles/pid',
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ubic_log => 'tfiles/ubic.log',
+    });
+    ok(check_daemon("tfiles/pid"), 'daemon started after being stopped with pidfile in new format');
+    stop_daemon('tfiles/pid');
+    ok(!check_daemon("tfiles/pid"), 'last stop completed successfully');
+}
