@@ -20,6 +20,8 @@ This module tries to safely start and daemonize any binary or any perl function.
 
 Main source of knowledge if daemon is still running is pidfile, which is locked all the time after daemon was created.
 
+Pidfile format is unreliable and can change in future releases. If you really need to get daemon's pid, save it from daemon or ask me for public pidfile-reading API in this module.
+
 =over
 
 =cut
@@ -40,6 +42,28 @@ our %EXPORT_TAGS = (
 
 use Params::Validate qw(:all);
 
+# get pid's guid
+# returns undef if pid not found, throws exception on other errors
+sub _pid2guid($) {
+    my $pid = shift;
+    unless (-d "/proc/$pid") {
+        return; # process not found
+    }
+    my $opened = open(my $fh, '<', "/proc/$pid/stat");
+    unless ($opened) {
+        # open failed
+        my $error = $!;
+        unless (-d "/proc/$pid") {
+            return; # process exited right now
+        }
+        die "Open /proc/$pid/stat failed: $!";
+    }
+    my $line = <$fh>;
+    my @fields = split /\s+/, $line;
+    my $guid = $fields[21];
+    return $guid;
+}
+
 # clean pidfile, actually
 # this method should be called only when pidfile is locked (check before removing?)
 sub _remove_pidfile($) {
@@ -47,22 +71,18 @@ sub _remove_pidfile($) {
     xopen('>', $file); # we can't unlink pidfile - Yandex::Lockf can cause race conditions in that case
 }
 
-# write guardian pid and started timestamp to pidfile
-sub _write_pidfile($) {
-    my ($file) = validate_pos(@_, { type => SCALAR });
-    my ($pid, $ts) = ($$, time);
+# write guardian pid and guid to pidfile
+sub _write_pidfile($$) {
+    my $file = shift;
+    my $params = validate(@_, {
+        pid => 1,
+        guid => 1,
+    });
+    my ($pid, $guid) = @$params{qw/ pid guid /};
+    my $self_pid = $$;
     my $fh = xopen('>', $file);
-    print {$fh} "pid $pid\n";
-    print {$fh} "started $ts\n";
-    $fh->flush;
-    xclose($fh);
-}
-
-# append daemon's pid to pidfile
-sub _append_pidfile($) {
-    my ($file) = validate_pos(@_, { type => SCALAR });
-    my $pid = $$;
-    my $fh = xopen('>>', $file);
+    print {$fh} "pid $self_pid\n";
+    print {$fh} "guid $guid\n";
     print {$fh} "daemon $pid\n";
     $fh->flush;
     xclose($fh);
@@ -76,9 +96,9 @@ sub _read_pidfile($) {
         # old format
         return { pid => $1, format => 'old' };
     }
-    elsif ($content =~ /\A pid \s+ (\d+) \n started \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
+    elsif ($content =~ /\A pid \s+ (\d+) \n guid \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
         # new format
-        return { pid => $1, started => $2, daemon => $3, format => 'new' };
+        return { pid => $1, guid => $2, daemon => $3, format => 'new' };
     }
     else {
         # broken pidfile
@@ -232,8 +252,8 @@ sub start_daemon($) {
 
             _log($ubic_fh, "[$$] getting lock...");
             $lock = lockf($pidfile, {nonblocking => 1});
+            _remove_pidfile($pidfile);
             _log($ubic_fh, "[$$] got lock");
-            _write_pidfile($pidfile);
 
             if (defined $user) {
                 my $id = getpwnam($user);
@@ -246,6 +266,9 @@ sub start_daemon($) {
             if (my $child = xfork) {
                 # guardian
 
+                my $child_guid = _pid2guid($child);
+                _write_pidfile($pidfile, { pid => $child, guid => $child_guid });
+
                 _log($ubic_fh, "guardian pid: $$");
                 _log($ubic_fh, "daemon pid: $child");
 
@@ -256,6 +279,7 @@ sub start_daemon($) {
                     _remove_pidfile($pidfile);
                     $instant_exit->(0);
                 };
+                xprint($write_pipe, "pidfile written\n");
                 xclose($write_pipe);
 
                 waitpid($child, 0);
@@ -275,8 +299,6 @@ sub start_daemon($) {
                 # start new process group - become immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
                 $0 = "ubic-daemon $name";
-
-                _append_pidfile($pidfile);
 
                 xprint($write_pipe, "xexecing into daemon\n");
                 xclose($write_pipe);
@@ -304,7 +326,7 @@ sub start_daemon($) {
         $out .= $data;
     }
     xclose($read_pipe);
-    if ($out =~ /xexecing into daemon/) {
+    if ($out =~ /^xexecing into daemon$/m and $out =~ /^pidfile written$/m) {
         # TODO - check daemon's name to make sure that xexec happened
         return;
     }
@@ -353,14 +375,15 @@ sub check_daemon {
     my $daemon_cmd = <$daemon_cmd_fh>;
     $daemon_cmd =~ s/\x{00}$//;
     $daemon_cmd =~ s/\x{00}/ /g;
-
     xclose($daemon_cmd_fh);
+
     my @procdir_stat = stat("/proc/$piddata->{daemon}");
-    unless (@procdir_stat) {
+    my $guid = _pid2guid($piddata->{daemon});
+    unless ($guid) {
         print "daemon '$daemon_cmd' from $pidfile just disappeared\n";
         return 0;
     }
-    if ($procdir_stat[8] < $piddata->{started} + 3) {
+    if ($guid eq $piddata->{guid}) {
         warn "killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile\n";
         kill -9 => $piddata->{daemon};
         _remove_pidfile($pidfile);

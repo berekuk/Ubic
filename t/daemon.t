@@ -22,6 +22,7 @@ start_daemon({
     ubic_log => 'tfiles/ubic.log',
 });
 ok(check_daemon("tfiles/pid"), 'daemon is running');
+
 dies_ok(sub {
     start_daemon({
         bin => "sleep 10",
@@ -31,9 +32,6 @@ dies_ok(sub {
         ubic_log => 'tfiles/ubic.log',
     });
 }, 'start_daemon fails if daemon is already started');
-
-#diag("stop here\n");
-#exit;
 
 stop_daemon('tfiles/pid');
 ok(!(check_daemon("tfiles/pid")), 'daemon is not running');

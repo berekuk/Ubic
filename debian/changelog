@@ -1,3 +1,10 @@
+yandex-ubic (0.9.6) unstable; urgency=low
+
+  * save guid in pidfile instead of broken 'started' time (start_time from
+    /proc/$pid/stat is used as guid currently)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 16 Nov 2009 18:02:22 +0300
+
 yandex-ubic (0.9.5) unstable; urgency=low
 
   * Ubic::Daemon:
