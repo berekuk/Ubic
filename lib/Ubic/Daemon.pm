@@ -100,6 +100,10 @@ sub _read_pidfile($) {
         # new format
         return { pid => $1, guid => $2, daemon => $3, format => 'new' };
     }
+    elsif ($content =~ /\A pid \s+ (\d+) \n started \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
+        # really deprecated format from testing 0.9.5 version
+        return { pid => $1, format => 'old' };
+    }
     else {
         # broken pidfile
         return;

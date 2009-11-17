@@ -1,3 +1,9 @@
+yandex-ubic (0.9.7) unstable; urgency=low
+
+  * Ubic::Daemon supports format from version 0.9.5
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 17 Nov 2009 17:12:23 +0300
+
 yandex-ubic (0.9.6) unstable; urgency=low
 
   * save guid in pidfile instead of broken 'started' time (start_time from
