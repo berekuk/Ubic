@@ -208,22 +208,34 @@ sub do_custom_command {
     my $self = _obj(shift);
     my ($service, $command) = @_;
 
+    my $results = Ubic::Cmd::Results->new;
     my $count = 0;
+    my $error = 0;
     $self->traverse($service, sub {
         my $service = shift;
+        my $name = $service->full_name;
 
         # Imagine we have multiservice X with subservices X.A, X.B and X.C.
         # X may want to support custom command CC by implementing it in X.A and X.B but not in X.C.
         # In this case X.A->CC and X.B->CC will be called, and X.C will be skipped.
         if (grep { $_ eq $command } $service->custom_commands) {
-            Ubic->do_custom_command($service->full_name, $command);
+            print "Running $command for $name... ";
+            eval {
+                Ubic->do_custom_command($name, $command);
+            }; if ($@) {
+                $results->print_bad("failed: ".$@."\n");
+                $error++;
+            }
+            else {
+                $results->print_good("ok\n");
+            }
             $count++;
         }
     });
     unless ($count) {
         # But if none of X subservices support our custom command, something is obviously wrong.
         if ($service->isa('Ubic::Multiservice')) {
-            die "None of subservices support $command";
+            die "None of ".$service->full_name." subservices support $command";
         }
         else {
             # it is unlikely that this error will happen, because we already checked that $service supports $command
@@ -233,6 +245,14 @@ sub do_custom_command {
 
     # TODO - what if X want to implement custom command itself?
     # should custom commands have different types, "try to call me in each subservice" and "call me for multiservice itself"?
+
+    if ($error) {
+        $results->print_bad("Failed: $error service(s)\n");
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 =item B<< usage($command) >>
@@ -430,14 +450,14 @@ sub _run_impl {
     # yes, custom "start" command will override default "start" command, although it's not very useful :)
     # but we need this because of current "logrotate" hack
     if (grep { $_ eq $command } $service->custom_commands) {
-        eval {
+        my $code = eval {
             $self->do_custom_command($service, $command);
         }; if ($@) {
             print STDERR "'$name $command' error: $@\n";
             return 1; # generic error, TODO - more lsb-specific errors?
         }
         else {
-            return 0;
+            return $code;
         }
     }
 

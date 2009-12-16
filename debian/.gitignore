@@ -1,8 +1,9 @@
 /*.prerm.debhelper
 /*.postinst.debhelper
-/files
 /*.postrm.debhelper
-/yandex-ubic
 /*.substvars
+/*.debhelper.log
+/files
+/yandex-ubic
 /stamp-makefile-build
 /stamp-makefile-check
