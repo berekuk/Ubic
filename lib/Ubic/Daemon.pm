@@ -118,11 +118,31 @@ sub _log {
 
 =item B<stop_daemon($pidfile)>
 
-Stop daemon which was started with $pidfile.
+=item B<stop_daemon($pidfile, $options)>
+
+Stop daemon which was started with C<$pidfile>.
+
+It sends I<SIGTERM> to process with pid specified in C<$pidfile> until it will stop to exist (according to C<check_daemon()> method). If it fails to stop process after several seconds, exception will be raised.
+
+Options:
+
+=over
+
+=item I<timeout>
+
+Number of seconds to wait before raising exception that daemon can't be stopped.
+
+=back
+
+Return value: C<not running> if daemon is already not running; C<stopped> if daemon is stopped by I<SIGTERM>.
 
 =cut
-sub stop_daemon($) {
-    my ($pidfile) = validate_pos(@_, 1);
+sub stop_daemon($;@) {
+    my ($pidfile, @tail) = validate_pos(@_, 1, 0);
+    my $options = validate(@tail, {
+        timeout => { default => 5, regex => qr/^\d+$/ },
+    });
+    my $timeout = $options->{timeout};
 
     unless (-s $pidfile) {
         return 'not running';
@@ -134,21 +154,18 @@ sub stop_daemon($) {
     }
     my $pid = $piddata->{pid};
 
-    my $killed;
-    for my $trial (1..5) {
+    unless (check_daemon($pidfile)) {
+        return 'not running';
+    }
+    kill 15 => $pid;
+    for my $trial (1..$timeout) {
         unless (check_daemon($pidfile)) {
-            if ($killed) {
-                return 'stopped';
-            }
-            else {
-                return 'not running';
-            }
+            return 'stopped';
         }
-        if ($killed) {
-            sleep(1);
-        }
-        kill 15 => $pid;
-        $killed++;
+        sleep(1);
+    }
+    unless (check_daemon($pidfile)) {
+        return 'stopped';
     }
     die "failed to stop daemon with pidfile '$pidfile' (pid $pid)";
 }
@@ -175,7 +192,7 @@ If not specified, I<bin>'s value will be assumed, or C<anonymous> when daemonizi
 
 =item I<pidfile>
 
-Pidfile. It will be locked for all time when service will be running. It will contain pid of daemon.
+Pidfile. It will be locked for a whole time of service's work. It will contain pid of daemon.
 
 =item I<stdout>
 
@@ -191,6 +208,12 @@ Filename of ubic log. It will contain some technical information about running d
 
 If not specified, C</dev/null> will be assumed.
 
+=item I<term_timeout>
+
+Can contain integer number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to daemon.
+
+Default is zero, which means sigkill daemon immediately.
+
 =back
 
 =cut
@@ -204,9 +227,10 @@ sub start_daemon($) {
         stderr => { type => SCALAR, default => '/dev/null' },
         ubic_log => { type => SCALAR, default => '/dev/null' },
         user => { type => SCALAR, optional => 1 },
+        term_timeout => { type => SCALAR, default => 0, regex => qr/^\d+$/ },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user, $term_timeout)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user term_timeout /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -276,20 +300,42 @@ sub start_daemon($) {
                 _log($ubic_fh, "guardian pid: $$");
                 _log($ubic_fh, "daemon pid: $child");
 
-                $SIG{TERM} = sub {
+                my $kill_sub = sub {
+                    if ($term_timeout) {
+                        _log($ubic_fh, "SIGTERM timeouted after $term_timeout second(s)");
+                    }
                     _log($ubic_fh, "sending SIGKILL to $child");
-                    kill -9 => $child; # TODO - should be "soft kill", "wait some time", "hard kill"
-                    _log($ubic_fh, "child probably killed");
+                    kill -9 => $child;
+                    _log($ubic_fh, "child probably killed by SIGKILL");
                     _remove_pidfile($pidfile);
                     $instant_exit->(0);
+                };
+
+                $SIG{TERM} = sub {
+                    if ($term_timeout > 0) {
+                        $SIG{ALRM} = $kill_sub;
+                        alarm($term_timeout);
+                        _log($ubic_fh, "sending SIGTERM to $child");
+                        kill -15 => $child;
+                    }
+                    else {
+                        $kill_sub->();
+                    }
                 };
                 xprint($write_pipe, "pidfile written\n");
                 xclose($write_pipe);
 
                 waitpid($child, 0);
                 if ($? > 0) {
-                    warn "Daemon failed: $?";
-                    _log($ubic_fh, "daemon failed: $?");
+                    my $msg;
+                    if ($? & 127) {
+                        $msg = "Daemon failed with signal ".($? & 127);
+                    }
+                    else {
+                        $msg = "Daemon failed: $?";
+                    }
+                    warn $msg;
+                    _log($ubic_fh, $msg);
                     _remove_pidfile($pidfile);
                     $instant_exit->(1);
                 }

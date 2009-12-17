@@ -1,3 +1,9 @@
+yandex-ubic (0.9.9) unstable; urgency=low
+
+  * Ubic::Daemon: term_timeout option implemented
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 17 Dec 2009 20:58:50 +0300
+
 yandex-ubic (0.9.8) unstable; urgency=low
 
   * Ubic::Cmd: pretty printing for custom commands

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 17;
+use Test::More tests => 25;
 use Test::Exception;
 
 use lib 'lib';
@@ -129,4 +129,105 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     ok(check_daemon("tfiles/pid"), 'daemon started after being stopped with pidfile in new format');
     stop_daemon('tfiles/pid');
     ok(!check_daemon("tfiles/pid"), 'last stop completed successfully');
+}
+
+# term_timeout (4)
+{
+    start_daemon({
+        function => sub {
+            $SIG{TERM} = sub {
+                print "sigterm caught\n";
+                exit;
+            };
+            sleep 100;
+        },
+        name => 'abc',
+        stdout => 'tfiles/kill_default.log',
+        pidfile => 'tfiles/pid',
+        ubic_log => 'tfiles/ubic.term.log',
+    });
+    stop_daemon('tfiles/pid');
+    is(xqx('cat tfiles/kill_default.log'), '', 'default kill signal is SIGKILL - nothing in log');
+
+    start_daemon({
+        function => sub {
+            $SIG{TERM} = sub {
+                print "sigterm caught\n";
+                exit;
+            };
+            sleep 100;
+        },
+        name => 'abc',
+        stdout => 'tfiles/kill_term.log',
+        pidfile => 'tfiles/pid',
+        ubic_log => 'tfiles/ubic.term.log',
+        term_timeout => 1,
+    });
+    stop_daemon('tfiles/pid');
+    is(xqx('cat tfiles/kill_term.log'), "sigterm caught\n", 'process caught SIGTERM and written something in log');
+
+    start_daemon({
+        function => sub {
+            $SIG{TERM} = sub {
+                sleep 4;
+                print "sigterm caught\n";
+                exit;
+            };
+            sleep 100;
+        },
+        name => 'abc',
+        stdout => 'tfiles/kill_4.log',
+        pidfile => 'tfiles/pid',
+        ubic_log => 'tfiles/ubic.term.log',
+        term_timeout => 1,
+    });
+    stop_daemon('tfiles/pid');
+    is(xqx('cat tfiles/kill_4.log'), '', 'process caught SIGTERM but was too slow to do anything about it');
+
+    throws_ok(sub {
+        start_daemon({
+            function => sub {
+                $SIG{TERM} = sub {
+                    print "sigterm caught\n";
+                    exit;
+                };
+                sleep 100;
+            },
+            name => 'abc',
+            stdout => 'tfiles/kill_segv.log',
+            pidfile => 'tfiles/pid',
+            ubic_log => 'tfiles/ubic.term.log',
+            term_timeout => 'abc',
+        })
+    }, qr/did not pass regex check/, 'term_timeout values are limited to integers');
+}
+
+# stop_daemon options (4)
+{
+    my $start = sub {
+        start_daemon({
+            function => sub {
+                $SIG{TERM} = 'IGNORE'; # ubic-guardian will send sigterm, and we want it to fail
+                sleep 100;
+            },
+            name => 'abc',
+            pidfile => 'tfiles/pid',
+            ubic_log => 'tfiles/ubic.term.log',
+            term_timeout => 3,
+        });
+    };
+
+    $start->();
+    is(stop_daemon('tfiles/pid'), 'stopped', 'stop with large enough timeout is ok');
+
+    $start->();
+    throws_ok(sub {
+        stop_daemon('tfiles/pid', { timeout => 2 });
+    }, qr/failed to stop daemon/, 'stop with small timeout fails');
+
+    is(stop_daemon('tfiles/pid', { timeout => 4 }), 'stopped', 'start and stop with large enough timeout is ok');
+
+    throws_ok(sub {
+        stop_daemon('tfiles/pid', { timeout => 'abc' });
+    }, qr/did not pass regex check/, 'stop with invalid timeout fails parameters validation');
 }
