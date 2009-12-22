@@ -72,7 +72,7 @@ sub new {
         }
         my $new_uid = getpwnam($user);
         $> = $new_uid;
-        if ($!) {
+        if ($> != $new_uid) {
             die result('unknown', "Failed to change user from $> to $new_uid: $!");
         }
     }
