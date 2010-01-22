@@ -1,0 +1,44 @@
+# vim:ft=perl
+use strict;
+use warnings;
+
+use base qw(Ubic::Multiservice);
+use Ubic::Service::Common;
+
+sub new {
+    return bless {} => shift;
+}
+
+my $eval_id = 1;
+sub simple_service {
+    my ($self, $name) = @_;
+    if ($name eq 'abc') {
+        return Ubic::Service::Common->new({
+            start => sub { die },
+            stop => sub { die },
+            status => sub { die },
+        });
+    }
+    elsif ($name eq 'broken') {
+        my $content = "package UbicService".($eval_id++).";
+        sub f () {
+            return 123;
+        }
+        die 'compilation failed';
+        ";
+        eval $content;
+        die "failed";
+    }
+}
+
+sub has_simple_service {
+    my ($self, $name) = @_;
+    return (grep { $name eq $_ } $self->service_names);
+}
+
+sub service_names {
+    my ($self) = @_;
+    return qw/ abc broken /;
+}
+
+__PACKAGE__->new;

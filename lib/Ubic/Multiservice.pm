@@ -43,31 +43,43 @@ sub service($$) {
     my @parts = split '\\.', $name;
 
     if ($self->{service_cache}{$name}) {
-        return $self->{service_cache}{$name};
+        if (my $error = $self->{service_cache}{$name}{error}) {
+            die $error;
+        }
+        else {
+            return $self->{service_cache}{$name}{service};
+        }
     }
 
     my $service;
-    if (@parts == 1) {
-        $service = $self->simple_service($name);
-        unless (defined $service->name) {
-            $service->name($name);
+    eval {
+        if (@parts == 1) {
+            $service = $self->simple_service($name);
+            unless (defined $service->name) {
+                $service->name($name);
+            }
+            $service->parent_name($self->full_name);
         }
-        $service->parent_name($self->full_name);
+        else {
+            # complex service
+            my $top_level = $self->simple_service($parts[0]);
+            unless ($top_level->isa('Ubic::Multiservice')) {
+                croak "top-level service '$parts[0]' is not a multiservice";
+            }
+            unless (defined $top_level->name) {
+                $top_level->name($parts[0]);
+            }
+            $top_level->parent_name($self->full_name);
+            $service = $top_level->service(join '.', @parts[1..$#parts]);
+        }
+    };
+    if ($@) {
+        $self->{service_cache}{$name} = { error => $@ };
+        die $@;
     }
     else {
-        # complex service
-        my $top_level = $self->simple_service($parts[0]);
-        unless ($top_level->isa('Ubic::Multiservice')) {
-            croak "top-level service '$parts[0]' is not a multiservice";
-        }
-        unless (defined $top_level->name) {
-            $top_level->name($parts[0]);
-        }
-        $top_level->parent_name($self->full_name);
-        $service = $top_level->service(join '.', @parts[1..$#parts]);
+        $self->{service_cache}{$name} = { service => $service };
     }
-
-    $self->{service_cache}{$name} = $service;
     return $service;
 }
 
@@ -94,7 +106,7 @@ sub has_service($$) {
         return $self->has_simple_service($name);
     }
     # complex service
-    my $top_level = $self->simple_service($parts[0]);
+    my $top_level = $self->service($parts[0]);
     unless ($top_level->isa('Ubic::Multiservice')) {
         croak "top-level service '$parts[0]' is not a multiservice";
     }

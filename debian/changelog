@@ -1,9 +1,18 @@
-yandex-ubic (0.9.10) UNRELEASED; urgency=low
+yandex-ubic (0.9.11) unstable; urgency=low
+
+  * Ubic::Multiservice:
+    - important memory leak fixed; call service() instead of simple_service()
+    in has_service() method to delegate has_service() processing to subservice
+    - cache failed service constructions too
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 22 Jan 2010 16:54:53 +0300
+
+yandex-ubic (0.9.10) unstable; urgency=low
 
   * Ubic::AccessGuard: perl apparently don't reset $! on successful euid
     assignment, so we now check $> for current value after assignment instead
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 22 Dec 2009 21:05:34 +0300
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 22 Jan 2010 16:36:56 +0300
 
 yandex-ubic (0.9.9) unstable; urgency=low
 
