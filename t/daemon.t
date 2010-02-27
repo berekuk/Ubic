@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 25;
+use Test::More tests => 27;
 use Test::Exception;
 
 use lib 'lib';
@@ -230,4 +230,10 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     throws_ok(sub {
         stop_daemon('tfiles/pid', { timeout => 'abc' });
     }, qr/did not pass regex check/, 'stop with invalid timeout fails parameters validation');
+}
+
+# stop_daemon params validation (2)
+{
+    lives_ok(sub { stop_daemon('aeuklryaweur') }, 'stop_daemon with non-existing pidfile is ok');
+    dies_ok(sub { stop_daemon({ pidfile => 'auerawera' }) }, 'calling stop_daemon with invalid parameters is wrong');
 }

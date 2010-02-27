@@ -138,7 +138,7 @@ Return value: C<not running> if daemon is already not running; C<stopped> if dae
 
 =cut
 sub stop_daemon($;@) {
-    my ($pidfile, @tail) = validate_pos(@_, 1, 0);
+    my ($pidfile, @tail) = validate_pos(@_, { type => SCALAR }, 0);
     my $options = validate(@tail, {
         timeout => { default => 5, regex => qr/^\d+$/ },
     });
