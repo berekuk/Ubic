@@ -1,3 +1,9 @@
+yandex-ubic (0.9.12) unstable; urgency=low
+
+  * add Ubic::Service::PSGI
+
+ -- Yury Zavarin <tadam@yandex-team.ru>  Mon, 01 Mar 2010 16:50:36 +0300
+
 yandex-ubic (0.9.11) unstable; urgency=low
 
   * Ubic::Multiservice:
