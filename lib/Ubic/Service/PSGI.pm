@@ -16,6 +16,7 @@ Ubic::Service::PSGI - service wrapper for psgi applications
                          nproc  => 5 },
         app      => "/var/www/app.psgi",
         app_name => 'app',
+        status   => sub { ... },
         ubic_log => '/var/log/app/ubic.log',
         stdout   => '/var/log/app/stdout.log',
         stderr   => '/var/log/app/stderr.log',
@@ -31,15 +32,16 @@ This service is a simplest ubic wrap for psgi applications and uses plackup for 
 use base qw(Ubic::Service::Common);
 
 use Params::Validate qw(:all);
-use POSIX;
 use Time::HiRes qw(usleep);
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 use Ubic::Result qw(result);
 use Ubic::Service::Common;
 
-use Yandex::Persistent;
-use Yandex::X;
+use Yandex::Config qw(ubic/psgi.cfg);
+use vars qw(
+    $PSGI_SERVER_ARGS
+);
 
 =head1 METHODS
 
@@ -59,6 +61,7 @@ You can pass this param in both variants, for example 'Plack::Handler::FCGI' or 
 =item I<server_args> (optional)
 
 Hashref with options that will passed to concrete Plack server specified by C<server> param. See concrete server docimentation for possible options.
+You can also pass here such options as 'env' to override defaults. In this case you must use long option names ('env' insted of 'E').
 
 =item I<app>
 
@@ -67,6 +70,10 @@ Path to .psgi app.
 =item I<app_name>
 
 Name of your application (uses for constructing path for storing pid-file of your app).
+
+=item I<status> (optional)
+
+Coderef to special function, that will check status of your application.
 
 =item I<ubic_log> (optional)
 
@@ -85,6 +92,12 @@ Path to stderr log of plackup.
 User name. If specified, real and effective user identifiers will be changed before execing any psgi applications.
 
 =back
+
+=back
+
+=head1 OTHERS
+
+/etc/ubic/psgi.cfg - config file with defaults $PSGI_SERVER_ARGS.
 
 =cut
 
@@ -117,10 +130,13 @@ sub new {
 
     my $self = $class->SUPER::new({
         start => sub {
-            my $cmd = "plackup -s $params->{server} -E production ";
-            foreach my $key (keys %{$params->{server_args}}) {
+            my %args = %{$PSGI_SERVER_ARGS};
+            $args{server} = $params->{server};
+            $args{$_} = $params->{server_args}->{$_} for keys %{$params->{server_args}};
+            my $cmd = "plackup ";
+            foreach my $key (keys %args) {
                 $cmd .= "--$key ";
-                my $v = $params->{server_args}->{$key};
+                my $v = $args{$key};
                 $cmd .= "$v " if defined($v);
             }
             $cmd .= $params->{app};
@@ -144,7 +160,6 @@ sub new {
                 }
                 die $status if $status->status eq 'not running';
             }
-
             return $status;
         },
         stop => sub {
