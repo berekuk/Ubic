@@ -22,7 +22,7 @@ Ubic::Service::Common->new({
             name => 'ubic-ping',
             pidfile => $pidfile,
         });
-        sleep 0.05; # sorry :(
+        sleep 0.5; # sorry :(
     },
     stop => sub {
         stop_daemon($pidfile);
