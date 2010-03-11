@@ -1,3 +1,9 @@
+yandex-ubic (0.9.14) unstable; urgency=low
+
+  * sleep more in start of ubic-ping, because it is now a "bin"
+
+ -- Yury Zavarin <tadam@yandex-team.ru>  Thu, 11 Mar 2010 19:13:21 +0300
+
 yandex-ubic (0.9.13) unstable; urgency=low
 
   * close all filehandles in daemonization
