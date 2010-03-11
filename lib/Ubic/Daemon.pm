@@ -268,6 +268,16 @@ sub start_daemon($) {
 
             xfork() and POSIX::_exit(0); # detach from parent process
 
+            # Close all inherited filehandles except $write_pipe (it will be closed explicitly).
+            # Do not close fh if uses 'function' option instead of 'bin' ('function' should be deprecated).
+            if ($bin) {
+                my @fd_nums = map { s!^.*/!!; $_ } glob("/proc/$$/fd/*");
+                my $write_pipe_fd_num = fileno($write_pipe);
+                foreach (@fd_nums) {
+                    POSIX::close($_) if ($_ != $write_pipe_fd_num);
+                }
+            }
+
             open STDOUT, ">>", $stdout or die "Can't write to '$stdout'";
             open STDERR, ">>", $stderr or die "Can't write to '$stderr'";
             open STDIN, "<", $stdin or die "Can't read from '$stdin'";

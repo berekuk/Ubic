@@ -1,3 +1,9 @@
+yandex-ubic (0.9.13) unstable; urgency=low
+
+  * close all filehandles in daemonization
+
+ -- Yury Zavarin <tadam@yandex-team.ru>  Wed, 10 Mar 2010 22:03:42 +0300
+
 yandex-ubic (0.9.12) unstable; urgency=low
 
   * add Ubic::Service::PSGI

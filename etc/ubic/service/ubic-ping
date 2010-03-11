@@ -18,7 +18,7 @@ Ubic::Service::Common->new({
     start => sub {
         my $pid;
         start_daemon({
-            function => sub { Ubic::Ping->new($port)->run },
+            bin => qq{perl -e 'require "$code"; Ubic::Ping->new($port)->run;'},
             name => 'ubic-ping',
             pidfile => $pidfile,
         });
