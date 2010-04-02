@@ -10,7 +10,7 @@ ubic - simple viewer of ubic services
 
 =head1 SYNOPSIS
 
- ubic [-f] COMMAND [SERVICE]
+ ubic [-f] COMMAND [SERVICE]...
 
  Supported commands:
     status
@@ -36,18 +36,24 @@ GetOptions(
     'f|force' => \$force,
 ) or pod2usage(2);
 
-my $command = $ARGV[0] or pod2usage(2);
+unless (@ARGV) {
+    pod2usage(2);
+}
 
-if (@ARGV == 2 or @ARGV == 1) {
-    my ($command, $name) = @ARGV;
+my $command = shift @ARGV;
+if (@ARGV) {
     Ubic::Cmd->run({
-        name => $name,
+        name => [@ARGV],
         command => $command,
         force => $force,
     });
 }
 else {
-    pod2usage(2);
+    Ubic::Cmd->run({
+        name => undef,
+        command => $command,
+        force => $force,
+    });
 }
 
 =head1 AUTHOR

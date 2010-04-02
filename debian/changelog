@@ -1,3 +1,9 @@
+yandex-ubic (0.9.16) UNRELEASED; urgency=low
+
+  * support multiple services in one 'ubic' script invocation
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 02 Apr 2010 17:56:26 +0400
+
 yandex-ubic (0.9.15) unstable; urgency=low
 
   * Ubic::Daemon fixed for non-posix locales

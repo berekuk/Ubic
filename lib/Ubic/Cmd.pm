@@ -385,6 +385,9 @@ sub run {
         @names = ($params->{name});
     }
     my @exit_codes;
+    if ($params->{command} eq 'status' and $>) {
+        print "Not a root, printing cached statuses\n";
+    }
     for my $name (@names) {
         my $exit_code = $self->_run_impl({ name => $name, command => $params->{command}, force => $params->{force} });
         push @exit_codes, $exit_code;
@@ -406,7 +409,6 @@ sub _run_impl {
     if ($command eq 'status' or $command eq 'cached-status') {
         my $cached;
         if ($command eq 'status' and $>) {
-            print "Not a root, printing cached statuses\n";
             $cached = 1;
         }
         if ($command eq 'cached-status') {
@@ -419,7 +421,7 @@ sub _run_impl {
             print STDERR $@;
             return 4; # status is unknown, internal error
         }
-        exit $result;
+        return $result;
     }
 
     if ($name and not Ubic->root_service->has_service($name)) {

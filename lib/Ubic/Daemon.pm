@@ -20,7 +20,8 @@ This module tries to safely start and daemonize any binary or any perl function.
 
 Main source of knowledge if daemon is still running is pidfile, which is locked all the time after daemon was created.
 
-Pidfile format is unreliable and can change in future releases. If you really need to get daemon's pid, save it from daemon or ask me for public pidfile-reading API in this module.
+Pidfile format is unreliable and can change in future releases.
+If you really need to get daemon's pid, save it from daemon or ask me for public pidfile-reading API in this module.
 
 =over
 
@@ -457,7 +458,7 @@ sub check_daemon {
 
 =head1 BUGS
 
-See the code for many critical TODO sections.
+Probably lots of them.
 
 =head1 SEE ALSO
 
