@@ -29,7 +29,7 @@ Pidfile format is unreliable and can change in future releases. If you really ne
 use IO::Handle;
 use POSIX qw(setsid);
 use Yandex::X;
-use Yandex::Lockf;
+use Yandex::Lockf 3.0;
 
 use Carp;
 
@@ -289,7 +289,7 @@ sub start_daemon($) {
             _log($ubic_fh, "self name: $0");
 
             _log($ubic_fh, "[$$] getting lock...");
-            $lock = lockf($pidfile, {nonblocking => 1});
+            $lock = lockf($pidfile, { nonblocking => 1 }) or die "Can't lock $pidfile";
             _remove_pidfile($pidfile);
             _log($ubic_fh, "[$$] got lock");
 
@@ -405,16 +405,12 @@ sub check_daemon {
     unless (-s $pidfile) {
         return 0;
     }
-    my $lock = eval { lockf($pidfile, {nonblocking => 1}) };
+    my $lock = lockf($pidfile, { nonblocking => 1 });
     unless ($lock) {
-        if ($@ =~ /temporarily unavailable/) {
-            # locked => daemon is alive
-            return 1;
-        }
-        else {
-            die "Failed to take lock: $@"; # other lock failure, probably incorrect file mode
-        }
+        # locked => daemon is alive
+        return 1;
     }
+
     # acquired lock when pidfile exists
     # checking whether just ubic-guardian died or whole process group
     my $piddata = _read_pidfile($pidfile);
