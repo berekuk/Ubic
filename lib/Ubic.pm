@@ -41,6 +41,7 @@ use Params::Validate qw(:all);
 use Carp;
 use IO::Handle;
 use Storable qw(freeze thaw);
+use Try::Tiny;
 use Yandex::Persistent;
 use Yandex::Lockf;
 use Yandex::X qw(xopen xclose xfork);
@@ -614,11 +615,11 @@ Run any code and wrap result into C<Ubic::Result::Class> object.
 =cut
 sub do_sub($$) {
     my ($self, $code) = @_;
-    my $result = eval {
+    my $result = try {
         $code->();
-    }; if ($@) {
-        die result($@);
-    }
+    } catch {
+        die result($_);
+    };
     return result($result);
 }
 
@@ -662,16 +663,15 @@ sub forked_call {
     my $tmp_file = $self->{tmp_dir}."/".time.".".rand(1000000);
     my $child;
     unless ($child = xfork) {
-        my $result = eval {
-            $callback->();
+        my $result;
+        try {
+            $result = { ok => $callback->() };
+        }
+        catch {
+            $result => { error => $_ };
         };
-        if ($@) {
-            $result = { error => $@ };
-        }
-        else {
-            $result = { ok => $result };
-        }
-        eval {
+
+        try {
             my $fh = xopen(">", "$tmp_file.tmp");
             print {$fh} freeze($result);
             xclose($fh);
@@ -679,11 +679,12 @@ sub forked_call {
             STDERR->flush;
             rename "$tmp_file.tmp", $tmp_file;
             POSIX::_exit(0); # don't allow to lock to be released - this process was forked from unknown environment, don't want to run unknown destructors
-        }; if ($@) {
-            # probably tmp_file is not writtable
-            warn $@;
-            POSIX::_exit(1);
         }
+        catch {
+            # probably tmp_file is not writtable
+            warn $_;
+            POSIX::_exit(1);
+        };
     }
     waitpid($child, 0);
     unless (-e $tmp_file) {

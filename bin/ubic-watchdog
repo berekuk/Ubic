@@ -20,6 +20,7 @@ use Yandex::Logger;
 use Yandex::Lockf;
 use Yandex::X qw(xfork);
 use Ubic;
+use Try::Tiny;
 
 my $verbose;
 GetOptions(
@@ -38,7 +39,8 @@ sub check {
     if ($verbose) {
         INFO "Checking $name\n";
     }
-    eval {
+
+    try {
         my $lock = Ubic->lock($name);
         if ($service->isa('Ubic::Multiservice')) {
             INFO "$name is multiservice, checking subservices\n" if $verbose;
@@ -67,9 +69,11 @@ sub check {
             INFO "$name started, but status is still '$status'";
         }
         Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
-    }; if ($@) {
-        ERROR "Failed to check $name: $@";
     }
+    catch {
+        ERROR "Failed to check $name: $_";
+    };
+
     if ($verbose) {
         INFO "$name checked\n";
     }

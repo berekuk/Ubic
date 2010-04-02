@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright (c) 2009 Yandex.ru
+# Copyright (c) 2009-2010 Yandex.ru
 
 use strict;
 use warnings;

@@ -23,6 +23,7 @@ Ubic::PortMap - update and read mapping of ports to service names.
 use Yandex::Logger;
 use Yandex::Persistent;
 use Ubic;
+use Try::Tiny;
 
 use Params::Validate qw(:all);
 
@@ -52,15 +53,15 @@ sub update {
                 $process_tree->($_);
             }
             else {
-                eval {
+                try {
                     my $port = $_->port;
                     if ($port) {
                         push @{ $portmap->{$port} }, $_->full_name;
                     }
-                };
-                if ($@) {
-                    ERROR $@;
                 }
+                catch {
+                    ERROR $_;
+                };
             }
         }
         return;

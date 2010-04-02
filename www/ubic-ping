@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright (c) 2009 Yandex.ru
+# Copyright (c) 2009-2010 Yandex.ru
 
 package Ubic::Ping;
 
@@ -15,6 +15,7 @@ ubic-ping - http server which returns service status by it's name or port
 use Ubic;
 use Ubic::PortMap;
 use Params::Validate qw(:all);
+use Try::Tiny;
 
 use base qw(HTTP::Server::Simple::CGI);
 
@@ -58,7 +59,7 @@ sub print_status($;$) {
 sub handle_request {
     my ($self, $cgi) = @_;
 
-    eval {
+    try {
         if ($cgi->path_info eq '/ping') {
             # ping self
             print "HTTP/1.0 200 OK\r\n\r\n";
@@ -100,11 +101,11 @@ sub handle_request {
             print "Expected /status/name/NAME or /status/port/PORT query\n";
             return;
         }
-    }; if ($@) {
-        print "HTTP/1.0 500 Internal error\r\n\r\n";
-        print "Error: $@";
-        return;
     }
+    catch {
+        print "HTTP/1.0 500 Internal error\r\n\r\n";
+        print "Error: $_";
+    };
 }
 
 1;

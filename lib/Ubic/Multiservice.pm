@@ -28,6 +28,7 @@ Remember that multiservice is a service too, although it doesn't implement start
 
 use Carp;
 use Params::Validate qw(:all);
+use Try::Tiny;
 use base qw(Ubic::Service);
 
 =item B<< service($name) >>
@@ -52,7 +53,7 @@ sub service($$) {
     }
 
     my $service;
-    eval {
+    try {
         if (@parts == 1) {
             $service = $self->simple_service($name);
             unless (defined $service->name) {
@@ -72,14 +73,12 @@ sub service($$) {
             $top_level->parent_name($self->full_name);
             $service = $top_level->service(join '.', @parts[1..$#parts]);
         }
-    };
-    if ($@) {
-        $self->{service_cache}{$name} = { error => $@ };
-        die $@;
-    }
-    else {
         $self->{service_cache}{$name} = { service => $service };
     }
+    catch {
+        $self->{service_cache}{$name} = { error => $_ };
+        die $_;
+    };
     return $service;
 }
 

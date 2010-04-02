@@ -21,7 +21,7 @@ Ubic->set_service_dir('t/service');
 
     my $stat = xqx("cat /proc/$$/statm");
     my ($mem) = $stat =~ /^(\d+)/;
-    cmp_ok($stat, '<', 15_000);
+    cmp_ok($mem, '<', 15_000);
 }
 
 {
@@ -33,5 +33,5 @@ Ubic->set_service_dir('t/service');
 
     my $stat = xqx("cat /proc/$$/statm");
     my ($mem) = $stat =~ /^(\d+)/;
-    cmp_ok($stat, '<', 15_000);
+    cmp_ok($mem, '<', 15_000);
 }

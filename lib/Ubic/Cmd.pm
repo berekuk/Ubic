@@ -26,6 +26,7 @@ use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(any);
 use List::Util qw(max);
+use Try::Tiny;
 use Ubic;
 use Ubic::Result qw(result);
 use Ubic::Cmd::Results;
@@ -220,15 +221,13 @@ sub do_custom_command {
         # In this case X.A->CC and X.B->CC will be called, and X.C will be skipped.
         if (grep { $_ eq $command } $service->custom_commands) {
             print "Running $command for $name... ";
-            eval {
+            try {
                 Ubic->do_custom_command($name, $command);
-            }; if ($@) {
-                $results->print_bad("failed: ".$@."\n");
-                $error++;
-            }
-            else {
                 $results->print_good("ok\n");
-            }
+            } catch {
+                $results->print_bad("failed: $_\n");
+                $error++;
+            };
             $count++;
         }
     });
@@ -384,12 +383,15 @@ sub run {
     else {
         @names = ($params->{name});
     }
-    my @exit_codes;
-    if ($params->{command} eq 'status' and $>) {
+
+    my $command = $params->{command};
+    if ($command eq 'status' and $>) {
         print "Not a root, printing cached statuses\n";
     }
+
+    my @exit_codes;
     for my $name (@names) {
-        my $exit_code = $self->_run_impl({ name => $name, command => $params->{command}, force => $params->{force} });
+        my $exit_code = $self->_run_impl({ name => $name, command => $command, force => $params->{force} });
         push @exit_codes, $exit_code;
     }
     exit max(@exit_codes);
@@ -414,13 +416,14 @@ sub _run_impl {
         if ($command eq 'cached-status') {
             $cached = 1;
         }
-        my $result = eval {
-            $self->print_status($name, $cached);
-        };
-        if ($@) {
-            print STDERR $@;
-            return 4; # status is unknown, internal error
+        my $result;
+        try {
+            $result = $self->print_status($name, $cached);
         }
+        catch {
+            print STDERR $_;
+            $result = 4; # status is unknown, internal error
+        };
         return $result;
     }
 
@@ -452,15 +455,14 @@ sub _run_impl {
     # yes, custom "start" command will override default "start" command, although it's not very useful :)
     # but we need this because of current "logrotate" hack
     if (grep { $_ eq $command } $service->custom_commands) {
-        my $code = eval {
-            $self->do_custom_command($service, $command);
-        }; if ($@) {
-            print STDERR "'$name $command' error: $@\n";
-            return 1; # generic error, TODO - more lsb-specific errors?
-        }
-        else {
-            return $code;
-        }
+        my $code;
+        try {
+            $code = $self->do_custom_command($service, $command);
+        } catch {
+            print STDERR "'$name $command' error: $_\n";
+            $code = 1; # generic error, TODO - more lsb-specific errors?
+        };
+        return $code;
     }
 
     $command = "force_reload" if $command eq "logrotate"; #FIXME: non LSB command? fix logrotate configs! (yandex-ppb-static-pt, etc...)
@@ -471,18 +473,19 @@ sub _run_impl {
         $self->usage($command);
     }
 
-    my $code = eval {
-        $self->$method($service);
-    }; if ($@) {
+    my $code;
+    try {
+        $code = $self->$method($service);
+    }
+    catch {
         if ($name) {
-            print STDERR "'$name $method' error: $@\n";
+            print STDERR "'$name $method' error: $_\n";
         }
         else {
-            print STDERR "'$method' error: $@\n";
+            print STDERR "'$method' error: $_\n";
         }
-        return 1; # generic error, TODO - more lsb-specific errors?
-
-    }
+        $code = 1; # generic error, TODO - more lsb-specific errors?
+    };
     return $code;
 }
 
