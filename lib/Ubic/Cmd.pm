@@ -139,7 +139,7 @@ sub try_restart {
             $results->print($result, $@ ? 'bad' : ());
         }
         else {
-            print "$name is down";
+            print "$name is down\n";
             $results->add(result('down'));
         }
     });

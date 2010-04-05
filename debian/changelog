@@ -3,8 +3,10 @@ yandex-ubic (0.9.16) UNRELEASED; urgency=low
   * support multiple services in one 'ubic' script invocation
   * using Try::Tiny in all appropriate places
   * memory-leak test fixed
+  * 'timeout_options' in Ubic::Service::Common and Ubic::Service::Skeleton
+  * try-restart: logging fixed when service is down
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 02 Apr 2010 17:56:26 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 05 Apr 2010 23:03:37 +0400
 
 yandex-ubic (0.9.15) unstable; urgency=low
 

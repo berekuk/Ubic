@@ -32,14 +32,11 @@ This service is a simplest ubic wrap for psgi applications and uses plackup for 
 use base qw(Ubic::Service::Common);
 
 use Params::Validate qw(:all);
-use Time::HiRes qw(usleep);
 
-use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
-use Ubic::Result qw(result);
+use Ubic::Daemon qw(:all);
 use Ubic::Service::Common;
 
-use Yandex::Config qw(ubic/psgi.cfg);
-use vars qw(
+use Yandex::Config 'ubic/psgi.cfg', qw(
     $PSGI_SERVER_ARGS
 );
 
@@ -116,23 +113,15 @@ sub new {
         stderr      => { type => SCALAR, optional => 1 },
     });
 
-    my $pidfile = "/tmp/" . $params->{app_name} . ".pid";
-
-    my $status_sub = sub {
-        my $running = check_daemon($pidfile);
-        return 'not running' unless ($running);
-        if ($params->{status}) {
-            return $params->{status}->();
-        } else {
-            return 'running';
-        }
-    };
+    my $pidfile = "/tmp/$params->{app_name}.pid";
 
     my $self = $class->SUPER::new({
         start => sub {
-            my %args = %{$PSGI_SERVER_ARGS};
-            $args{server} = $params->{server};
-            $args{$_} = $params->{server_args}->{$_} for keys %{$params->{server_args}};
+            my %args = (
+                %{$PSGI_SERVER_ARGS},
+                server => $params->{server},
+                %{$params->{server_args}},
+            );
             my $cmd = "plackup ";
             foreach my $key (keys %args) {
                 $cmd .= "--$key ";
@@ -146,28 +135,22 @@ sub new {
                 $daemon_opts->{$_} = $params->{$_} if $params->{$_};
             }
             start_daemon($daemon_opts);
-
-            my $time = 0;
-            my $status;
-            for my $trial (1..15) {
-                my $sleep = $trial / 10;
-                usleep(1_000_000 * $sleep);
-                $time += $sleep;
-                $status = $status_sub->();
-                $status = result($status);
-                if ($status->status eq 'running') {
-                    return result('started', "started after $time seconds");
-                }
-                die $status if $status->status eq 'not running';
-            }
-            return $status;
+            return;
         },
         stop => sub {
             return stop_daemon($pidfile, { timeout => 7 });
         },
-        status => $status_sub,
-
+        status => sub {
+            my $running = check_daemon($pidfile);
+            return 'not running' unless ($running);
+            if ($params->{status}) {
+                return $params->{status}->();
+            } else {
+                return 'running';
+            }
+        },
         user => $params->{user} || 'root',
+        timeout_options => { start => { trials => 15, step => 0.1 }, stop => { trials => 15, step => 0.1 } },
     });
 
     return $self;

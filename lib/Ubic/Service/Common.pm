@@ -89,6 +89,7 @@ sub new {
         port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1 },
         custom_commands => { type => HASHREF, default => {} },
         user        => { type => SCALAR, default => 'root' },
+        timeout_options => { type => HASHREF, default => {} },
     });
     if ($params->{custom_commands}) {
         for (keys %{$params->{custom_commands}}) {
@@ -117,6 +118,11 @@ sub start_impl {
 sub stop_impl {
     my $self = shift;
     return $self->{stop}->();
+}
+
+sub timeout_options {
+    my $self = shift;
+    return $self->{timeout_options};
 }
 
 sub custom_commands {

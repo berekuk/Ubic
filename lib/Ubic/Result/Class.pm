@@ -71,6 +71,7 @@ use overload '""' => sub {
 };
 
 use Params::Validate qw(:all);
+use Carp;
 use base qw(Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(qw/ type msg /);
@@ -97,10 +98,11 @@ Get status, see above for possible values.
 =cut
 sub status {
     my $self = shift;
-    if (grep { $_ eq $self->{type} } ('running', 'already running', 'started', 'already started', 'restarted', 'reloaded')) {
+    croak 'status() is read-only method' if @_;
+    if (grep { $_ eq $self->{type} } ('running', 'already running', 'started', 'already started', 'restarted', 'reloaded', 'stopping')) {
         return 'running';
     }
-    elsif (grep { $_ eq $self->{type} } ('not running', 'stopped', 'down')) {
+    elsif (grep { $_ eq $self->{type} } ('not running', 'stopped', 'down', 'starting')) {
         return 'not running';
     }
     elsif (grep { $_ eq $self->{type} } ('down')) {
@@ -118,6 +120,7 @@ Get action.
 =cut
 sub action {
     my $self = shift;
+    croak 'action() is read-only method' if @_;
     if (grep { $_ eq $self->{type} } ('started', 'stopped', 'reloaded')) {
         return $self->{type};
     }

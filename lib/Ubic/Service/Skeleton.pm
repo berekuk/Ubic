@@ -12,6 +12,8 @@ Ubic::Service::Skeleton - skeleton of any service with common start/stop logic
 use Yandex::Lockf;
 use Ubic::Result qw(result);
 use Scalar::Util qw(blessed);
+use Time::HiRes qw(sleep);
+use Ubic::Service::Utils qw(wait_for_status);
 
 use base qw(Ubic::Service);
 
@@ -89,7 +91,7 @@ Subclass must overload following methods with simple status, start and stop impl
 
 =over
 
-=item I<status_impl>
+=item B<status_impl>
 
 Status implentation. Should return result object or plain string which coerces to result object.
 
@@ -98,26 +100,51 @@ sub status_impl {
     die 'not implemented';
 }
 
-=item I<start_impl>
+=item B<start_impl>
 
-Start implentation. It shouldn't check for current status, this base class will care about it itself.
+Start implementation.
 
-Return value will be ignored.
+It can check for status itself and return proper C<Ubic::Result> value, or it can allow skeleton class to recheck status after that, in several attempts.
+
+To choose second option, it should return non-result value or C<result("starting")>. See C<timeout_options()> method for details about recheck policy.
 
 =cut
 sub start_impl {
     die 'not implemented';
 }
 
-=item I<stop_impl>
+=item B<stop_impl>
 
-Stop implentation. It shouldn't check for current status, this base class will care about it itself.
+Stop implementation.
 
-Return value will be ignored.
+It can check for status itself and return proper C<Ubic::Result> value, or it can allow skeleton class to recheck status after that, in several attempts.
+
+To choose second option, it should return non-result value or C<result("stopping")>. See C<timeout_options()> method for details about recheck policy.
 
 =cut
 sub stop_impl {
     die 'not implemented';
+}
+
+=item B<timeout_options>
+
+Return hashref with timeout options.
+
+Possible options:
+
+=over
+
+=item I<start>
+
+Params to be used when checking for status of started service.
+
+Should contain hashref with I<step> and I<trials> options for C<wait_for_status> function from C<Ubic::Service::Utils>.
+
+=back
+
+=cut
+sub timeout_options {
+    return {};
 }
 
 =back
@@ -135,13 +162,21 @@ sub _do_start {
     if (blessed($start_result) and $start_result->isa('Ubic::Result::Class')) {
         $status = $start_result;
     }
-    else {
-        $status = $self->status;
+
+    if (not $status or $status->type eq 'starting') {
+        $status = wait_for_status({
+            service => $self,
+            expect_status => ['running', 'not running'],
+            %{ $self->timeout_options->{start} || {} },
+        });
         if ($status->status eq 'running') {
             $status->type('started'); # fake status to report correct action (hopefully)
         }
     }
 
+    if (not $status) {
+        die result('unknown', 'no result');
+    }
     if ($status->status eq 'running') {
         return $status;
     }
@@ -156,13 +191,23 @@ sub _do_stop {
 
     my $stop_result = $self->stop_impl;
     if (blessed($stop_result) and $stop_result->isa('Ubic::Result::Class')) {
-        $status = $stop_result; # stop_impl can return status, in this case we don't want to recheck it
-    }
-    else {
-        $status = $self->status;
-        $status->type('stopped');
+        $status = $stop_result;
     }
 
+    if (not $status or $status->type eq 'stopping') {
+        $status = wait_for_status({
+            service => $self,
+            expect_status => ['not running'],
+            %{ $self->timeout_options->{stop} || {} },
+        });
+        if ($status->status eq 'not running') {
+            $status->type('stopped'); # fake status to report correct action (hopefully)
+        }
+    }
+
+    if (not $status) {
+        die result('unknown', 'no result');
+    }
     if ($status->status eq 'not running') {
         return $status;
     }

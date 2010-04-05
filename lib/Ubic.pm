@@ -564,7 +564,6 @@ sub lock($$) {
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
 
     if ($self->{locks}{$name}) {
-        warn "selected existing ref\n";
         return ${ $self->{locks}{$name} };
     }
 

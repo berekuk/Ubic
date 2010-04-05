@@ -31,6 +31,7 @@ use IO::Handle;
 use POSIX qw(setsid);
 use Yandex::X;
 use Yandex::Lockf 3.0;
+use Time::HiRes qw(sleep);
 
 use Carp;
 
@@ -143,7 +144,7 @@ sub stop_daemon($;@) {
     my $options = validate(@tail, {
         timeout => { default => 5, regex => qr/^\d+$/ },
     });
-    my $timeout = $options->{timeout};
+    my $timeout = $options->{timeout} if defined $options->{timeout};
 
     unless (-s $pidfile) {
         return 'not running';
@@ -159,16 +160,25 @@ sub stop_daemon($;@) {
         return 'not running';
     }
     kill 15 => $pid;
-    for my $trial (1..$timeout) {
-        unless (check_daemon($pidfile)) {
-            return 'stopped';
+    my $trial = 1;
+    {
+        my $sleep = 0.1;
+        my $total_sleep = 0;
+        while (1) {
+            unless (check_daemon($pidfile)) {
+                return 'stopped';
+            }
+            last if $total_sleep >= $timeout;
+            sleep($sleep);
+            $total_sleep += $sleep;
+            $sleep += 0.1 * $trial if $sleep < 1;
+            $trial++;
         }
-        sleep(1);
     }
     unless (check_daemon($pidfile)) {
         return 'stopped';
     }
-    die "failed to stop daemon with pidfile '$pidfile' (pid $pid)";
+    die "failed to stop daemon with pidfile '$pidfile' (pid $pid, timeout $timeout, trials $trial)";
 }
 
 =item B<start_daemon($params)>
@@ -415,13 +425,14 @@ sub check_daemon {
     # acquired lock when pidfile exists
     # checking whether just ubic-guardian died or whole process group
     my $piddata = _read_pidfile($pidfile);
-    if ($piddata->{format} eq 'old') {
+    if ($piddata->{format} and $piddata->{format} eq 'old') {
         # ok, old-style pidfile, can't check daemon, let's just pretend that everything is ok
         _read_pidfile($pidfile);
         return 0;
     }
     unless ($piddata->{daemon}) {
-        die "pidfile $pidfile exists, but daemon pid is not saved in it, so existing unguarded daemon can't be killed";
+        use Data::Dumper;
+        die "pidfile $pidfile exists, but daemon pid is not saved in it, so existing unguarded daemon can't be killed (piddata: ".Dumper($piddata).")";
     }
     unless (-d "/proc/$piddata->{daemon}") {
         _remove_pidfile($pidfile);
