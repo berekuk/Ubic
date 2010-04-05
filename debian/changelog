@@ -1,4 +1,4 @@
-yandex-ubic (0.9.16) UNRELEASED; urgency=low
+yandex-ubic (0.9.16) unstable; urgency=low
 
   * support multiple services in one 'ubic' script invocation
   * using Try::Tiny in all appropriate places
