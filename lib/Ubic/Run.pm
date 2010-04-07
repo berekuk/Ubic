@@ -15,9 +15,16 @@ Ubic::Run - really simple way to write init scripts
 =cut
 
 use Ubic::Cmd;
+use Getopt::Long;
+use Pod::Usage;
 
 sub import {
     my ($name) = $0 =~ m{^/etc/init\.d/(.+)$} or die "Strange $0";
+    my $force;
+    GetOptions(
+        'f|force' => \$force,
+    ) or die "Unknown option specified";
+
     my ($command, @args) = @ARGV;
     my @names;
     if (@args) {
@@ -29,7 +36,7 @@ sub import {
     Ubic::Cmd->run({
         name => \@names,
         ($command ? (command => $command) : ()),
-        command => $command,
+        ($force ? (force => $force) : ()),
     });
 }
 
