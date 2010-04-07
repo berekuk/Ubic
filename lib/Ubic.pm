@@ -667,7 +667,7 @@ sub forked_call {
             $result = { ok => $callback->() };
         }
         catch {
-            $result => { error => $_ };
+            $result = { error => $_ };
         };
 
         try {

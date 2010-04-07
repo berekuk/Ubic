@@ -1,6 +1,7 @@
 yandex-ubic (0.9.17) UNRELEASED; urgency=low
 
   * Ubic::Run supports --force flag
+  * Ubic.pm bugfix: forked_call() fills result when call fails
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 07 Apr 2010 16:51:07 +0400
 
