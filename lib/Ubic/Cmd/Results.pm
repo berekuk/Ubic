@@ -143,10 +143,6 @@ sub finish($$) {
             die $result;
         }
     }
-    else {
-        # no results, huh?
-        die "no services processed";
-    }
     return $error;
 }
 
