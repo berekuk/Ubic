@@ -1,4 +1,4 @@
-yandex-ubic (0.9.90) UNRELEASED; urgency=low
+yandex-ubic (0.9.90) unstable; urgency=low
 
   * Ubic::Daemon:
    - pidfile is a dir now
@@ -6,7 +6,7 @@ yandex-ubic (0.9.90) UNRELEASED; urgency=low
   * Ubic::AccessGuard: 'uninitialized' warning fixed:wq
   * Ubic::Service::SimpleDaemon: support 'stdout' and 'stderr' options
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 20 Apr 2010 19:17:24 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 20 Apr 2010 22:45:29 +0400
 
 yandex-ubic (0.9.17) unstable; urgency=low
 
