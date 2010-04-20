@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 27;
+use Test::More tests => 23;
 use Test::Exception;
 
 use lib 'lib';
@@ -81,7 +81,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     });
     ok(check_daemon("tfiles/pid"), 'daemon started');
 
-    chomp(my $piddata = xqx('cat tfiles/pid'));
+    chomp(my $piddata = xqx('cat tfiles/pid/pid'));
     my ($pid) = $piddata =~ /pid\s+(\d+)/ or die "Unknown pidfile content '$piddata'";
     kill -9 => $pid;
     sleep 1;
@@ -100,38 +100,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     ok(!check_daemon("tfiles/pid"), 'daemon stopped');
 }
 
-# old format compatibility (5)
-{
-    start_daemon({
-        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
-        pidfile => 'tfiles/pid',
-        stdout => 'tfiles/stdout',
-        stderr => 'tfiles/stderr',
-        ubic_log => 'tfiles/ubic.log',
-    });
-    ok(check_daemon("tfiles/pid"), 'daemon with pidfile in new format started');
-
-    chomp(my $piddata = xqx('cat tfiles/pid'));
-    my ($pid) = $piddata =~ /pid\s+(\d+)/ or die "Unknown pidfile content '$piddata'";
-    xqx("echo $pid >tfiles/pid"); # replacing pidfile with content in old format (pid only)
-    ok(check_daemon("tfiles/pid"), 'daemon with pidfile in old format is still alive');
-
-    stop_daemon('tfiles/pid');
-    ok(!check_daemon("tfiles/pid"), 'daemon with pidfile in old format stopped');
-
-    start_daemon({
-        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
-        pidfile => 'tfiles/pid',
-        stdout => 'tfiles/stdout',
-        stderr => 'tfiles/stderr',
-        ubic_log => 'tfiles/ubic.log',
-    });
-    ok(check_daemon("tfiles/pid"), 'daemon started after being stopped with pidfile in new format');
-    stop_daemon('tfiles/pid');
-    ok(!check_daemon("tfiles/pid"), 'last stop completed successfully');
-}
-
-# term_timeout (4)
+# term_timeout (5)
 {
     start_daemon({
         function => sub {
@@ -147,7 +116,24 @@ qr{\QError: Can't write to '/forbidden.log'\E},
         ubic_log => 'tfiles/ubic.term.log',
     });
     stop_daemon('tfiles/pid');
-    is(xqx('cat tfiles/kill_default.log'), '', 'default kill signal is SIGKILL - nothing in log');
+    is(xqx('cat tfiles/kill_default.log'), "sigterm caught\n", 'default kill signal is SIGTERM - log written');
+
+    start_daemon({
+        function => sub {
+            $SIG{TERM} = sub {
+                print "sigterm caught\n";
+                exit;
+            };
+            sleep 100;
+        },
+        name => 'abc',
+        stdout => 'tfiles/kill_zero_timeout.log',
+        pidfile => 'tfiles/pid',
+        ubic_log => 'tfiles/ubic.term.log',
+        term_timeout => 0,
+    });
+    stop_daemon('tfiles/pid');
+    is(xqx('cat tfiles/kill_zero_timeout.log'), "", 'when term_timeout is 0, SIGKILL is sent immediately');
 
     start_daemon({
         function => sub {

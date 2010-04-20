@@ -16,7 +16,7 @@ use Ubic::Service::SimpleDaemon;
 
 my $service = Ubic::Service::SimpleDaemon->new({
     name => 'simple1',
-    bin => q{perl -e 'use IO::Handle; print "stdout\n"; print STDERR "stderr\n"; STDOUT->flush; STDERR->flush; sleep 1000'},
+    bin => ['perl', '-e', 'use IO::Handle; $SIG{TERM} = sub { exit 0 }; print "stdout\n"; print STDERR "stderr\n"; STDOUT->flush; STDERR->flush; sleep 1000'],
     user => $ENV{LOGNAME},
     stdout => 'tfiles/stdout',
     stderr => 'tfiles/stderr',

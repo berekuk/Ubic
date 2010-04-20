@@ -66,49 +66,79 @@ sub _pid2guid($) {
     return $guid;
 }
 
-# clean pidfile, actually
 # this method should be called only when pidfile is locked (check before removing?)
 sub _remove_pidfile($) {
     my ($file) = validate_pos(@_, { type => SCALAR });
-    xopen('>', $file); # we can't unlink pidfile - Yandex::Lockf can cause race conditions in that case
+    if (-d $file) {
+        if (-e "$file/pid") {
+            unlink "$file/pid" or die "Can't remove $file/pid: $!";
+        }
+    }
+    else {
+        unlink $file or die "Can't remove $file: $!";
+    }
+}
+
+sub _lock_pidfile($) {
+    my ($pidfile) = validate_pos(@_, { type => SCALAR });
+    if (-d $pidfile) {
+        # new-style pidfile
+        return lockf("$pidfile/lock", { nonblocking => 1 });
+    }
+    else {
+        return lockf($pidfile, { nonblocking => 1 });
+    }
 }
 
 # write guardian pid and guid to pidfile
 sub _write_pidfile($$) {
     my $file = shift;
+    unless (-d $file) {
+        die "piddir $file not exists";
+    }
     my $params = validate(@_, {
         pid => 1,
         guid => 1,
     });
     my ($pid, $guid) = @$params{qw/ pid guid /};
     my $self_pid = $$;
-    my $fh = xopen('>', $file);
+    my $fh = xopen('>', "$file/pid.new");
     print {$fh} "pid $self_pid\n";
     print {$fh} "guid $guid\n";
     print {$fh} "daemon $pid\n";
     $fh->flush;
     xclose($fh);
+    rename "$file/pid.new" => "$file/pid" or die "Can't commit pidfile $file: $!";
 }
 
 sub _read_pidfile($) {
     my ($file) = validate_pos(@_, { type => SCALAR });
-    my $fh = xopen('<', $file);
-    my $content = join '', <$fh>;
-    if ($content =~ /\A (\d+) \Z/x) {
-        # old format
-        return { pid => $1, format => 'old' };
-    }
-    elsif ($content =~ /\A pid \s+ (\d+) \n guid \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
-        # new format
-        return { pid => $1, guid => $2, daemon => $3, format => 'new' };
-    }
-    elsif ($content =~ /\A pid \s+ (\d+) \n started \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
-        # really deprecated format from testing 0.9.5 version
-        return { pid => $1, format => 'old' };
+    my $content;
+    my $parse_content = sub {
+        if ($content =~ /\A pid \s+ (\d+) \n guid \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
+            # new format
+            return { pid => $1, guid => $2, daemon => $3, format => 'new' };
+        }
+        else {
+            die "invalid pidfile content in pidfile $file";
+        }
+    };
+    if (-d $file) {
+        # pidfile as dir
+        my $fh = xopen('<', "$file/pid");
+        $content = join '', <$fh>;
+        return $parse_content->();
     }
     else {
-        # broken pidfile
-        return;
+        my $fh = xopen('<', $file);
+        $content = join '', <$fh>;
+        if ($content =~ /\A (\d+) \Z/x) {
+            # old format
+            return { pid => $1, format => 'old' };
+        }
+        else {
+            return $parse_content->();
+        }
     }
 }
 
@@ -142,11 +172,14 @@ Return value: C<not running> if daemon is already not running; C<stopped> if dae
 sub stop_daemon($;@) {
     my ($pidfile, @tail) = validate_pos(@_, { type => SCALAR }, 0);
     my $options = validate(@tail, {
-        timeout => { default => 5, regex => qr/^\d+$/ },
+        timeout => { default => 30, regex => qr/^\d+$/ },
     });
     my $timeout = $options->{timeout} if defined $options->{timeout};
 
-    unless (-s $pidfile) {
+    if (not -d $pidfile and not -s $pidfile) {
+        return 'not running';
+    }
+    if (-d $pidfile and not -e "$pidfile/pid") {
         return 'not running';
     }
 
@@ -223,14 +256,16 @@ If not specified, C</dev/null> will be assumed.
 
 Can contain integer number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to daemon.
 
-Default is zero, which means sigkill daemon immediately.
+Zero value means that guardian will send sigkill to daemon immediately.
+
+Default is 10 seconds.
 
 =back
 
 =cut
 sub start_daemon($) {
     my %options = validate(@_, {
-        bin => { type => SCALAR, optional => 1 },
+        bin => { type => SCALAR | ARRAYREF, optional => 1 },
         function => { type => CODEREF, optional => 1 },
         name => { type => SCALAR, optional => 1 },
         pidfile => { type => SCALAR },
@@ -238,7 +273,7 @@ sub start_daemon($) {
         stderr => { type => SCALAR, default => '/dev/null' },
         ubic_log => { type => SCALAR, default => '/dev/null' },
         user => { type => SCALAR, optional => 1 },
-        term_timeout => { type => SCALAR, default => 0, regex => qr/^\d+$/ },
+        term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
     });
     my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user, $term_timeout)
     = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user term_timeout /};
@@ -249,11 +284,23 @@ sub start_daemon($) {
         croak "Only one of 'bin' and 'function' should be specified";
     }
     unless (defined $name) {
-        $name = $bin || 'anonymous';
+        if (ref $bin) {
+            $name = $bin->[0];
+        }
+        else {
+            $name = $bin || 'anonymous';
+        }
     }
 
     if (check_daemon($pidfile)) {
         croak "Daemon with pidfile $pidfile already running, can't start";
+    }
+    if (-e $pidfile and not -d $pidfile) {
+        print "converting $pidfile to dir\n";
+        unlink $pidfile or die "Can't unlink $pidfile: $!";
+    }
+    unless (-d $pidfile) {
+        mkdir $pidfile or die "Can't create $pidfile: $!";
     }
 
     my $stdin = '/dev/null';
@@ -300,7 +347,7 @@ sub start_daemon($) {
             _log($ubic_fh, "self name: $0");
 
             _log($ubic_fh, "[$$] getting lock...");
-            $lock = lockf($pidfile, { nonblocking => 1 }) or die "Can't lock $pidfile";
+            $lock = _lock_pidfile($pidfile) or die "Can't lock $pidfile";
             _remove_pidfile($pidfile);
             _log($ubic_fh, "[$$] got lock");
 
@@ -346,11 +393,12 @@ sub start_daemon($) {
                 xprint($write_pipe, "pidfile written\n");
                 xclose($write_pipe);
 
+                $? = 0;
                 waitpid($child, 0);
                 if ($? > 0) {
                     my $msg;
                     if ($? & 127) {
-                        $msg = "Daemon failed with signal ".($? & 127);
+                        $msg = "Daemon $child failed with signal ".($? & 127);
                     }
                     else {
                         $msg = "Daemon failed: $?";
@@ -374,12 +422,10 @@ sub start_daemon($) {
                 xprint($write_pipe, "xexecing into daemon\n");
                 xclose($write_pipe);
 
-                if ($bin) {
-                    xexec($bin); # finally, run underlying binary
-                }
-                else {
-                    $function->();
-                }
+                # finally, run underlying binary
+                if (ref $bin)   { xexec(@$bin) }
+                elsif ($bin)    { xexec($bin) }
+                else            { $function->() }
 
             }
         };
@@ -413,10 +459,14 @@ Returns true if it is so.
 =cut
 sub check_daemon {
     my ($pidfile) = @_;
-    unless (-s $pidfile) {
+    if (not -d $pidfile and not -s $pidfile) {
+        return 0; # empty, old-style pidfile
+    }
+    if (-d $pidfile and not -e "$pidfile/pid") {
         return 0;
     }
-    my $lock = lockf($pidfile, { nonblocking => 1 });
+
+    my $lock = _lock_pidfile($pidfile);
     unless ($lock) {
         # locked => daemon is alive
         return 1;
@@ -426,9 +476,7 @@ sub check_daemon {
     # checking whether just ubic-guardian died or whole process group
     my $piddata = _read_pidfile($pidfile);
     if ($piddata->{format} and $piddata->{format} eq 'old') {
-        # ok, old-style pidfile, can't check daemon, let's just pretend that everything is ok
-        _read_pidfile($pidfile);
-        return 0;
+        die "deprecated pidfile format detected\n";
     }
     unless ($piddata->{daemon}) {
         use Data::Dumper;

@@ -69,7 +69,7 @@ File into which daemon's stderr will be redirected. Default is C</dev/null>.
 sub new {
     my $class = shift;
     my $params = validate(@_, {
-        bin => { type => SCALAR },
+        bin => { type => SCALAR | ARRAYREF },
         user => { type => SCALAR, optional => 1 },
         name => { type => SCALAR, optional => 1 },
         stdout => { type => SCALAR, optional => 1 },

@@ -122,15 +122,15 @@ sub new {
                 server => $params->{server},
                 %{$params->{server_args}},
             );
-            my $cmd = "plackup ";
+            my @cmd = ("plackup");
             foreach my $key (keys %args) {
-                $cmd .= "--$key ";
+                push @cmd, "--$key";
                 my $v = $args{$key};
-                $cmd .= "$v " if defined($v);
+                push @cmd, $v if defined($v);
             }
-            $cmd .= $params->{app};
+            push @cmd, $params->{app};
 
-            my $daemon_opts = { bin => $cmd, pidfile => $pidfile, term_timeout => 5 };
+            my $daemon_opts = { bin => \@cmd, pidfile => $pidfile, term_timeout => 5 };
             for (qw/ubic_log stdout stderr/) {
                 $daemon_opts->{$_} = $params->{$_} if $params->{$_};
             }
