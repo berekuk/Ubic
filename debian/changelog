@@ -1,3 +1,10 @@
+yandex-ubic (0.9.18) UNRELEASED; urgency=low
+
+  * Ubic::AccessGuard: 'uninitialized' warning fixed:wq
+  * Ubic::Service::SimpleDaemon: support 'stdout' and 'stderr' options
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 20 Apr 2010 02:12:37 +0400
+
 yandex-ubic (0.9.17) unstable; urgency=low
 
   * Ubic::Run supports --force flag

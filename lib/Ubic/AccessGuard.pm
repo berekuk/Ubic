@@ -71,6 +71,9 @@ sub new {
             die result('unknown', "You are $current_user, and service ".$service->name." should be started from $user");
         }
         my $new_uid = getpwnam($user);
+        unless (defined $new_uid) {
+            die "user $user not found";
+        }
         $> = $new_uid;
         if ($> != $new_uid) {
             die result('unknown', "Failed to change user from $> to $new_uid: $!");

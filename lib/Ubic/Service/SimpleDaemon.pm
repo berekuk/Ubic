@@ -51,6 +51,18 @@ Daemon binary.
 
 Service's name. Optional, will usually be set by upper-level multiservice.
 
+=item I<user>
+
+User under which daemon will be started. Optional, default is C<root>.
+
+=item I<stdout>
+
+File into which daemon's stdout will be redirected. Default is C</dev/null>.
+
+=item I<stderr>
+
+File into which daemon's stderr will be redirected. Default is C</dev/null>.
+
 =back
 
 =cut
@@ -60,6 +72,8 @@ sub new {
         bin => { type => SCALAR },
         user => { type => SCALAR, optional => 1 },
         name => { type => SCALAR, optional => 1 },
+        stdout => { type => SCALAR, optional => 1 },
+        stderr => { type => SCALAR, optional => 1 },
     });
 
     return bless {%$params} => $class;
@@ -81,8 +95,8 @@ sub start_impl {
     my $start_params = {
         pidfile => $self->pidfile,
         bin => $self->{bin},
-        stdout => "/dev/null",
-        stderr => "/dev/null",
+        stdout => $self->{stdout} || "/dev/null",
+        stderr => $self->{stderr} || "/dev/null",
     };
     if ($self->{user}) {
         $start_params->{user} = $self->{user};
