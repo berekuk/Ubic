@@ -224,6 +224,8 @@ Start daemon. Params:
 
 Binary which will be daemonized.
 
+Can be string or arrayref with arguments. Arrayref-style values are recommended in complex cases, C<exec()> can invoke sh shell which will immediately exit on sigterm.
+
 =item I<function>
 
 Function which will be daemonized. One and only one of I<function> and I<bin> must be specified.
