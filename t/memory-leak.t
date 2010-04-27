@@ -7,8 +7,9 @@ use Test::More tests => 2;
 
 use lib 'lib';
 
-use PPB::Test::TFiles;
-use Yandex::X qw(xqx);
+use Perl6::Slurp;
+use t::Utils;
+rebuild_tfiles();
 
 use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');
@@ -19,7 +20,7 @@ Ubic->set_service_dir('t/service');
         my $status = Ubic->cached_status('multi-impl.abc');
     }
 
-    my $stat = xqx("cat /proc/$$/statm");
+    my $stat = slurp("/proc/$$/statm");
     my ($mem) = $stat =~ /^(\d+)/;
     cmp_ok($mem, '<', 15_000);
 }
@@ -31,7 +32,7 @@ Ubic->set_service_dir('t/service');
         };
     }
 
-    my $stat = xqx("cat /proc/$$/statm");
+    my $stat = slurp("/proc/$$/statm");
     my ($mem) = $stat =~ /^(\d+)/;
     cmp_ok($mem, '<', 15_000);
 }

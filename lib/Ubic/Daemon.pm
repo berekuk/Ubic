@@ -29,8 +29,7 @@ If you really need to get daemon's pid, save it from daemon or ask me for public
 
 use IO::Handle;
 use POSIX qw(setsid);
-use Yandex::X;
-use Yandex::Lockf 3.0;
+use Ubic::Lockf;
 use Time::HiRes qw(sleep);
 
 use Carp;
@@ -79,14 +78,15 @@ sub _remove_pidfile($) {
     }
 }
 
-sub _lock_pidfile($) {
-    my ($pidfile) = validate_pos(@_, { type => SCALAR });
+sub _lock_pidfile($;$) {
+    my ($pidfile, $timeout) = validate_pos(@_, { type => SCALAR }, 0);
+    $timeout ||= 0;
     if (-d $pidfile) {
         # new-style pidfile
-        return lockf("$pidfile/lock", { nonblocking => 1 });
+        return lockf("$pidfile/lock", { timeout => $timeout });
     }
     else {
-        return lockf($pidfile, { nonblocking => 1 });
+        return lockf($pidfile, { blocking => 0 });
     }
 }
 
@@ -102,15 +102,18 @@ sub _write_pidfile($$) {
     });
     my ($pid, $guid) = @$params{qw/ pid guid /};
     my $self_pid = $$;
-    my $fh = xopen('>', "$file/pid.new");
+    open my $fh, '>', "$file/pid.new" or die "Can't write '$file/pid.new': $!";
     print {$fh} "pid $self_pid\n";
     print {$fh} "guid $guid\n";
     print {$fh} "daemon $pid\n";
     $fh->flush;
-    xclose($fh);
+    close $fh or die "Can't close '$file/pid.new': $!";
     rename "$file/pid.new" => "$file/pid" or die "Can't commit pidfile $file: $!";
 }
 
+# read daemon info from pidfile
+# returns undef if pidfile not found
+# throws exceptions when content is invalid
 sub _read_pidfile($) {
     my ($file) = validate_pos(@_, { type => SCALAR });
     my $content;
@@ -125,12 +128,24 @@ sub _read_pidfile($) {
     };
     if (-d $file) {
         # pidfile as dir
-        my $fh = xopen('<', "$file/pid");
+        my $open_success = open my $fh, '<', "$file/pid";
+        unless ($open_success) {
+            if ($!{ENOENT}) {
+                return; # pidfile not found, daemon is not running
+            }
+            else {
+                die "Failed to open '$file/pid': $!";
+            }
+        }
         $content = join '', <$fh>;
         return $parse_content->();
     }
     else {
-        my $fh = xopen('<', $file);
+        # deprecated - single pidfile without piddir
+        if (-f $file and not -s $file) {
+            return; # empty pidfile - old way to stop services
+        }
+        open my $fh, '<', $file or die "Failed to open $file: $!";
         $content = join '', <$fh>;
         if ($content =~ /\A (\d+) \Z/x) {
             # old format
@@ -145,7 +160,7 @@ sub _read_pidfile($) {
 sub _log {
     my $fh = shift;
     return unless defined $fh;
-    xprint($fh, '[', scalar(localtime), "]\t$$\t", @_, "\n");
+    print {$fh} '[', scalar(localtime), "]\t$$\t", @_, "\n";
 }
 
 =item B<stop_daemon($pidfile)>
@@ -179,13 +194,9 @@ sub stop_daemon($;@) {
     if (not -d $pidfile and not -s $pidfile) {
         return 'not running';
     }
-    if (-d $pidfile and not -e "$pidfile/pid") {
-        return 'not running';
-    }
-
     my $piddata = _read_pidfile($pidfile);
     unless ($piddata) {
-        die "Can't read $pidfile"; # or silently remove?
+        return 'not running';
     }
     my $pid = $piddata->{pid};
 
@@ -224,11 +235,13 @@ Start daemon. Params:
 
 Binary which will be daemonized.
 
-Can be string or arrayref with arguments. Arrayref-style values are recommended in complex cases, C<exec()> can invoke sh shell which will immediately exit on sigterm.
+Can be string or arrayref with arguments. Arrayref-style values are recommended in complex cases, because otherwise C<exec()> can invoke sh shell which will immediately exit on sigterm.
 
 =item I<function>
 
 Function which will be daemonized. One and only one of I<function> and I<bin> must be specified.
+
+Function daemonization is a dangerous feature and will probably be deprecated and removed in future.
 
 =item I<name>
 
@@ -310,7 +323,10 @@ sub start_daemon($) {
     pipe my ($read_pipe, $write_pipe) or die "pipe failed";
     my $child;
 
-    unless ($child = xfork) {
+    unless ($child = fork) {
+        unless (defined $child) {
+            die "fork failed";
+        }
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
@@ -323,10 +339,15 @@ sub start_daemon($) {
         };
 
         eval {
-            xclose($read_pipe);
+            close($read_pipe) or die "Can't close read pipe: $!";
             # forking child - will reopen standard streams, daemonize itself, fork into daemon binary and wait for it
 
-            xfork() and POSIX::_exit(0); # detach from parent process
+            {
+                my $tmp_pid = fork() and POSIX::_exit(0); # detach from parent process
+                unless (defined $tmp_pid) {
+                    die "fork failed";
+                }
+            }
 
             # Close all inherited filehandles except $write_pipe (it will be closed explicitly).
             # Do not close fh if uses 'function' option instead of 'bin' ('function' should be deprecated).
@@ -338,10 +359,10 @@ sub start_daemon($) {
                 }
             }
 
-            open STDOUT, ">>", $stdout or die "Can't write to '$stdout'";
-            open STDERR, ">>", $stderr or die "Can't write to '$stderr'";
-            open STDIN, "<", $stdin or die "Can't read from '$stdin'";
-            $ubic_fh = xopen(">>", $ubic_log);
+            open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
+            open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+            open STDIN, "<", $stdin or die "Can't read from '$stdin': $!";
+            open $ubic_fh, ">>", $ubic_log or die "Can't write to '$ubic_log': $!";
             $ubic_fh->autoflush(1);
             $SIG{HUP} = 'ignore';
             $0 = "ubic-guardian $name";
@@ -349,7 +370,13 @@ sub start_daemon($) {
             _log($ubic_fh, "self name: $0");
 
             _log($ubic_fh, "[$$] getting lock...");
-            $lock = _lock_pidfile($pidfile) or die "Can't lock $pidfile";
+
+            # We're passing 'timeout' option to lockf call to get rid of races.
+            # There should be no races when Ubic::Daemon is used in context of
+            # ubic service, because services has additional lock, but
+            # Ubic::Daemon can be useful without services as well.
+            $lock = _lock_pidfile($pidfile, 5) or die "Can't lock $pidfile";
+
             _remove_pidfile($pidfile);
             _log($ubic_fh, "[$$] got lock");
 
@@ -361,7 +388,8 @@ sub start_daemon($) {
                 POSIX::setuid($id);
             }
 
-            if (my $child = xfork) {
+            my $child;
+            if ($child = fork) {
                 # guardian
 
                 my $child_guid = _pid2guid($child);
@@ -392,8 +420,8 @@ sub start_daemon($) {
                         $kill_sub->();
                     }
                 };
-                xprint($write_pipe, "pidfile written\n");
-                xclose($write_pipe);
+                print {$write_pipe} "pidfile written\n" or die "Can't write to pipe: $!";
+                close $write_pipe or die "Can't close pipe: $!";
 
                 $? = 0;
                 waitpid($child, 0);
@@ -416,18 +444,27 @@ sub start_daemon($) {
             }
             else {
                 # daemon
+                unless (defined $child) {
+                    die "fork failed";
+                }
 
                 # start new process group - become immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
                 $0 = "ubic-daemon $name";
 
-                xprint($write_pipe, "xexecing into daemon\n");
-                xclose($write_pipe);
+                print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
+                close($write_pipe) or die "Can't close pipe: $!";
 
                 # finally, run underlying binary
-                if (ref $bin)   { xexec(@$bin) }
-                elsif ($bin)    { xexec($bin) }
-                else            { $function->() }
+                if (ref $bin) {
+                    exec(@$bin) or die "exec failed: $!";
+                }
+                elsif ($bin) {
+                    exec($bin) or die "exec failed: $!";
+                }
+                else {
+                    $function->();
+                }
 
             }
         };
@@ -438,15 +475,15 @@ sub start_daemon($) {
         $instant_exit->(1);
     }
     waitpid($child, 0); # child should've exited immediately
-    xclose($write_pipe);
+    close($write_pipe) or die "Can't close write_pipe: $!";
 
     my $out = '';
     while ( my $data = <$read_pipe>) {
         $out .= $data;
     }
-    xclose($read_pipe);
-    if ($out =~ /^xexecing into daemon$/m and $out =~ /^pidfile written$/m) {
-        # TODO - check daemon's name to make sure that xexec happened
+    close($read_pipe) or die "Can't close read_pipe: $!";
+    if ($out =~ /^execing into daemon$/m and $out =~ /^pidfile written$/m) {
+        # TODO - check daemon's name to make sure that exec happened
         return;
     }
     die "Failed to create daemon: '$out'";
@@ -474,9 +511,13 @@ sub check_daemon {
         return 1;
     }
 
+    my $piddata = _read_pidfile($pidfile);
+    unless ($piddata) {
+        return 0;
+    }
+
     # acquired lock when pidfile exists
     # checking whether just ubic-guardian died or whole process group
-    my $piddata = _read_pidfile($pidfile);
     if ($piddata->{format} and $piddata->{format} eq 'old') {
         die "deprecated pidfile format detected\n";
     }
@@ -489,11 +530,11 @@ sub check_daemon {
         print "pidfile $pidfile removed - daemon with cached pid $piddata->{daemon} not found\n";
         return 0;
     }
-    my $daemon_cmd_fh = xopen('<', "/proc/$piddata->{daemon}/cmdline");
+    open my $daemon_cmd_fh, '<', "/proc/$piddata->{daemon}/cmdline" or die "Can't open daemon's cmdline: $!";
     my $daemon_cmd = <$daemon_cmd_fh>;
     $daemon_cmd =~ s/\x{00}$//;
     $daemon_cmd =~ s/\x{00}/ /g;
-    xclose($daemon_cmd_fh);
+    close $daemon_cmd_fh;
 
     my @procdir_stat = stat("/proc/$piddata->{daemon}");
     my $guid = _pid2guid($piddata->{daemon});

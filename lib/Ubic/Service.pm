@@ -3,8 +3,6 @@ package Ubic::Service;
 use strict;
 use warnings;
 
-use Yandex::Version '{{DEBIAN_VERSION}}';
-
 =head1 NAME
 
 Ubic::Service - interface and base class for any ubic service

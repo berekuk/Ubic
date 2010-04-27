@@ -7,8 +7,8 @@ use Test::More tests => 6;
 
 use lib 'lib';
 
-use PPB::Test::TFiles;
-use Yandex::X;
+use t::Utils;
+rebuild_tfiles();
 
 use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');

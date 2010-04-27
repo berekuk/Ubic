@@ -8,9 +8,10 @@ use Test::Exception;
 
 use lib 'lib';
 
-use Yandex::X;
-xsystem('rm -rf tfiles');
-xsystem('mkdir tfiles');
+use Perl6::Slurp;
+
+use t::Utils;
+rebuild_tfiles();
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 
@@ -81,11 +82,14 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     });
     ok(check_daemon("tfiles/pid"), 'daemon started');
 
-    chomp(my $piddata = xqx('cat tfiles/pid/pid'));
+    chomp(my $piddata = slurp('tfiles/pid/pid'));
     my ($pid) = $piddata =~ /pid\s+(\d+)/ or die "Unknown pidfile content '$piddata'";
     kill -9 => $pid;
     sleep 1;
-    ok(!check_daemon("tfiles/pid"), 'ubic-guardian is dead');
+    {
+        my $ignore_warn = ignore_warn(qr{(killing unguarded daemon|pidfile tfiles/pid removed)});
+        ok(!check_daemon("tfiles/pid"), 'ubic-guardian is dead');
+    }
 
     start_daemon({
         bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
@@ -116,7 +120,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
         ubic_log => 'tfiles/ubic.term.log',
     });
     stop_daemon('tfiles/pid');
-    is(xqx('cat tfiles/kill_default.log'), "sigterm caught\n", 'default kill signal is SIGTERM - log written');
+    is(slurp('tfiles/kill_default.log'), "sigterm caught\n", 'default kill signal is SIGTERM - log written');
 
     start_daemon({
         function => sub {
@@ -133,7 +137,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
         term_timeout => 0,
     });
     stop_daemon('tfiles/pid');
-    is(xqx('cat tfiles/kill_zero_timeout.log'), "", 'when term_timeout is 0, SIGKILL is sent immediately');
+    is(slurp('tfiles/kill_zero_timeout.log'), "", 'when term_timeout is 0, SIGKILL is sent immediately');
 
     start_daemon({
         function => sub {
@@ -150,7 +154,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
         term_timeout => 1,
     });
     stop_daemon('tfiles/pid');
-    is(xqx('cat tfiles/kill_term.log'), "sigterm caught\n", 'process caught SIGTERM and written something in log');
+    is(slurp('tfiles/kill_term.log'), "sigterm caught\n", 'process caught SIGTERM and written something in log');
 
     start_daemon({
         function => sub {
@@ -168,7 +172,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
         term_timeout => 1,
     });
     stop_daemon('tfiles/pid');
-    is(xqx('cat tfiles/kill_4.log'), '', 'process caught SIGTERM but was too slow to do anything about it');
+    is(slurp('tfiles/kill_4.log'), '', 'process caught SIGTERM but was too slow to do anything about it');
 
     throws_ok(sub {
         start_daemon({

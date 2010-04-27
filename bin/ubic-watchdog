@@ -16,9 +16,7 @@ ubic-watchdog - watchdog which checks all ubic services.
 use Getopt::Long 2.33;
 use Pod::Usage;
 
-use Yandex::Logger;
-use Yandex::Lockf;
-use Yandex::X qw(xfork);
+use Ubic::Logger;
 use Ubic;
 use Try::Tiny;
 
@@ -31,59 +29,61 @@ if ($<) {
     die "ubic-watchdog requires root access";
 }
 
-my @services = Ubic->services;
+sub check($);
 
-sub check {
+sub check_all {
+    my @services = @_;
+    for my $service (@services) {
+        my $child = fork;
+        unless (defined $child) {
+            die "fork failed";
+        }
+        unless ($child) {
+            check($service);
+            exit;
+        }
+    }
+    1 while wait() > 0;
+    return;
+}
+
+sub check($) {
     my $service = shift;
     my $name = $service->full_name;
     if ($verbose) {
-        INFO "Checking $name\n";
+        INFO("Checking $name");
     }
 
     try {
         my $lock = Ubic->lock($name);
         if ($service->isa('Ubic::Multiservice')) {
-            INFO "$name is multiservice, checking subservices\n" if $verbose;
-            for my $service ($service->services) {
-                unless (xfork) {
-                    check($service);
-                    exit;
-                }
-            }
-            1 while wait() > 0;
-            return;
+            INFO("$name is multiservice, checking subservices") if $verbose;
+            check_all($service->services);
         }
         unless (Ubic->is_enabled($name)) {
-            INFO "$name disabled\n" if $verbose;
+            INFO("$name disabled") if $verbose;
             return;
         }
         # TODO - alarm?
         my $status = Ubic->status($name);
         unless ($status eq 'running') {
             Ubic->set_cached_status($name, $status->status); # following start can throw exception
-            INFO "$name is broken, restarting";
+            ERROR("$name is broken, restarting");
             Ubic->start($name);
         }
         $status = $service->status;
         if ($status ne 'running') {
-            INFO "$name started, but status is still '$status'";
+            INFO("$name started, but status is still '$status'");
         }
         Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
     }
     catch {
-        ERROR "Failed to check $name: $_";
+        ERROR("Failed to check $name: $_");
     };
 
-    if ($verbose) {
-        INFO "$name checked\n";
-    }
+    INFO("$name checked") if $verbose;
 }
 
-for my $service (@services) {
-    unless (xfork) {
-        check($service);
-        exit;
-    }
-}
-1 while wait() > 0;
+my @services = Ubic->services;
+check_all(@services);
 

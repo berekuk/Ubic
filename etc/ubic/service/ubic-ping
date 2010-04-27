@@ -1,7 +1,6 @@
 # vim: ft=perl
 use Ubic::Service::Common;
 use Ubic::Daemon qw(:all);
-use Yandex::Persistent;
 use LWP::Simple;
 use POSIX;
 use Time::HiRes qw(sleep);
@@ -22,7 +21,6 @@ Ubic::Service::Common->new({
             name => 'ubic-ping',
             pidfile => $pidfile,
         });
-        sleep 0.5; # sorry :(
     },
     stop => sub {
         stop_daemon($pidfile);
@@ -38,4 +36,5 @@ Ubic::Service::Common->new({
     },
     port => $port,
     user => $user,
+    timeout_options => { start => { step => 0.1, trials => 3 }},
 });

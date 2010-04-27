@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-use Yandex::Version '{{DEBIAN_VERSION}}';
+use version; our $VERSION = '0.9.95';
 
 =head1 NAME
 
@@ -42,9 +42,8 @@ use Carp;
 use IO::Handle;
 use Storable qw(freeze thaw);
 use Try::Tiny;
-use Yandex::Persistent;
-use Yandex::Lockf;
-use Yandex::X qw(xopen xclose xfork);
+use Ubic::Persistent;
+use Ubic::Lockf;
 use Scalar::Util qw(blessed);
 
 our $SINGLETON;
@@ -304,6 +303,7 @@ sub disable($$) {
     my $status_obj = $self->status_obj($name);
     delete $status_obj->{status};
     $status_obj->{enabled} = 0;
+    $status_obj->commit;
 }
 
 
@@ -538,7 +538,7 @@ It's a bad idea to call this from any other class than C<Ubic>, but if you'll ev
 sub status_obj($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->status_file($name));
+    return Ubic::Persistent->new($self->status_file($name));
 }
 
 =item B<status_obj_ro($name)>
@@ -549,7 +549,7 @@ Get readonly, nonlocked status persistent object by service's name.
 sub status_obj_ro($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, 1);
-    return Yandex::Persistent->new($self->status_file($name), { lock => 0, auto_commit => 0 }); # lock => 0 should allow to construct persistent even without writing rights on it
+    return Ubic::Persistent->load($self->status_file($name));
 }
 
 =item B<lock($name)>
@@ -578,7 +578,7 @@ sub lock($$) {
     package Ubic::Lock;
     use strict;
     use warnings;
-    use Yandex::Lockf;
+    use Ubic::Lockf;
     use Carp qw(longmess);
     sub new {
         my ($class, $name, $ubic) = @_;
@@ -661,7 +661,10 @@ sub forked_call {
     my ($self, $callback) = @_;
     my $tmp_file = $self->{tmp_dir}."/".time.".".rand(1000000);
     my $child;
-    unless ($child = xfork) {
+    unless ($child = fork) {
+        unless (defined $child) {
+            die "fork failed";
+        }
         my $result;
         try {
             $result = { ok => $callback->() };
@@ -671,9 +674,9 @@ sub forked_call {
         };
 
         try {
-            my $fh = xopen(">", "$tmp_file.tmp");
+            open my $fh, '>', "$tmp_file.tmp" or die "Can't write to '$tmp_file.tmp: $!";
             print {$fh} freeze($result);
-            xclose($fh);
+            close $fh or die "Can't close $tmp_file.tmp: $!";
             STDOUT->flush;
             STDERR->flush;
             rename "$tmp_file.tmp", $tmp_file;
@@ -689,9 +692,9 @@ sub forked_call {
     unless (-e $tmp_file) {
         die "temp file not found after fork (probably failed write to $self->{tmp_dir})";
     }
-    my $fh = xopen('<', $tmp_file);
+    open my $fh, '<', $tmp_file or die "Can't read $tmp_file: $!";
     my $content = do { local $/; <$fh>; };
-    xclose($fh);
+    close $fh;
     unlink $tmp_file;
     my $result = thaw($content);
     if ($result->{error}) {

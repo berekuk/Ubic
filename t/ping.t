@@ -7,13 +7,18 @@ use Test::More tests => 24;
 
 use lib 'lib';
 
-use PPB::Test::TFiles;
 use LWP::UserAgent;
 use Ubic;
 use Ubic::PortMap;
+use Cwd;
+
+use t::Utils;
+rebuild_tfiles();
 
 Ubic->set_ubic_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
+$ENV{PERL5LIB} = getcwd().'/lib';
+my $ignore_warn = ignore_warn(qr/Can't construct 'broken': failed/);
 
 END {
     Ubic->stop('ubic-ping');

@@ -34,8 +34,6 @@ use Params::Validate qw(:all);
 
 use base qw(Ubic::Service::Skeleton);
 
-use Yandex::Lockf;
-use Yandex::Persistent;
 use Carp;
 
 =head1 CONSTRUCTOR

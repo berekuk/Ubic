@@ -4,18 +4,20 @@ use strict;
 use warnings;
 
 use Ubic::Service::Common;
-use Yandex::Persistent;
+use Storable;
 
+my $file = 'tfiles/fake-http-service2.status';
 return Ubic::Service::Common->new({
     start => sub {
-        Yandex::Persistent->new('tfiles/fake-http-service2.status')->{status} = 'running';
+        store { status => 'running' } => $file;
     },
     stop => sub {
-        Yandex::Persistent->new('tfiles/fake-http-service2.status')->{status} = 'not running';
+        store { status => 'not running' } => $file;
     },
     status => sub {
-        Yandex::Persistent->new('tfiles/fake-http-service2.status')->{status};
+        return unless -e $file;
+        return retrieve($file)->{status};
     },
-    port => 12347, # conflicts with fake-http-service2
+    port => 12347, # conflicts with fake-http-service
     user => $ENV{LOGNAME},
 });

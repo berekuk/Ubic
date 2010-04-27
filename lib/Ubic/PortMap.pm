@@ -20,8 +20,8 @@ Ubic::PortMap - update and read mapping of ports to service names.
 
 =cut
 
-use Yandex::Logger;
-use Yandex::Persistent;
+use Ubic::Logger;
+use Ubic::Persistent;
 use Ubic;
 use Try::Tiny;
 
@@ -41,7 +41,7 @@ Update portmap file.
 sub update {
     validate_pos(@_);
 
-    my $portmap = Yandex::Persistent->new(_portmap_file(), { auto_commit => 0 });
+    my $portmap = Ubic::Persistent->new(_portmap_file());
     my %port2service;
 
     my $process_tree;
@@ -73,7 +73,7 @@ sub update {
     }
     $process_tree->();
     $portmap->commit();
-    undef $portmap; # memory leak bug in perl! closure doesn't allow local variable to be destroyed
+    undef $portmap; # fighting memory leaks - closure doesn't allow local variable to be destroyed
 
     return;
 }
@@ -87,7 +87,7 @@ If there are several services with one port, it will try to find enabled service
 =cut
 sub port2name($) {
     my ($port) = validate_pos(@_, { regex => qr/^\d+$/ });
-    my $portmap = Yandex::Persistent->new(_portmap_file(), { read_only => 0 });
+    my $portmap = Ubic::Persistent->load(_portmap_file());
     return unless $portmap->{$port};
     my @names = @{ $portmap->{$port} };
     while (my $name = shift @names) {

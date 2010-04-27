@@ -8,7 +8,8 @@ use Test::Exception;
 
 use lib 'lib';
 
-use PPB::Test::TFiles;
+use t::Utils;
+rebuild_tfiles();
 
 use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');

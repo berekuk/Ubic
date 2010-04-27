@@ -9,7 +9,6 @@ Ubic::Service::Skeleton - skeleton of any service with common start/stop logic
 
 =cut
 
-use Yandex::Lockf;
 use Ubic::Result qw(result);
 use Scalar::Util qw(blessed);
 use Time::HiRes qw(sleep);

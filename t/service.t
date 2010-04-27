@@ -7,9 +7,8 @@ use Test::More tests => 16;
 
 use lib 'lib';
 
-use Yandex::X;
-xsystem('rm -rf tfiles');
-xsystem('mkdir tfiles');
+use t::Utils;
+rebuild_tfiles();
 
 use Ubic::Service::Common;
 

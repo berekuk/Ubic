@@ -1,3 +1,18 @@
+yandex-ubic (0.9.95) unstable; urgency=low
+
+  * preparing to opensource release:
+   - don't depend on Yandex::Version, set version manually
+   - don't depend on Yandex::Lockf anymore, useful lockf code copypasted in
+     Ubic::Lockf
+   - Yandex::Persistent bits copypasted as Ubic::Persistent
+   - primitive logger module Ubic::Logger instead of heavy log4perl
+  * Ubic::Daemon start_daemon function takes blocking lock with timeout
+  * Ubic::Service::PSGI and Ubic::Service::ProcManager are moved to separate
+    packages
+  * tests ignore some warnings for the sake of clearer output
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 27 Apr 2010 16:32:41 +0400
+
 yandex-ubic (0.9.90) unstable; urgency=low
 
   * Ubic::Daemon:

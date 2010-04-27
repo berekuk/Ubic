@@ -8,9 +8,10 @@ use Test::More tests => 5;
 use lib 'lib';
 
 use Time::HiRes qw(sleep);
-use Yandex::X;
-xsystem('rm -rf tfiles');
-xsystem('mkdir tfiles');
+
+use Perl6::Slurp;
+use t::Utils;
+rebuild_tfiles();
 
 use Ubic::Service::SimpleDaemon;
 
@@ -31,6 +32,6 @@ sleep 1;
 $service->stop;
 is($service->status, 'not running', 'stop works');
 
-is(xqx('cat tfiles/stdout'), "stdout\n", 'daemon stdout');
-is(xqx('cat tfiles/stderr'), "stderr\n", 'daemon stderr');
+is(slurp('tfiles/stdout'), "stdout\n", 'daemon stdout');
+is(slurp('tfiles/stderr'), "stderr\n", 'daemon stderr');
 
