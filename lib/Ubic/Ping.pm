@@ -8,7 +8,7 @@ use warnings;
 
 =head1 NAME
 
-ubic-ping - http server which returns service status by it's name or port
+Ubic::Ping - http server which returns service status by it's name or port
 
 =cut
 
@@ -19,7 +19,7 @@ use Try::Tiny;
 
 use base qw(HTTP::Server::Simple::CGI);
 
-sub print_status($;$) {
+sub _print_status($;$) {
     my ($name, $options) = validate_pos(@_, 1, { type => HASHREF, default => {} });
 
     unless (Ubic->is_enabled($name)) {
@@ -74,7 +74,7 @@ sub handle_request {
                 print "Service at port '$port' not found\n";
                 return;
             }
-            print_status($name, { noc => 1 });
+            _print_status($name, { noc => 1 });
             return;
         }
         elsif ($cgi->path_info =~ m{^/status/port/(\d+)/?$}) {
@@ -85,7 +85,7 @@ sub handle_request {
                 print "Service at port '$port' not found\n";
                 return;
             }
-            print_status($name);
+            _print_status($name);
             return;
         }
         elsif (my ($name) = $cgi->path_info =~ m{^/status/service/(.+?)/?$}) {
@@ -94,7 +94,7 @@ sub handle_request {
                 print "Service with name '$name' not found\n";
                 return;
             }
-            print_status($name);
+            _print_status($name);
         }
         else {
             print "HTTP/1.0 404 Not found\r\n\r\n";

@@ -22,6 +22,8 @@ In future it probably maintain other ubic metadata as well.
 use Getopt::Long 2.33;
 use Pod::Usage;
 
+return 1 if caller();
+
 GetOptions() or pod2usage(2);
 pod2usage(2) if @ARGV;
 

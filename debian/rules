@@ -1,6 +1,55 @@
 #!/usr/bin/make -f
 
-include /usr/share/cdbs/1/class/makefile.mk
-include /usr/share/cdbs/1/class/ppb.mk
+PACKAGE=$(shell dh_listpackages)
 
-DEB_MAKE_CHECK_TARGET=test
+ifndef PERL
+PERL = /usr/bin/perl
+endif
+
+TMP     =$(CURDIR)/debian/$(PACKAGE)
+
+build: debian/build-stamp
+debian/build-stamp:
+	dh_testdir
+	$(PERL) Build.PL installdirs=vendor
+	$(PERL) Build
+	$(PERL) Build test
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean debian/build-stamp debian/install-stamp
+	[ ! -f Build ] || $(PERL) Build distclean
+
+install: debian/install-stamp
+debian/install-stamp: debian/build-stamp
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	$(PERL) Build install destdir=$(TMP) create_packlist=0
+	cp -r etc $(TMP)/
+	touch $@
+
+binary-arch:
+# We have nothing to do here for an architecture-independent package
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs README
+	dh_installexamples
+	dh_installchangelogs Changes
+	dh_installdirs
+	dh_installcron
+	dh_installlogrotate
+	dh_perl
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary

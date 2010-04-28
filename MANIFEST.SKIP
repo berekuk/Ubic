@@ -1,0 +1,10 @@
+^\.git
+^\.gitignore
+^tfiles
+^debian
+^blib
+^_build
+^Build$
+^MANIFEST\.bak
+^cover_db
+^Ubic-.*

@@ -1,2 +1,11 @@
 /tfiles
 /man
+/blib
+/pm_to_blib
+/MANIFEST.bak
+/cover_db
+/Ubic-*
+/_build
+/Build
+/META.yml
+/MYMETA.yml

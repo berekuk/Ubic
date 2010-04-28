@@ -1,1 +1,44 @@
-Universal framework...^W^W Something for writing init scripts.
+Ubic version 1.00
+===========================
+
+Universal framework...^W^W Something for writing daemons, init scripts and other services.
+
+INSTALLATION
+
+To install this module, run the following commands:
+
+	perl Build.PL
+	./Build
+	./Build test
+	./Build install
+
+SUPPORT AND DOCUMENTATION
+
+After installing, you can find documentation for this module with the
+perldoc command.
+
+    perldoc Ubic
+
+You can also look for information at:
+
+    RT, CPAN's request tracker
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Ubic
+
+    AnnoCPAN, Annotated CPAN documentation
+        http://annocpan.org/dist/Ubic
+
+    CPAN Ratings
+        http://cpanratings.perl.org/d/Ubic
+
+    Search CPAN
+        http://search.cpan.org/dist/Ubic/
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (c) 2009-2010 Yandex LTD. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+See <http://www.perl.com/perl/misc/Artistic.html>
+

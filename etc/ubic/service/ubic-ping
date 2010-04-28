@@ -5,10 +5,9 @@ use LWP::Simple;
 use POSIX;
 use Time::HiRes qw(sleep);
 
-my $code = $ENV{UBIC_SERVICE_PING_CODE} || '/usr/share/ubic/ubic-ping';
-require $code;
+use Ubic::Ping;
 
-# ugly; i really need to write Yandex::Catalog...
+# ugly; waiting for druxa's Mopheus to save us all...
 my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
 my $pidfile = $ENV{UBIC_SERVICE_PING_PID} || "/var/lib/ubic/ubic-ping.pid";
 my $user = $ENV{UBIC_SERVICE_PING_USER} || 'root';
@@ -17,7 +16,7 @@ Ubic::Service::Common->new({
     start => sub {
         my $pid;
         start_daemon({
-            bin => qq{perl -e 'require "$code"; Ubic::Ping->new($port)->run;'},
+            bin => qq{perl -MUbic::Ping -e 'Ubic::Ping->new($port)->run;'},
             name => 'ubic-ping',
             pidfile => $pidfile,
         });

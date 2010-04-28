@@ -31,6 +31,8 @@ use Pod::Usage;
 use Ubic;
 use Ubic::Cmd;
 
+return 1 if caller();
+
 my $force;
 GetOptions(
     'f|force' => \$force,

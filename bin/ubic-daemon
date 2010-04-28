@@ -22,6 +22,8 @@ use Ubic::Daemon qw(start_daemon);
 my $name;
 my $pid_dir = '/var/lib/ubic/ubic-daemon/pid';
 
+return 1 if caller();
+
 GetOptions(
     'name=s'    => \$name,
     'pid-dir=s' => \$pid_dir,
