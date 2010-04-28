@@ -1,38 +1,46 @@
 Ubic version 1.00
 ===========================
 
-Universal framework...^W^W Something for writing daemons, init scripts and other services.
+Toolkit for writing daemons, init scripts and services in perl.
 
 INSTALLATION
 
-To install this module, run the following commands:
+Full ubic installation requires crontab, configs and running watchdog,
+so installing through 'cpan -i' is currently incomplete.
+
+To install ubic modules, run the following commands:
 
 	perl Build.PL
 	./Build
 	./Build test
 	./Build install
 
+For full install on Debian/Ubuntu, use standard debian packaging commands:
+	debuild && sudo debi
+
+For non-Debian systems, basically you'll need to:
+ - copy all files from etc/ into /etc
+ - copy debian/ubic.logrotate into /etc/logrotate.d/ubic and debian/ubic.cron.d into /etc/cron.d/ubic
+ - create all dirs from debian/ubic.dirs
+ - run commands from debian/ubic.postinst
+
+If you'll write ebuilds for Gentoo and specs for RPM-based systems, please contribute them back :)
+
 SUPPORT AND DOCUMENTATION
 
-After installing, you can find documentation for this module with the
-perldoc command.
+After installing, you can find documentation for this module using perldoc
+and man commands.
 
+    man ubic
     perldoc Ubic
 
 You can also look for information at:
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Ubic
-
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Ubic
-
-    CPAN Ratings
-        http://cpanratings.perl.org/d/Ubic
+    Github
+        http://github.com/berekuk/ubic
 
     Search CPAN
         http://search.cpan.org/dist/Ubic/
-
 
 COPYRIGHT AND LICENCE
 

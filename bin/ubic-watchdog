@@ -61,6 +61,7 @@ sub check($) {
         if ($service->isa('Ubic::Multiservice')) {
             INFO("$name is multiservice, checking subservices") if $verbose;
             check_all($service->services);
+            return;
         }
         unless (Ubic->is_enabled($name)) {
             INFO("$name disabled") if $verbose;

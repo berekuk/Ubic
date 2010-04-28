@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+#DEBHELPER#
+
 if [ -x "/etc/init.d/ubic-ping" ]; then
     invoke-rc.d ubic-ping stop || exit $?
 fi

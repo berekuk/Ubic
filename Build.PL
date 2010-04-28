@@ -1,3 +1,8 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
 use 5.008;
 use Module::Build;
 
@@ -16,7 +21,6 @@ my $mb = Module::Build->new(
         'Params::Validate'      => 0,
         'Perl6::Slurp'          => 0,
         'Try::Tiny'             => 0,
-        'version'               => 0,
         'LWP::UserAgent'        => 0,
     },
     build_requires => {

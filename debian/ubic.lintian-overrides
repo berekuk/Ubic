@@ -1,0 +1,4 @@
+# ubic libraries implement these
+ubic: init.d-script-does-not-implement-required-option
+# Module::Build always puts 3 in .TH section
+ubic: manpage-section-mismatch

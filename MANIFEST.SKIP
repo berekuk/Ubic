@@ -8,3 +8,4 @@
 ^MANIFEST\.bak
 ^cover_db
 ^Ubic-.*
+^MYMETA.yml$

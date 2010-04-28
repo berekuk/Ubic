@@ -26,7 +26,6 @@ use Fcntl qw(:flock);
 use Params::Validate;
 use POSIX qw(:errno_h);
 use Carp;
-use version;
 
 use base qw(Exporter);
 
@@ -167,8 +166,7 @@ absence of a target file directory for example, an exception is raisen.
 
 =item I<timeout>
 
-Undef by default. If set, specifies the wait timeout for acquiring the blocking lock. The value of 0 is allowed, which emulates the behavior 
- of blocking => 0, version => 2 combination, reguardless of the actual version value.
+Undef by default. If set, specifies the wait timeout for acquiring the blocking lock. The value of 0 is equivalent to blocking => 0 option.
 
 =item I<mode>
 

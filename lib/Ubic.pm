@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-use version; our $VERSION = '0.9.95';
+our $VERSION = '1.00';
 
 =head1 NAME
 

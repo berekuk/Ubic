@@ -6,12 +6,12 @@ ifndef PERL
 PERL = /usr/bin/perl
 endif
 
-TMP     =$(CURDIR)/debian/$(PACKAGE)
+TMP     =$(CURDIR)/debian/tmp
 
 build: debian/build-stamp
 debian/build-stamp:
 	dh_testdir
-	$(PERL) Build.PL installdirs=vendor
+	$(PERL) Build.PL installdirs=vendor --config man1ext=1
 	$(PERL) Build
 	$(PERL) Build test
 	touch $@
@@ -29,6 +29,7 @@ debian/install-stamp: debian/build-stamp
 	dh_clean -k
 	$(PERL) Build install destdir=$(TMP) create_packlist=0
 	cp -r etc $(TMP)/
+	install -D -m644 debian/ubic.lintian-overrides $(TMP)/usr/share/lintian/overrides/ubic
 	touch $@
 
 binary-arch:
@@ -43,6 +44,7 @@ binary-indep: build install
 	dh_installdirs
 	dh_installcron
 	dh_installlogrotate
+	dh_install --sourcedir=debian/tmp
 	dh_perl
 	dh_compress
 	dh_fixperms

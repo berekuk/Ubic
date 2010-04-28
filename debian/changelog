@@ -1,6 +1,10 @@
-yandex-ubic (0.9.96) UNRELEASED; urgency=low
+ubic (1.00) unstable; urgency=low
 
+  * ubic-watchdog fixed
   * Build.PL instead of Makefile
+  * package renamed
+  * install clarifications in README
+  * opensource!
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 28 Apr 2010 21:53:22 +0400
 

@@ -16,3 +16,5 @@ if [ "$1" = "configure" ]; then
     invoke-rc.d ubic-ping start || exit $?
 fi
 
+#DEBHELPER#
+
