@@ -28,7 +28,6 @@ $ENV{UBIC_SERVICE_PING_USER} = $ENV{LOGNAME};
 $ENV{UBIC_SERVICE_PING_PID} = 'tfiles/ubic-ping.pid';
 my $port = 12346;
 $ENV{UBIC_SERVICE_PING_PORT} = $port;
-$ENV{UBIC_SERVICE_PING_CODE} = 'www/ubic-ping';
 
 my $another_port = Ubic->service('fake-http-service')->port;
 

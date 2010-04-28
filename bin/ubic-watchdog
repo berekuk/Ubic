@@ -20,6 +20,8 @@ use Ubic::Logger;
 use Ubic;
 use Try::Tiny;
 
+return 1 if caller();
+
 my $verbose;
 GetOptions(
     'v|verbose' => \$verbose,
@@ -86,4 +88,3 @@ sub check($) {
 
 my @services = Ubic->services;
 check_all(@services);
-
