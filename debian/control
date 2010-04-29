@@ -11,6 +11,9 @@ Architecture: all
 Depends: ${perl:Depends},
  libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtry-tiny-perl, libwww-perl,
  libubic-service-psgi-perl, libubic-service-procmanager-perl
+Provides: yandex-ubic
+Replaces: yandex-ubic (<< 1.00)
+Conflicts: yandex-ubic (<< 1.00)
 Description: framework for writing init scripts with watchdogs
  This module contains some common perl modules and binaries which should
  greatly simplify writing of new init scripts.

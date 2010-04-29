@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 =head1 NAME
 
@@ -567,7 +567,7 @@ sub lock($$) {
         return ${ $self->{locks}{$name} };
     }
 
-    my $lock = Ubic::Lock->new($name, $self);
+    my $lock = Ubic::ServiceLock->new($name, $self);
     use Scalar::Util qw(weaken);
     weaken($lock);
     $self->{locks}{$name} = $lock;
@@ -575,7 +575,7 @@ sub lock($$) {
 }
 
 {
-    package Ubic::Lock;
+    package Ubic::ServiceLock;
     use strict;
     use warnings;
     use Ubic::Lockf;
