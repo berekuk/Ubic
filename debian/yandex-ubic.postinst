@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+rm -f /etc/cron.d/yandex-ubic
+rm -f /etc/logrotate.d/yandex-ubic
+
+#DEBHELPER#
