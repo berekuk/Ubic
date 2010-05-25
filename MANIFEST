@@ -4,7 +4,6 @@ bin/ubic-update
 bin/ubic-watchdog
 Build.PL
 Changes
-Documentation/api
 Documentation/flow
 Documentation/goal
 etc/bash_completion.d/ubic
@@ -46,6 +45,7 @@ t/bin/multi-init
 t/bin/sleeping-init
 t/cmd.t
 t/daemon.t
+t/lock.t
 t/memory-leak.t
 t/multiservice-names.t
 t/multiservice-simple.t

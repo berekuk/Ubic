@@ -1,8 +1,9 @@
-ubic (1.03) UNRELEASED; urgency=low
+ubic (1.04) unstable; urgency=low
 
   * Ubic::Daemon: join all bin args if bin is arrayref
+  * important bugfix: service locks fixed!
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 07 May 2010 20:34:15 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 25 May 2010 22:23:06 +0400
 
 ubic (1.02) unstable; urgency=low
 

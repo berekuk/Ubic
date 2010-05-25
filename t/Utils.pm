@@ -4,7 +4,9 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem );
+our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork );
+
+use Carp;
 
 if ($ENV{IGNORE_WARN}) {
     # parent process has set warn regex
@@ -35,6 +37,13 @@ sub xsystem {
         push @msg, "exit code ".($? >> 8) if $? >> 8;
     }
     die join ", ", @msg;
+}
+
+sub xfork {
+    my $pid = fork;
+    croak "fork failed: $!" unless defined $pid;
+    return $pid;
+
 }
 
 package t::Utils::WarnIgnore;

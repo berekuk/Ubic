@@ -564,13 +564,13 @@ sub lock($$) {
     my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
 
     if ($self->{locks}{$name}) {
-        return ${ $self->{locks}{$name} };
+        return $self->{locks}{$name};
     }
 
     my $lock = Ubic::ServiceLock->new($name, $self);
     use Scalar::Util qw(weaken);
-    weaken($lock);
     $self->{locks}{$name} = $lock;
+    weaken $self->{locks}{$name};
     return $lock;
 }
 
