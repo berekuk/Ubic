@@ -300,7 +300,7 @@ sub start_daemon($) {
     }
     unless (defined $name) {
         if (ref $bin) {
-            $name = $bin->[0];
+            $name = join ' ', @$bin;
         }
         else {
             $name = $bin || 'anonymous';
