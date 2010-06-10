@@ -9,18 +9,10 @@ Build-Depends: debhelper (>= 5), perl, libmodule-build-perl,
 Package: ubic
 Architecture: all
 Depends: ${perl:Depends},
- libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtry-tiny-perl, libwww-perl,
- libubic-service-psgi-perl, libubic-service-procmanager-perl
+ libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtry-tiny-perl, libwww-perl
 Provides: yandex-ubic
 Replaces: yandex-ubic (<< 1.00)
 Conflicts: yandex-ubic (<< 1.00)
 Description: framework for writing init scripts with watchdogs
  This module contains some common perl modules and binaries which should
  greatly simplify writing of new init scripts.
-
-Package: yandex-ubic
-Architecture: all
-Depends: ubic (=${binary:Version})
-Description: transitional dummy package
- This is a dummy package to ease the transition to simple 'ubic' and can
- be safely removed.
