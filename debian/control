@@ -4,7 +4,7 @@ Section: perl
 Priority: optional
 Standards-Version: 3.8.0
 Build-Depends: debhelper (>= 5), perl, libmodule-build-perl,
- libclass-accessor-perl, libfile-spec-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtest-exception-perl, libtest-pod-coverage-perl, libtest-pod-perl, libtest-simple-perl, libtry-tiny-perl, libwww-perl
+ libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtest-exception-perl, libtest-pod-coverage-perl, libtest-pod-perl, libtest-simple-perl, libtry-tiny-perl, libwww-perl
 
 Package: ubic
 Architecture: all

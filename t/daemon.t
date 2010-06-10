@@ -74,7 +74,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
 # reviving after kill -9 on ubic-guardian (4)
 {
     start_daemon({
-        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
+        bin => 't/bin/locking-daemon',
         pidfile => 'tfiles/pid',
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
@@ -92,7 +92,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     }
 
     start_daemon({
-        bin => 'lockf -t 0 -k tfiles/locking-daemon sleep 100',
+        bin => 't/bin/locking-daemon',
         pidfile => 'tfiles/pid',
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
