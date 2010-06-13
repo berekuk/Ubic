@@ -37,6 +37,7 @@ MANIFEST.SKIP
 META.yml
 README
 t/00_compile.t
+t/bin/locking-daemon
 t/bin/multi-init
 t/bin/sleeping-init
 t/cmd.t
