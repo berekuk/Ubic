@@ -1,5 +1,8 @@
 Revision history for Ubic
 
+1.05    Sun Jun 13, 2010
+        Small POD improvements.
+
 1.04    Tue May 25, 2010
         - important bugfix: service locks fixed!
         - Ubic::Daemon: join all bin args if bin is arrayref.

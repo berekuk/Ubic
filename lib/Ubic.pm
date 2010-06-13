@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 =head1 NAME
 
@@ -343,7 +343,7 @@ sub do_custom_command($$) {
 
 =item B<service($name)>
 
-Get service _object by name.
+Get service object by name.
 
 =cut
 sub service($$) {
@@ -465,14 +465,14 @@ sub set_cached_status($$$) {
 
 Create and set ubic dir.
 
-Ubic dir is a directory with service statuses and locks. By default, ubic dir is C</var/lib/ubic> and it is packaged in ubic distribution, but in tests you may want to change it.
+Ubic dir is a directory with service statuses and locks. By default, ubic dir is C</var/lib/ubic>, but in tests you may want to change it.
 
-These settings will be propagated into subprocesses using environment, so you can write in comments following code:
+These settings will be propagated into subprocesses using environment, so following code works:
 
     Ubic->set_ubic_dir('tfiles/ubic');
     Ubic->set_service_dir('etc/ubic/service');
-    xsystem('ubic start some_service');
-    xsystem('ubic stop some_service');
+    system('ubic start some_service');
+    system('ubic stop some_service');
 
 =cut
 sub set_ubic_dir($$) {

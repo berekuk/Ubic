@@ -366,6 +366,10 @@ Service's name or arrayref with names.
 
 Command to execute.
 
+=item I<force>
+
+Force command on protected multiservice.
+
 =back
 
 =cut

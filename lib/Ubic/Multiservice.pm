@@ -18,7 +18,7 @@ Multiservice's interface consists of two fundamental methods: C<service($name)> 
 
 Additionally, you can check whether multiservice contains service without instantiating it, using C<has_service($name)> method.
 
-Remember that multiservice is a service too, although it doesn't implement start/stop/status methods. This is because user will usually want to see action's progress, and all output policy is defined in L<Ubic::Cmd> class; interaction protocol between this class and C<Ubic::Cmd> class would be too hard to code.
+Remember that althouth multiservice is currently a service too, it doesn't implement start/stop/status methods. This is because user will usually want to see action's progress, and all output policy is defined in L<Ubic::Cmd> class; interaction protocol between this class and C<Ubic::Cmd> class would be too hard to code.
 
 =head1 METHODS
 
@@ -175,9 +175,11 @@ sub multiop($) {
 
 =back
 
-=head1 TODO
+=head1 SEE ALSO
 
-Implement start/stop/restart methods.
+L<Ubic::Multiservice::Simple> - class for defining simple multiservices.
+
+L<Ubic::Multiservice::Dir> - multiservice which loads service configs from files.
 
 =head1 AUTHOR
 
