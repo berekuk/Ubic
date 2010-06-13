@@ -32,10 +32,6 @@ lib/Ubic/Service/Common.pm
 lib/Ubic/Service/SimpleDaemon.pm
 lib/Ubic/Service/Skeleton.pm
 lib/Ubic/Service/Utils.pm
-man/ubic-daemon.1
-man/ubic-update.1
-man/ubic-watchdog.1
-man/ubic.1
 MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
