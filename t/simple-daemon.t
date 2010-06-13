@@ -13,6 +13,9 @@ use Perl6::Slurp;
 use t::Utils;
 rebuild_tfiles();
 
+BEGIN {
+    $ENV{UBIC_DAEMON_PID_DIR} = 'tfiles';
+}
 use Ubic::Service::SimpleDaemon;
 
 my $service = Ubic::Service::SimpleDaemon->new({
