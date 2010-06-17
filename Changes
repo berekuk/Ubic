@@ -1,5 +1,9 @@
 Revision history for Ubic
 
+{{$NEXT}}
+        * using $Config{perlpath} in tests - should fix CPAN tests
+        * Dist::Zilla
+
 1.05    Sun Jun 13, 2010
         MANIFEST up-to-date.
         Small POD improvements.

@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-our $VERSION = '1.05';
+# ABSTRACT: Toolkit for describing services on Linux in perl
 
 =head1 NAME
 

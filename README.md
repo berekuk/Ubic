@@ -1,4 +1,4 @@
-Ubic version 1.05
+Ubic
 ===========================
 
 Toolkit for writing daemons, init scripts and services in perl.
@@ -7,13 +7,6 @@ INSTALLATION
 
 Full ubic installation requires crontab, configs and running watchdog,
 so installing through 'cpan -i' is currently incomplete.
-
-To install ubic modules, run the following commands:
-
-	perl Build.PL
-	./Build
-	./Build test
-	./Build install
 
 For full install on Debian/Ubuntu, use standard debian packaging commands:
 	debuild && sudo debi

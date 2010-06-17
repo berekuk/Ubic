@@ -8,6 +8,9 @@ use Test::Exception;
 
 use lib 'lib';
 
+use Config;
+my $perl = $Config{perlpath};
+
 use Perl6::Slurp;
 
 use t::Utils;
@@ -74,7 +77,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
 # reviving after kill -9 on ubic-guardian (4)
 {
     start_daemon({
-        bin => 't/bin/locking-daemon',
+        bin => "$perl t/bin/locking-daemon",
         pidfile => 'tfiles/pid',
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
@@ -92,7 +95,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     }
 
     start_daemon({
-        bin => 't/bin/locking-daemon',
+        bin => "$perl t/bin/locking-daemon",
         pidfile => 'tfiles/pid',
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',

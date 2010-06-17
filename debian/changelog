@@ -1,8 +1,15 @@
-ubic (1.05) UNRELEASED; urgency=low
+ubic (1.06) UNRELEASED; urgency=low
+
+  * using $Config{perlpath} in tests - should fix CPAN tests
+  * Dist::Zilla
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 17 Jun 2010 23:27:07 +0400
+
+ubic (1.05) unstable; urgency=low
 
   * small POD improvements
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sun, 13 Jun 2010 18:05:07 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 17 Jun 2010 23:27:05 +0400
 
 ubic (1.04) unstable; urgency=low
 
