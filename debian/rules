@@ -11,23 +11,26 @@ TMP     =$(CURDIR)/debian/tmp
 build: debian/build-stamp
 debian/build-stamp:
 	dh_testdir
-	$(PERL) Build.PL installdirs=vendor --config man1ext=1
-	$(PERL) Build
-	$(PERL) Build test
+	$(PERL) Makefile.PL INSTALLDIRS=vendor \
+		INSTALLVENDORARCH=/usr/share/perl5/ \
+		VENDORARCHEXP=/usr/share/perl5/
+	$(MAKE)
+	$(MAKE) test
 	touch $@
 
 clean:
 	dh_testdir
 	dh_testroot
 	dh_clean debian/build-stamp debian/install-stamp
-	[ ! -f Build ] || $(PERL) Build distclean
+	[ ! -f Makefile ] || $(MAKE) realclean
 
 install: debian/install-stamp
 debian/install-stamp: debian/build-stamp
 	dh_testdir
 	dh_testroot
 	dh_clean -k
-	$(PERL) Build install destdir=$(TMP) create_packlist=0
+	$(MAKE) install DESTDIR=$(TMP) PREFIX=/usr
+	rm -rf $(TMP)/usr/lib/perl/5.8/
 	cp -r etc $(TMP)/
 	install -D -m644 debian/ubic.lintian-overrides $(TMP)/usr/share/lintian/overrides/ubic
 	touch $@
