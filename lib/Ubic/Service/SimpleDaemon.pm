@@ -10,11 +10,10 @@ Ubic::Service::SimpleDaemon - variant of service when your service is simple dae
 =head1 SYNOPSIS
 
     use Ubic::Service::SimpleDaemon;
-    $service = Ubic::Service::SimpleDaemon->new({
+    my $service = Ubic::Service::SimpleDaemon->new({
         name => "sleep",
         bin => "sleep 1000",
     });
-    $service->start;
 
 =head1 DESCRIPTION
 
