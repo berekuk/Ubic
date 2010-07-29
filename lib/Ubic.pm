@@ -594,6 +594,7 @@ sub lock($$) {
     }
     sub DESTROY {
         my $self = shift;
+        local $@;
         my $ubic = ${$self->{ubic_ref}};
         if (defined $ubic) {
             $ubic->_free_lock($self->{name});

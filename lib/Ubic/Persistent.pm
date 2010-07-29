@@ -86,6 +86,7 @@ sub commit {
 
 sub DESTROY {
     my $self = shift;
+    local $@;
     delete $meta->{$self};
 }
 

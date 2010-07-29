@@ -88,6 +88,7 @@ sub new {
 
 sub DESTROY {
     my $self = shift;
+    local $@;
 
     if ($> != $self->{old_euid}) {
         $> = $self->{old_euid}; # return euid back to normal

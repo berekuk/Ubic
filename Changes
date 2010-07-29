@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * localize $@ in destructors
 
 1.06    Fri Jun 18, 2010
         * using $Config{perlpath} in tests - should fix CPAN tests

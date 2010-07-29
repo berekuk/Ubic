@@ -9,6 +9,7 @@ sub new ($$) {
 
 sub DESTROY ($) {
     my $self = shift;
+    local $@;
     my $alarm;
     if ($self->{alarm}) {
         $alarm = $self->{alarm} + $self->{time} - time;
@@ -34,6 +35,7 @@ our @EXPORT = qw(lockf);
 
 sub DESTROY ($) {
     my ($self) = @_;
+    local $@;
     my $fh = $self->{_fh};
     return unless defined $fh; # already released
     flock $fh, LOCK_UN;
