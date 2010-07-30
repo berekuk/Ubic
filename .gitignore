@@ -9,3 +9,9 @@
 /Build
 /META.yml
 /MYMETA.yml
+/.build
+/*.dsc
+/*.tar.gz
+/*.build
+/*.deb
+/*.changes
