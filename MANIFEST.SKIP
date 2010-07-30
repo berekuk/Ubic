@@ -10,3 +10,9 @@
 ^Ubic-.*
 ^MYMETA.yml$
 ^man/
+^.*\.dsc
+^.*\.tar\.gz
+^.*\.build
+^.*\.deb
+^.*\.changes
+^.*\.upload

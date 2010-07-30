@@ -121,29 +121,45 @@ sub results {
     return map { $_->[0] } @{ $self->{data} };
 }
 
+=item B<< exit_code() >>
+
+Get exit code appropriate for results.
+
+It can be detected dynamically based on results content, or set explicitly from C<Ubic::Cmd>, depending on command.
+
+=item B<< exit_code($code) >>
+
+Set exit code explicitly.
+
+=cut
+sub exit_code {
+    my ($self, $new_code) = validate_pos(@_, 1, 0);
+    if (defined $new_code) {
+        $self->{exit_code} = $new_code;
+        return;
+    }
+    if ($self->{exit_code}) {
+        return $self->{exit_code};
+    }
+    my $data = $self->{data};
+    my $bad = grep { $_->[1] eq 'bad' } @$data;
+    return ($bad ? 1 : 0);
+}
+
+
 =item B<< finish(\@results) >>
 
-Print error if some of results are bad, and return correct exit code, understandable by C<_run_impl()>.
+Print error if some of results are bad, and return exit code.
 
 =cut
 sub finish($$) {
     my $self = shift;
     my $data = $self->{data};
-    my $error = 0;
+    my $bad = grep { $_->[1] eq 'bad' } @$data;
     if (@$data > 1) {
-        my $bad = grep { $_->[1] eq 'bad' } @$data;
-        if ($bad) {
-            $self->print_bad("Failed: $bad service(s)\n");
-            $error = 1;
-        }
+        $self->print_bad("Failed: $bad service(s)\n");
     }
-    elsif (@$data == 1) {
-        my ($result, $type) = @{ $data->[0] };
-        if ($type eq 'bad') {
-            die $result;
-        }
-    }
-    return $error;
+    return $self->exit_code;
 }
 
 =back

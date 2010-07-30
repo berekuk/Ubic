@@ -1,0 +1,15 @@
+# vim: ft=perl
+use Ubic::Service::Common;
+
+Ubic::Service::Common->new({
+    start => sub {
+        die "oops, this service can't start";
+    },
+    stop => sub {
+        die "oops, this service can't stop";
+    },
+    status => sub {
+        return 'broken';
+    },
+    user => $ENV{LOGNAME},
+});

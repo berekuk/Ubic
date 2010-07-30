@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 
 use lib 'lib';
 
@@ -47,7 +47,15 @@ if ($@) {
 }
 else {
     pass("do_custom_command is successful");
-
 }
 is($out, "Running 2plus2 for sleeping-common... ok\n", 'Ubic::Cmd logged something on custom command');
 
+
+$out = '';
+open $fh, '>', \$out;
+select $fh;
+
+my $results = Ubic::Cmd->start('broken');
+select $stdout;
+is($results->exit_code, 1, 'exit code when starting broken service');
+like($out, qr{^\QStarting broken... oops, this service can't stop at t/service/broken line \E\d+\.$}, 'stdout when starting broken service');
