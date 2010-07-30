@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.07    Fri Jul 30, 2010
         * localize $@ in destructors
         * Ubic::Cmd refactoring, more consistent console results printing
 
