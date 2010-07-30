@@ -1,9 +1,15 @@
-ubic (1.06) UNRELEASED; urgency=low
+ubic (1.07) UNRELEASED; urgency=low
+
+  * localize $@ in destructors
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 30 Jul 2010 17:55:34 +0400
+
+ubic (1.06) unstable; urgency=low
 
   * using $Config{perlpath} in tests - should fix CPAN tests
   * Dist::Zilla
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 17 Jun 2010 23:27:07 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 30 Jul 2010 17:55:20 +0400
 
 ubic (1.05) unstable; urgency=low
 
