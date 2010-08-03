@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * bugfix: has_service for nested unexistent services
+        * debian/ dir in distribution too
 
 1.07    Fri Jul 30, 2010
         * localize $@ in destructors

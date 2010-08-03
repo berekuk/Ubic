@@ -1,4 +1,4 @@
-ubic (1.07-1) unstable; urgency=low
+ubic (1.08) unstable; urgency=low
 
   * bugfix: has_service for nested unexistent services
 

@@ -1,7 +1,6 @@
 ^\.git
 ^\.gitignore
 ^tfiles
-^debian
 ^blib
 ^_build
 ^Build$
