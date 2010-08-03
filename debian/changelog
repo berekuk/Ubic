@@ -1,3 +1,9 @@
+ubic (1.04-1) unstable; urgency=low
+
+  * bugfix: has_service for nested unexistent services
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 03 Aug 2010 17:26:10 +0400
+
 ubic (1.04) unstable; urgency=low
 
   * Ubic::Daemon: join all bin args if bin is arrayref
