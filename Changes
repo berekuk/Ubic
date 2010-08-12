@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.09    Thu Aug 12, 2010
         * bugfix: custom commands print 'ok' using green color and exit with zero
         code when there are not errors
 
