@@ -1,3 +1,10 @@
+ubic (1.09) unstable; urgency=low
+
+  * bugfix: custom commands print 'ok' using green color and exit with zero
+    code when there are not errors
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 12 Aug 2010 18:05:32 +0400
+
 ubic (1.08) unstable; urgency=low
 
   * bugfix: has_service for nested unexistent services

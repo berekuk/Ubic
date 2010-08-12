@@ -212,7 +212,7 @@ sub do_custom_command {
             print "Running $command for $name... ";
             try {
                 Ubic->do_custom_command($name, $command);
-                $results->print(result('unknown', 'ok'));
+                $results->print_good("ok\n");
             } catch {
                 $results->print(result('unknown', "failed: $_"), 'bad');
             };
