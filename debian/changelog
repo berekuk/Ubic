@@ -1,3 +1,9 @@
+ubic (1.10) unstable; urgency=low
+
+  * security bugfix: store all statuses in JSON format
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 18 Aug 2010 21:40:35 +0400
+
 ubic (1.09) unstable; urgency=low
 
   * bugfix: custom commands print 'ok' using green color and exit with zero

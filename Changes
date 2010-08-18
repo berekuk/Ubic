@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * security bugfix: store all statuses in JSON format
 
 1.09    Thu Aug 12, 2010
         * bugfix: custom commands print 'ok' using green color and exit with zero
