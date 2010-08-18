@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.10    Wed Aug 18, 2010
         * security bugfix: store all statuses in JSON format
 
 1.09    Thu Aug 12, 2010
