@@ -1,3 +1,9 @@
+ubic (1.10.1) unstable; urgency=low
+
+  * libjson-perl in dependencies
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 19 Aug 2010 17:40:17 +0400
+
 ubic (1.10) unstable; urgency=low
 
   * security bugfix: store all statuses in JSON format
