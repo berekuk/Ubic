@@ -31,3 +31,11 @@ use Ubic::PortMap;
 
 Ubic::PortMap::update();
 
+=head1 FUTURE DIRECTIONS
+
+This script can (and possibly will) be reimplemented as ubic service.
+
+=head1 SEE ALSO
+
+There is an entry about ubic-update in L<Ubic::Manual::FAQ>.
+
