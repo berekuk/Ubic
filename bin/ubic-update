@@ -9,7 +9,7 @@ ubic-update - update ubic metadata
 
 =head1 SYNOPSIS
 
-    ubic-date [--help]
+    ubic-update [--help]
 
 =head1 DESCRIPTION
 
