@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.11    Thu Aug 26, 2010
         * ubic-watchdog prints errors to stdout only
 
 1.10    Wed Aug 18, 2010
