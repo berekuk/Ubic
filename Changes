@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * ubic-watchdog prints errors to stdout only
 
 1.10    Wed Aug 18, 2010
         * security bugfix: store all statuses in JSON format
