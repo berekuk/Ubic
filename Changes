@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.12    Thu Aug 26, 2010
         * Ubic::Manual::FAQ with first 2 questions
         * Ubic::Log documentation updated according to 1.11 changes
 
