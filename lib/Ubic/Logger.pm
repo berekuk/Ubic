@@ -39,7 +39,7 @@ sub INFO {
 
 Log some error.
 
-Message will be red if writing to terminal, and will be duplicated into both stdout and stderr otherwise.
+Message will be red if writing to terminal.
 
 =cut
 sub ERROR {

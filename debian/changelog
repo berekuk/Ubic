@@ -1,3 +1,10 @@
+ubic (1.12) unstable; urgency=low
+
+  * Ubic::Manual::FAQ with first 2 questions
+  * Ubic::Log documentation updated according to 1.11 changes
+
+ -- Vyacheslav Matyukhin <mmcleric@mmcleric-desktop>  Thu, 26 Aug 2010 23:46:28 +0400
+
 ubic (1.11) unstable; urgency=low
 
   * ubic-watchdog prints errors to stdout only

@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Ubic::Manual::FAQ with first 2 questions
+        * Ubic::Log documentation updated according to 1.11 changes
 
 1.11    Thu Aug 26, 2010
         * ubic-watchdog prints errors to stdout only
