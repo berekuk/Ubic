@@ -7,7 +7,6 @@ use Test::More tests => 2;
 
 use lib 'lib';
 
-use Perl6::Slurp;
 use t::Utils;
 rebuild_tfiles();
 

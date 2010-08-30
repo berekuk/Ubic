@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork );
+our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork slurp );
 
 use Carp;
 
@@ -43,7 +43,12 @@ sub xfork {
     my $pid = fork;
     croak "fork failed: $!" unless defined $pid;
     return $pid;
+}
 
+sub slurp {
+    my $file = shift;
+    open my $fh, '<', $file or die "Can't open $file: $!";
+    return do { local $/; <$fh> };
 }
 
 package t::Utils::WarnIgnore;

@@ -12,7 +12,6 @@ Ubic::Multiservice::Dir - multiservice which uses directory with configs to inst
 use base qw(Ubic::Multiservice);
 use Params::Validate qw(:all);
 use Carp;
-use Perl6::Slurp;
 use File::Basename;
 use Scalar::Util qw(blessed);
 
@@ -64,7 +63,10 @@ sub simple_service($$) {
         return $service;
     }
     elsif (-e $file) {
-        my $content = slurp($file);
+        open my $fh, '<', $file or die "Can't open $file: $!";
+        my $content = do { local $/; <$fh> };
+        close $fh or die "Can't close $file: $!";
+
         $content = "# line 1 $file\n$content";
         $content = "package UbicService".($eval_id++).";\n# line 1 $file\n$content";
         my $service = eval $content;

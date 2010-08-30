@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Perl6::Slurp removed from dependencies
 
 1.12    Thu Aug 26, 2010
         * Ubic::Manual::FAQ with first 2 questions

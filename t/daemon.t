@@ -11,8 +11,6 @@ use lib 'lib';
 use Config;
 my $perl = $Config{perlpath};
 
-use Perl6::Slurp;
-
 use t::Utils;
 rebuild_tfiles();
 

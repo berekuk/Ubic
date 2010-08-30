@@ -9,7 +9,6 @@ use lib 'lib';
 
 use Time::HiRes qw(sleep);
 
-use Perl6::Slurp;
 use t::Utils;
 rebuild_tfiles();
 
