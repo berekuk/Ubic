@@ -2,6 +2,13 @@ Revision history for Ubic
 
 {{$NEXT}}
 
+1.12    Thu Aug 26, 2010
+        * Ubic::Manual::FAQ with first 2 questions
+        * Ubic::Log documentation updated according to 1.11 changes
+
+1.11    Thu Aug 26, 2010
+        * ubic-watchdog prints errors to stdout only
+
 1.10    Wed Aug 18, 2010
         * security bugfix: store all statuses in JSON format
 

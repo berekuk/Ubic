@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 use lib 'lib';
 
@@ -32,5 +32,6 @@ is(scalar(Ubic->service('fake-http-service')->status), 'not running', 'service s
 
 xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog >tfiles/watchdog.log 2>tfiles/watchdog.err.log");
 like(slurp('tfiles/watchdog.log'), qr/fake-http-service is broken, restarting/, 'watchdog prints logs about restarted service');
+is(slurp('tfiles/watchdog.err.log'), '', "watchdog don't print anything to error log");
 is(scalar(Ubic->service('fake-http-service')->status), 'running', 'service is running again');
 

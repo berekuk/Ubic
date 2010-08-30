@@ -39,19 +39,16 @@ sub INFO {
 
 Log some error.
 
-Message will be red if writing to terminal, and will be duplicated into both stdout and stderr otherwise.
+Message will be red if writing to terminal.
 
 =cut
 sub ERROR {
-    if (-t STDERR) {
-        print STDERR RED('[', scalar(localtime), "]\t", @_, "\n");
-        unless (-t STDOUT) {
-            print STDOUT '[', scalar(localtime), "]\t", @_, "\n";
-        }
+    my @message = ('[', scalar(localtime), "]\t", @_, "\n");
+    if (-t STDOUT) {
+        print RED(@message);
     }
     else {
-        print STDOUT '[', scalar(localtime), "]\t", @_, "\n";
-        print STDERR '[', scalar(localtime), "]\t", @_, "\n";
+        print @message;
     }
 }
 
