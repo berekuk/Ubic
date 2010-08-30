@@ -1,0 +1,7 @@
+=head1 NAME
+
+Ubic::Manual - Ubic manual
+
+=head1 What is Ubic?
+
+Ubic is a toolkit for describing services using perl.
