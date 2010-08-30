@@ -4,15 +4,16 @@ Section: perl
 Priority: optional
 Standards-Version: 3.8.0
 Build-Depends: debhelper (>= 5), perl, libmodule-build-perl,
- libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtest-exception-perl, libtest-pod-coverage-perl, libtest-pod-perl, libtest-simple-perl, libtest-class-perl, libtry-tiny-perl, libwww-perl, libjson-perl, libparent-perl
+ libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libtest-exception-perl, libtest-pod-coverage-perl, libtest-pod-perl, libtest-simple-perl, libtest-class-perl, libtry-tiny-perl, libwww-perl, libjson-perl, libparent-perl
 
 Package: ubic
 Architecture: all
 Depends: ${perl:Depends},
- libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libperl6-slurp-perl, libtry-tiny-perl, libwww-perl, libjson-perl
+ libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libtry-tiny-perl, libwww-perl, libjson-perl
 Provides: yandex-ubic
 Replaces: yandex-ubic (<< 1.00)
 Conflicts: yandex-ubic (<< 1.00)
-Description: framework for writing init scripts with watchdogs
- This module contains some common perl modules and binaries which should
- greatly simplify writing of new init scripts.
+Description: flexible perl-based service manager
+ Each ubic service is represented by perl object, so code reuse is trivial.
+ Watchdog, neat color output and SysV-style LSB conformant init scripts are
+ supported.

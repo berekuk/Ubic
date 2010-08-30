@@ -1,7 +1,7 @@
 Ubic
 ===========================
 
-Toolkit for writing daemons, init scripts and services in perl.
+Ubic is a flexible perl-based service manager.
 
 INSTALLATION
 
@@ -18,9 +18,9 @@ For non-Debian systems, basically you'll need to:
 - create all dirs from debian/ubic.dirs
 - run commands from debian/ubic.postinst
 
-If you'll write ebuilds for Gentoo and specs for RPM-based systems, please contribute them back :)
+If you'll write ebuilds for Gentoo or specs for RPM-based systems, please contribute them back :)
 
-SUPPORT AND DOCUMENTATION
+DOCUMENTATION
 
 After installing, you can find documentation for this module using perldoc
 and man commands.
@@ -30,11 +30,17 @@ and man commands.
 
 You can also look for information at:
 
-    Github
-        http://github.com/berekuk/ubic
+    Github Wiki:
+        http://github.com/berekuk/Ubic/wiki
 
     Search CPAN
         http://search.cpan.org/dist/Ubic/
+
+SUPPORT
+
+Our mailing list is ubic-perl@googlegroups.com. Send an empty message to ubic-perl+subscribe@googlegroups.com to subscribe.
+
+These is also an IRC channel: irc://irc.perl.org#ubic.
 
 COPYRIGHT AND LICENCE
 

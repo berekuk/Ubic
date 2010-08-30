@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-# ABSTRACT: Toolkit for describing services on Linux in perl
+# ABSTRACT: flexible perl-based service manager
 
 =head1 NAME
 
@@ -19,15 +19,17 @@ Ubic - frontend to all ubic services
 
 =head1 DESCRIPTION
 
-Ubic allows you to implement safe services which will be monitored and checked automatically.
+Ubic is a flexible perl-based service manager.
 
 This module is a main frontend to ubic services.
 
 Further directions:
 
+if you are looking for general introduction to Ubic, follow this link: L<http://blogs.perl.org/mt/mt-search.fcgi?blog_id=310&tag=tutorial&limit=20>;
+
 if you want to manage ubic services from perl scripts, read this POD;
 
-if you want to use ubic from command line, see L<ubic(1)> and L<Ubic::Cmd>.
+if you want to use ubic from command line, see L<ubic(1)> and L<Ubic::Cmd>;
 
 if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Service::*> modules. Check out L<Ubic::Run> for integration with SysV init script system too.
 
@@ -707,6 +709,16 @@ sub forked_call {
 }
 
 =back
+
+=head1 SEE ALSO
+
+Most Ubic-related links are collected on github wiki: L<http://github.com/berekuk/Ubic/wiki>.
+
+=head1 SUPPORT
+
+Our mailing list is ubic-perl@googlegroups.com. Send an empty message to ubic-perl+subscribe@googlegroups.com to subscribe.
+
+These is also an IRC channel: irc://irc.perl.org#ubic.
 
 =head1 AUTHOR
 
