@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.13    Wed Sep 01, 2010
         * Perl6::Slurp removed from dependencies
         * Ubic::Manual::FAQ now is actually added
         * group() method in services:
