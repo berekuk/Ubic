@@ -634,22 +634,28 @@ sub do_cmd($$$) {
     my ($self, $name, $cmd) = @_;
     $self->do_sub(sub {
         my $service = $self->service($name);
+
         my $user = $service->user;
+        my $group = $service->group;
         my $service_uid = getpwnam($user);
+        my $service_gid = getgrnam($group);
         unless (defined $service_uid) {
             die "user $user not found";
         }
-        if ($service_uid == $> and $service_uid == $<) {
-            $service->$cmd();
+        unless (defined $service_gid) {
+            die "group $group not found";
         }
-        else {
-            # locking all service operations inside fork with correct real and effective uids
-            # setting just effective uid is not enough, and tainted mode requires too careful coding
-            $self->forked_call(sub {
-                POSIX::setuid($service_uid);
-                $service->$cmd();
-            });
+
+        if ($service_uid == $> and $service_uid == $< and $service_gid == $) and $service_gid == $() {
+            return $service->$cmd();
         }
+        # locking all service operations inside fork with correct real and effective uids
+        # setting just effective uid is not enough, and tainted mode requires too careful coding from service authors
+        $self->forked_call(sub {
+            POSIX::setgid($service_gid);
+            POSIX::setuid($service_uid);
+            return $service->$cmd();
+        });
     });
 }
 

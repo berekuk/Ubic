@@ -1,9 +1,13 @@
-ubic (1.13) UNRELEASED; urgency=low
+ubic (1.13) unstable; urgency=low
 
   * Perl6::Slurp removed from dependencies
   * Ubic::Manual::FAQ now is actually added
+  * group() method in services:
+   - services can specify group(s) from which service should run, analogous to user() method
+   - ubic will call setgid() before invoking any service methods
+   - default group list consists only of main user's group, as returned by getpwnam; supplementary groups are not supported yet
 
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 30 Aug 2010 21:39:39 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 01 Sep 2010 00:07:09 +0400
 
 ubic (1.12) unstable; urgency=low
 

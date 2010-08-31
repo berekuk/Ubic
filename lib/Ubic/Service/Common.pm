@@ -86,7 +86,8 @@ sub new {
         name        => { type => SCALAR, regex => qr/^[\w-]+$/, optional => 1 }, # violates Ubic::Service incapsulation...
         port        => { type => SCALAR, regex => qr/^\d+$/, optional => 1 },
         custom_commands => { type => HASHREF, default => {} },
-        user        => { type => SCALAR, default => 'root' },
+        user        => { type => SCALAR, optional => 1 },
+        group       => { type => SCALAR, optional => 1 },
         timeout_options => { type => HASHREF, default => {} },
     });
     if ($params->{custom_commands}) {
@@ -130,7 +131,14 @@ sub custom_commands {
 
 sub user {
     my $self = shift;
-    return $self->{user};
+    return $self->{user} if defined $self->{user};
+    return $self->SUPER::user();
+}
+
+sub group {
+    my $self = shift;
+    return $self->{group} if defined $self->{group};
+    return $self->SUPER::group();
 }
 
 sub do_custom_command {

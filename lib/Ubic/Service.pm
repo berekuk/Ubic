@@ -166,6 +166,21 @@ sub user {
     return 'root';
 }
 
+=item B<group>
+
+Should return list of groups from which the service can be controlled and will be running.
+
+Default is main group of the user returned by C<user()> method.
+
+Supplementary groups are not supported by this default implementation (yet).
+
+=cut
+sub group {
+    my $self = shift;
+    my $group = getgrgid((getpwnam $self->user)[3]);
+    return ($group);
+}
+
 =item B<check_period>
 
 Should return period of checking a service by watchdog in seconds.

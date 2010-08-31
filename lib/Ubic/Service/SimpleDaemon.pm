@@ -70,9 +70,11 @@ sub new {
     my $params = validate(@_, {
         bin => { type => SCALAR | ARRAYREF },
         user => { type => SCALAR, optional => 1 },
+        group => { type => SCALAR, optional => 1 },
         name => { type => SCALAR, optional => 1 },
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
+        ubic_log => { type => SCALAR, optional => 1 },
     });
 
     return bless {%$params} => $class;
@@ -96,16 +98,24 @@ sub start_impl {
         bin => $self->{bin},
         stdout => $self->{stdout} || "/dev/null",
         stderr => $self->{stderr} || "/dev/null",
+        ubic_log => $self->{ubic_log} || "/dev/null",
     };
     if ($self->{user}) {
-        $start_params->{user} = $self->{user};
+        $start_params->{user} = $self->{user}; # do we actually need this? Ubic.pm should call setuid for us...
     }
     start_daemon($start_params);
 }
 
 sub user {
     my $self = shift;
-    return $self->{user} || 'root';
+    return $self->{user} if defined $self->{user};
+    return $self->SUPER::user();
+}
+
+sub group {
+    my $self = shift;
+    return $self->{group} if defined $self->{group};
+    return $self->SUPER::group();
 }
 
 sub stop_impl {

@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Ubic::AccessGuard - class which guards all service operations
+Ubic::AccessGuard - class which guards simple service operations
 
 =head1 SYNOPSIS
 
@@ -18,7 +18,9 @@ Ubic::AccessGuard - class which guards all service operations
 
 Ubic::AccessGuard sets effective uid to specified service's user id if neccesary, and restore it back on destruction.
 
-It's usage is limited, because when effective uid is not equal to real uid, perl automatically turns on tainted mode. Because of this, only tainted-safe code should be called when AccessGuard is active. L<Ubic> doesn't start services under this guard, only takes locks and writes status files.
+It's usage is limited, because when effective uid is not equal to real uid, perl automatically turns on tainted mode.
+Because of this, only tainted-safe code should be called when AccessGuard is active.
+L<Ubic> doesn't start services under this guard, but uses it when acquiring locks and writing service status files.
 
 =head1 METHODS
 
@@ -59,14 +61,33 @@ sub new {
     }
 
     my $user = $service->user;
+    my ($group) = $service->group;
+
+    my $euid = $>;
+    my $egid = $);
+    $egid =~ s/^(\d+).*/$1/;
     my $current_user = getpwuid($>);
+    my $current_group = getgrgid($egid);
 
     my $self = bless {
-        old_euid => $>,
         service_name => $service->full_name,
     } => $class;
 
+    if ($group ne $current_group) {
+        $self->{old_egid} = $);
+        my $new_gid = getgrnam($group);
+        unless (defined $new_gid) {
+            die "group $group not found";
+        }
+        $) = "$new_gid 0";
+        my ($current_gid) = $) =~ /^(\d+)/;
+        if ($current_gid != $new_gid) {
+            die result('unknown', "Failed to change group from $egid to $new_gid: $!");
+        }
+    }
+
     if ($user ne $current_user) {
+        $self->{old_euid} = $>;
         if ($current_user ne 'root') {
             die result('unknown', "You are $current_user, and service ".$service->name." should be started from $user");
         }
@@ -90,10 +111,16 @@ sub DESTROY {
     my $self = shift;
     local $@;
 
-    if ($> != $self->{old_euid}) {
+    if (defined $self->{old_euid}) {
         $> = $self->{old_euid}; # return euid back to normal
         if ($> != $self->{old_euid}) {
-            die result('unknown', "Failed to restore euid from $> to $self->{old_euid}: $!");
+            warn "Failed to restore euid from $> to $self->{old_euid}: $!";
+        }
+    }
+    if (defined $self->{old_egid}) {
+        $) = $self->{old_egid}; # return egid back to normal
+        if ($) != $self->{old_egid}) {
+            warn "Failed to restore egid from '$)' to '$self->{old_egid}': $!";
         }
     }
 }

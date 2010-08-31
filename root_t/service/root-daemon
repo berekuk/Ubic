@@ -1,0 +1,7 @@
+# vim:ft=perl
+use root_t::Daemon;
+
+return root_t::Daemon->new({
+    name => 'root-daemon',
+    user => 'root',
+});

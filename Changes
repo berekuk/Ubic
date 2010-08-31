@@ -3,6 +3,10 @@ Revision history for Ubic
 {{$NEXT}}
         * Perl6::Slurp removed from dependencies
         * Ubic::Manual::FAQ now is actually added
+        * group() method in services:
+         - services can specify group(s) from which service should run, analogous to user() method
+         - ubic will call setgid() before invoking any service methods
+         - default group list consists only of main user's group, as returned by getpwnam; supplementary groups are not supported yet
 
 1.12    Thu Aug 26, 2010
         * Ubic::Manual::FAQ with first 2 questions
