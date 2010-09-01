@@ -3,6 +3,7 @@ Revision history for Ubic
 {{$NEXT}}
         * handle supplementary groups correctly
         * ubic-watchdog doesn't require root privileges anymore (unless service requires them, of course)
+        * repo and bugtracker resources in META.yml
 
 1.13    Wed Sep 01, 2010
         * Perl6::Slurp removed from dependencies
