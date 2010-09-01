@@ -27,10 +27,6 @@ GetOptions(
     'v|verbose' => \$verbose,
 ) or pod2usage(2);
 
-if ($<) {
-    die "ubic-watchdog requires root access";
-}
-
 sub check($);
 
 sub check_all {
