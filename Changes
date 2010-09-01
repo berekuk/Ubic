@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * handle supplementary groups correctly
         * ubic-watchdog doesn't require root privileges anymore (unless service requires them, of course)
 
 1.13    Wed Sep 01, 2010

@@ -7,7 +7,7 @@ use warnings;
 
 =head1 NAME
 
-Ubic - frontend to all ubic services
+Ubic - flexible perl-based service manager
 
 =head1 SYNOPSIS
 
@@ -47,6 +47,7 @@ use Try::Tiny;
 use Ubic::Persistent;
 use Ubic::Lockf;
 use Scalar::Util qw(blessed);
+use List::MoreUtils qw(uniq);
 
 our $SINGLETON;
 
@@ -625,6 +626,13 @@ sub do_sub($$) {
     return result($result);
 }
 
+sub _groups_equal {
+    my ($g1, $g2) = @_;
+    my ($main1, @other1) = split / /, $g1;
+    my ($main2, @other2) = split / /, $g2;
+    return ($main1 == $main2 and join(' ', sort { $a <=> $b } uniq($main1, @other1)) eq join(' ', sort { $a <=> $b } uniq($main2, @other2)));
+}
+
 =item B<< do_cmd($name, $cmd) >>
 
 Run C<$cmd> method from service C<$name> and wrap any result or exception into C<Ubic::Result::Class> object.
@@ -636,24 +644,48 @@ sub do_cmd($$$) {
         my $service = $self->service($name);
 
         my $user = $service->user;
-        my $group = $service->group;
         my $service_uid = getpwnam($user);
-        my $service_gid = getgrnam($group);
         unless (defined $service_uid) {
             die "user $user not found";
         }
-        unless (defined $service_gid) {
-            die "group $group not found";
-        }
 
-        if ($service_uid == $> and $service_uid == $< and $service_gid == $) and $service_gid == $() {
+        my @group = $service->group;
+
+        my @gid;
+        for my $group (@group) {
+            my $gid = getgrnam($group);
+            unless (defined $gid) {
+                die "group $group not found";
+            }
+            push @gid, $gid;
+        }
+        my $service_gid = join ' ', @gid;
+
+        if (
+            $service_uid == $>
+            and $service_uid == $<
+            and _groups_equal($service_gid, $))
+            and _groups_equal($service_gid, $()
+        ) {
+            # current euid, ruid, egid, rgid and supplementary groups are all conform to service expectations
             return $service->$cmd();
         }
-        # locking all service operations inside fork with correct real and effective uids
-        # setting just effective uid is not enough, and tainted mode requires too careful coding from service authors
+
+        # setting just effective uid is not enough, because:
+        # - we can accidentally enter tainted mode, and service authors don't expect this
+        # - local administrator may want to allow everyone to write service, and leaving root as real uid is an obvious security breach
+        # (ubic will have to learn to compare service user with service file's owner for such policy to be save, though - this is not implemented yet)
         $self->forked_call(sub {
-            POSIX::setgid($service_gid);
-            POSIX::setuid($service_uid);
+            $) = $service_gid;
+            unless (_groups_equal($), $service_gid)) {
+                die "Failed to set effective gid to $service_gid: $!";
+            }
+            $( = $gid[0];
+            unless (_groups_equal($(, $service_gid)) {
+                die "Failed to set real gid to $service_gid: $!";
+            }
+            $> = $service_uid;
+            $< = $service_uid;
             return $service->$cmd();
         });
     });

@@ -79,6 +79,8 @@ sub new {
         unless (defined $new_gid) {
             die "group $group not found";
         }
+
+        # AccessGuard don't need to handle supplementary groups correctly, so this is ok
         $) = "$new_gid 0";
         my ($current_gid) = $) =~ /^(\d+)/;
         if ($current_gid != $new_gid) {
@@ -89,7 +91,7 @@ sub new {
     if ($user ne $current_user) {
         $self->{old_euid} = $>;
         if ($current_user ne 'root') {
-            die result('unknown', "You are $current_user, and service ".$service->name." should be started from $user");
+            die result('unknown', "You are $current_user, and service ".$service->name." should be operated from $user");
         }
         my $new_uid = getpwnam($user);
         unless (defined $new_uid) {

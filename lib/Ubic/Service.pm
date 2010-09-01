@@ -177,8 +177,16 @@ Supplementary groups are not supported by this default implementation (yet).
 =cut
 sub group {
     my $self = shift;
-    my $group = getgrgid((getpwnam $self->user)[3]);
-    return ($group);
+    my $user = $self->user;
+    my $main_group = getgrgid((getpwnam $user)[3]);
+    setgrent();
+    my @groups;
+    while (my @grent = getgrent()) {
+        my @users = split / /, $grent[3];
+        push @groups, $grent[0] if grep { $_ eq $user } @users;
+    }
+    endgrent();
+    return ($main_group, @groups);
 }
 
 =item B<check_period>
