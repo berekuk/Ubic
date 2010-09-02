@@ -7,6 +7,14 @@ use parent qw(Exporter);
 our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork slurp );
 
 use Carp;
+use Cwd;
+
+if ($ENV{PERL5LIB}) {
+    $ENV{PERL5LIB} = $ENV{PERL5LIB}.":".getcwd()."/lib";
+}
+else {
+    $ENV{PERL5LIB} = getcwd()."/lib";
+}
 
 if ($ENV{IGNORE_WARN}) {
     # parent process has set warn regex

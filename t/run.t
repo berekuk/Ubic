@@ -16,7 +16,6 @@ rebuild_tfiles();
 use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
-$ENV{PERL5LIB} = 'lib';
 
 # single (4)
 {
