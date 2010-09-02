@@ -3,9 +3,7 @@ package Ubic::Run;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Run - really simple way to write init scripts
+# ABSTRACT: really simple way to write init scripts
 
 =head1 SYNOPSIS
 
@@ -40,12 +38,4 @@ sub import {
     });
 }
 
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
-=cut
-
 1;
-

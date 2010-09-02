@@ -3,9 +3,7 @@ package Ubic::Logger;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Logger - very simple logging functions
+# ABSTRACT: very simple logging functions
 
 =head1 SYNOPSIS
 
@@ -22,8 +20,7 @@ Ubic::Logger - very simple logging functions
 use Term::ANSIColor qw(:constants);
 $Term::ANSIColor::AUTORESET = 1;
 
-use base qw(Exporter);
-
+use parent qw(Exporter);
 our @EXPORT = qw( INFO ERROR );
 
 =item B<INFO(@data)>

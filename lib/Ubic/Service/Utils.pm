@@ -3,9 +3,7 @@ package Ubic::Service::Utils;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Service::Utils - helpers for custom service authors
+# ABSTRACT: helpers for custom service authors
 
 =head1 FUNCTIONS
 
@@ -16,7 +14,8 @@ Ubic::Service::Utils - helpers for custom service authors
 use Params::Validate qw(:all);
 use Time::HiRes qw(sleep);
 use Ubic::Result qw(result);
-use base qw(Exporter);
+
+use parent qw(Exporter);
 our @EXPORT_OK = qw(wait_for_status);
 
 =item B<wait_for_status($params)>
@@ -83,10 +82,6 @@ sub wait_for_status {
 }
 
 =back
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

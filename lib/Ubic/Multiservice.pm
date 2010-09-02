@@ -1,11 +1,8 @@
 package Ubic::Multiservice;
+# ABSTRACT: interface of multiservice representing several named services
 
 use strict;
 use warnings;
-
-=head1 NAME
-
-Ubic::Multiservice - interface of multiservice representing several named services
 
 =head1 SYNOPSIS
 
@@ -29,7 +26,7 @@ Remember that althouth multiservice is currently a service too, it doesn't imple
 use Carp;
 use Params::Validate qw(:all);
 use Try::Tiny;
-use base qw(Ubic::Service);
+use parent qw(Ubic::Service);
 
 =item B<< service($name) >>
 
@@ -182,10 +179,6 @@ sub multiop($) {
 L<Ubic::Multiservice::Simple> - class for defining simple multiservices.
 
 L<Ubic::Multiservice::Dir> - multiservice which loads service configs from files.
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

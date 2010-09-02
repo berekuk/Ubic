@@ -1,11 +1,10 @@
 #!/usr/bin/perl
+package bin::ubic_watchdog;
 
 use strict;
 use warnings;
 
-=head1 NAME
-
-ubic-watchdog - watchdog which checks all ubic services.
+# ABSTRACT: watchdog which checks all ubic services.
 
 =head1 SYNOPSIS
 

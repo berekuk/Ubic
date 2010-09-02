@@ -1,12 +1,10 @@
 #!/usr/bin/perl
-# Copyright (c) 2009 Yandex.ru
+package bin::ubic_daemon;
+
+# ABSTRACT: daemonize any binary
 
 use strict;
 use warnings;
-
-=head1 NAME
-
-ubic-daemon - daemononize any binary
 
 =head1 SYNOPSIS
 
@@ -41,9 +39,4 @@ start_daemon({
 
 L<Ubic::Daemon>
 
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
 =cut
-

@@ -8,9 +8,7 @@ $Term::ANSIColor::AUTORESET = 1;
 
 use Params::Validate qw(:all);
 
-=head1 NAME
-
-Ubic::Cmd::Results - console results set
+# ABSTRACT: console results set
 
 =head1 SYNOPSIS
 
@@ -163,10 +161,6 @@ sub finish($$) {
 }
 
 =back
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

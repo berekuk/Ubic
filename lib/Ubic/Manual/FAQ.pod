@@ -1,6 +1,5 @@
-=head1 NAME
-
-Ubic::Manual::FAQ - frequently asked questions about Ubic
+package Ubic::Manual::FAQ;
+# ABSTRACT: frequently asked questions about Ubic
 
 =head1 QUESTIONS
 

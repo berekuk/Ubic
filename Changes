@@ -4,6 +4,7 @@ Revision history for Ubic
         * handle supplementary groups correctly
         * ubic-watchdog doesn't require root privileges anymore (unless service requires them, of course)
         * repo and bugtracker resources in META.yml
+        * PodWeaver in dist.ini config, so all modules now have proper AUTHOR and COPYRIGHT sections
 
 1.13    Wed Sep 01, 2010
         * Perl6::Slurp removed from dependencies

@@ -1,12 +1,10 @@
 #!/usr/bin/perl
-# Copyright (c) 2009-2010 Yandex.ru
+package bin::ubic;
 
 use strict;
 use warnings;
 
-=head1 NAME
-
-ubic - simple viewer of ubic services
+# ABSTRACT: simple viewer of ubic services
 
 =head1 SYNOPSIS
 
@@ -58,8 +56,3 @@ else {
     });
 }
 
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
-=cut

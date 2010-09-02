@@ -3,9 +3,7 @@ package Ubic::Multiservice::Simple;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Multiservice::Simple - simplest multiservice, configured in constructor
+# ABSTRACT: simplest multiservice, configured in constructor
 
 =head1 SYNOPSIS
 
@@ -20,7 +18,7 @@ $ms = Ubic::Multiservice::Simple->new({
 
 use Params::Validate qw(:all);
 use Scalar::Util qw(blessed);
-use base qw(Ubic::Multiservice);
+use parent qw(Ubic::Multiservice);
 
 =head1 METHODS
 
@@ -69,10 +67,6 @@ sub multiop {
 }
 
 =back
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

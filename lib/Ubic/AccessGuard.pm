@@ -3,9 +3,7 @@ package Ubic::AccessGuard;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::AccessGuard - class which guards simple service operations
+# ABSTRACT: class which guards simple service operations
 
 =head1 SYNOPSIS
 
@@ -128,10 +126,6 @@ sub DESTROY {
 }
 
 =back
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

@@ -3,13 +3,9 @@ package Ubic::Catalog;
 use strict;
 use warnings;
 
-use base qw(Ubic::Multiservice);
+use parent qw(Ubic::Multiservice);
 
-=head1 NAME
-
-Ubic::Catalog - deprecated alternate name of Ubic::Multiservice
-
-=cut
+# ABSTRACT: deprecated alternate name of Ubic::Multiservice
 
 1;
 

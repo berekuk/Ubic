@@ -3,9 +3,7 @@ package Ubic::Cmd;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Cmd - ubic methods with pretty printing.
+# ABSTRACT: ubic methods with pretty printing.
 
 =head1 SYNOPSIS
 
@@ -483,10 +481,6 @@ sub _run_impl {
 Interface of this class is unstable and can be changed without further notice.
 
 When in doubt, consider L<Ubic> or system("ubic COMMAND SERVICE") instead.
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

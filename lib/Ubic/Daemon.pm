@@ -3,9 +3,7 @@ package Ubic::Daemon;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Daemon - toolkit for creating daemonized process
+# ABSTRACT: toolkit for creating daemonized process
 
 =head1 SYNOPSIS
 
@@ -34,8 +32,7 @@ use Time::HiRes qw(sleep);
 
 use Carp;
 
-use Exporter;
-use base qw(Exporter);
+use parent qw(Exporter);
 our @EXPORT_OK = qw(start_daemon stop_daemon check_daemon);
 our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
@@ -565,10 +562,6 @@ Probably lots of them.
 =head1 SEE ALSO
 
 L<Ubic::Service::SimpleDaemon>
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

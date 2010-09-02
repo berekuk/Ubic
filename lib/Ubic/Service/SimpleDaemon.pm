@@ -3,9 +3,7 @@ package Ubic::Service::SimpleDaemon;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Service::SimpleDaemon - variant of service when your service is simple daemonized binary
+# ABSTRACT: variant of service when your service is simple daemonized binary
 
 =head1 SYNOPSIS
 
@@ -21,7 +19,7 @@ Unlike L<Ubic::Service::Common>, this class allows you to specify only name and 
 
 =cut
 
-use base qw(Ubic::Service::Skeleton);
+use parent qw(Ubic::Service::Skeleton);
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 use Ubic::Result qw(result);
@@ -138,10 +136,6 @@ sub status_impl {
 =head1 SEE ALSO
 
 L<Ubic::Daemon> - module to daemonize any binary
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

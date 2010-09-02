@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use base qw(Ubic::Multiservice);
+use parent qw(Ubic::Multiservice);
 use Ubic::Service::Common;
 
 sub new {

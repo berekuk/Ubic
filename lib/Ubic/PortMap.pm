@@ -3,9 +3,7 @@ package Ubic::PortMap;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::PortMap - update and read mapping of ports to service names.
+# ABSTRACT: update and read mapping of ports to service names.
 
 =head1 SYNOPSIS
 
@@ -97,10 +95,6 @@ sub port2name($) {
 }
 
 =back
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

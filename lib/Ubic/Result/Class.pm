@@ -3,9 +3,7 @@ package Ubic::Result::Class;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Result::Class - ubic result object
+# ABSTRACT: ubic result object
 
 =head1 SYNOPSIS
 
@@ -72,7 +70,7 @@ use overload '""' => sub {
 
 use Params::Validate qw(:all);
 use Carp;
-use base qw(Class::Accessor::Fast);
+use parent qw(Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(qw/ type msg /);
 
@@ -152,10 +150,6 @@ sub as_string {
 =head1 SEE ALSO
 
 L<Ubic::Result> - service action's result.
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

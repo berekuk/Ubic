@@ -28,7 +28,7 @@ use Params::Validate;
 use POSIX qw(:errno_h);
 use Carp;
 
-use base qw(Exporter);
+use parent qw(Exporter);
 
 our @EXPORT = qw(lockf);
 
@@ -124,9 +124,7 @@ sub name($)
 
 1;
 
-=head1 NAME
-
-Ubic::Lockf - file locker with an automatic out-of-scope unlocking mechanism
+# ABSTRACT: file locker with an automatic out-of-scope unlocking mechanism
 
 =head1 SYNOPSIS
 

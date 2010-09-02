@@ -1,23 +1,17 @@
 #!/usr/bin/perl
-# Copyright (c) 2009-2010 Yandex.ru
-
 package Ubic::Ping;
 
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Ping - http server which returns service status by it's name or port
-
-=cut
+# ABSTRACT: http server which returns service status by it's name or port
 
 use Ubic;
 use Ubic::PortMap;
 use Params::Validate qw(:all);
 use Try::Tiny;
 
-use base qw(HTTP::Server::Simple::CGI);
+use parent qw(HTTP::Server::Simple::CGI);
 
 sub _print_status($;$) {
     my ($name, $options) = validate_pos(@_, 1, { type => HASHREF, default => {} });
@@ -109,9 +103,3 @@ sub handle_request {
 }
 
 1;
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
-=cut

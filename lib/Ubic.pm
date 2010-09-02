@@ -5,10 +5,6 @@ use warnings;
 
 # ABSTRACT: flexible perl-based service manager
 
-=head1 NAME
-
-Ubic - flexible perl-based service manager
-
 =head1 SYNOPSIS
 
     Ubic->start("yandex-something");
@@ -757,10 +753,6 @@ Most Ubic-related links are collected on github wiki: L<http://github.com/bereku
 Our mailing list is ubic-perl@googlegroups.com. Send an empty message to ubic-perl+subscribe@googlegroups.com to subscribe.
 
 These is also an IRC channel: irc://irc.perl.org#ubic.
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

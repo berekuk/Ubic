@@ -1,11 +1,10 @@
 #!/usr/bin/perl
+package bin::ubic_update;
 
 use strict;
 use warnings;
 
-=head1 NAME
-
-ubic-update - update ubic metadata
+# ABSTRACT: update ubic metadata
 
 =head1 SYNOPSIS
 

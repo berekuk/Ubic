@@ -3,9 +3,7 @@ package Ubic::Result;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Result - common return value for many ubic interfaces
+# ABSTRACT: common return value for many ubic interfaces
 
 =head1 SYNOPSIS
 
@@ -28,7 +26,7 @@ Ubic::Result - common return value for many ubic interfaces
 
 use Ubic::Result::Class;
 use Scalar::Util qw(blessed);
-use base qw(Exporter);
+use parent qw(Exporter);
 
 our @EXPORT_OK = qw(
     result

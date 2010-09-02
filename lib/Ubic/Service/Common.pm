@@ -3,9 +3,7 @@ package Ubic::Service::Common;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Service::Common - common way to construct new service by specifying several callbacks
+# ABSTRACT: common way to construct new service by specifying several callbacks
 
 =head1 SYNOPSIS
 
@@ -32,7 +30,7 @@ Each service should provide safe C<start()>, C<stop()> and C<status()> methods.
 
 use Params::Validate qw(:all);
 
-use base qw(Ubic::Service::Skeleton);
+use parent qw(Ubic::Service::Skeleton);
 
 use Carp;
 
@@ -149,11 +147,4 @@ sub do_custom_command {
     $self->{custom_commands}{$command}->();
 }
 
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
-=cut
-
 1;
-

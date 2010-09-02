@@ -3,13 +3,9 @@ package Ubic::Multiservice::Dir;
 use strict;
 use warnings;
 
-=head1 NAME
+# ABSTRACT: multiservice which uses directory with configs to instantiate services
 
-Ubic::Multiservice::Dir - multiservice which uses directory with configs to instantiate services
-
-=cut
-
-use base qw(Ubic::Multiservice);
+use parent qw(Ubic::Multiservice);
 use Params::Validate qw(:all);
 use Carp;
 use File::Basename;
@@ -109,10 +105,6 @@ sub service_names($) {
 L<Ubic::Multiservice> - base interface of this class.
 
 L<Ubic> - main ubic module uses this class as root namespace of services.
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

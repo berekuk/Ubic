@@ -3,9 +3,7 @@ package Ubic::Persistent;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Persistent - simple hash-to-file persistence object
+# ABSTRACT: simple hash-to-file persistence object
 
 =head1 SYNOPSIS
 
@@ -106,5 +104,9 @@ sub DESTROY {
     local $@;
     delete $meta->{$self};
 }
+
+=back
+
+=cut
 
 1;

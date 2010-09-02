@@ -3,9 +3,7 @@ package Ubic::Service;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Service - interface and base class for any ubic service
+# ABSTRACT: interface and base class for any ubic service
 
 =head1 SYNOPSIS
 
@@ -228,10 +226,6 @@ L<Ubic::Service::Skeleton> - implement simple start/stop/status methods, and ubi
 L<Ubic::Service::Common> - just like Skeleton, but all code can be passed to constructor as sub references.
 
 L<Ubic::Service::SimpleDaemon> - just give it any binary and it will make service from it.
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
 
 =cut
 

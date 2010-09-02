@@ -3,7 +3,7 @@ package t::Utils;
 use strict;
 use warnings;
 
-use base qw(Exporter);
+use parent qw(Exporter);
 our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork slurp );
 
 use Carp;

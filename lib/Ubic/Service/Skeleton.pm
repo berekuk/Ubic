@@ -3,18 +3,14 @@ package Ubic::Service::Skeleton;
 use strict;
 use warnings;
 
-=head1 NAME
-
-Ubic::Service::Skeleton - skeleton of any service with common start/stop logic
-
-=cut
+# ABSTRACT: skeleton of any service with common start/stop logic
 
 use Ubic::Result qw(result);
 use Scalar::Util qw(blessed);
 use Time::HiRes qw(sleep);
 use Ubic::Service::Utils qw(wait_for_status);
 
-use base qw(Ubic::Service);
+use parent qw(Ubic::Service);
 
 =head1 ACTIONS
 
@@ -214,12 +210,6 @@ sub _do_stop {
         die result($status, 'stop failed');
     }
 }
-
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
-=cut
 
 1;
 
