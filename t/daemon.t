@@ -143,6 +143,7 @@ qr{\QError: Can't write to '/forbidden.log'\E},
     start_daemon({
         function => sub {
             $SIG{TERM} = sub {
+                $|++;
                 print "sigterm caught\n";
                 exit;
             };
