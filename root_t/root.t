@@ -5,6 +5,7 @@ use warnings;
 
 use parent qw(Test::Class);
 use Test::More;
+use Time::HiRes qw(sleep);
 
 use lib 'lib';
 use lib '.';
@@ -33,6 +34,7 @@ sub test_grants :Tests(6) {
     my $expected_user = $self->{user};
     my $expected_group = $self->{group};
     Ubic->start($name);
+    sleep 0.1;
     Ubic->stop($name);
 
     for my $file ( "tfiles/$name.result", "tfiles/status/$name", "tfiles/lock/$name" ) {

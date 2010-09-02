@@ -4,6 +4,7 @@ ubic (1.14) unstable; urgency=low
   * ubic-watchdog doesn't require root privileges anymore (unless service requires them, of course)
   * repo and bugtracker resources in META.yml
   * PodWeaver in dist.ini config, so all modules now have proper AUTHOR and COPYRIGHT sections
+  * SimpleDaemon and Common services accept arrayref as 'group' value
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 02 Sep 2010 22:52:48 +0400
 

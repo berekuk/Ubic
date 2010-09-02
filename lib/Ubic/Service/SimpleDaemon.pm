@@ -46,11 +46,19 @@ Daemon binary.
 
 =item I<name>
 
-Service's name. Optional, will usually be set by upper-level multiservice.
+Service's name.
+
+Optional, will usually be set by upper-level multiservice. Don't set it unless you know what you're doing.
 
 =item I<user>
 
 User under which daemon will be started. Optional, default is C<root>.
+
+=item I<group>
+
+Group under which daemon will be started. Optional, default is all user groups.
+
+Value can be scalar or arrayref.
 
 =item I<stdout>
 
@@ -68,7 +76,7 @@ sub new {
     my $params = validate(@_, {
         bin => { type => SCALAR | ARRAYREF },
         user => { type => SCALAR, optional => 1 },
-        group => { type => SCALAR, optional => 1 },
+        group => { type => SCALAR | ARRAYREF, optional => 1 },
         name => { type => SCALAR, optional => 1 },
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
@@ -112,8 +120,10 @@ sub user {
 
 sub group {
     my $self = shift;
-    return $self->{group} if defined $self->{group};
-    return $self->SUPER::group();
+    my $groups = $self->{group};
+    return $self->SUPER::group() if not defined $groups;
+    return @$groups if ref $groups eq 'ARRAY';
+    return $groups;
 }
 
 sub stop_impl {

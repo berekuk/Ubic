@@ -655,6 +655,7 @@ sub do_cmd($$$) {
             }
             push @gid, $gid;
         }
+        @gid = (@gid, @gid) if @gid == 1; # otherwise $) = "1 0"; $) = "1" leaves 0 in group list
         my $service_gid = join ' ', @gid;
 
         if (

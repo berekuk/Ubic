@@ -168,9 +168,9 @@ sub user {
 
 Should return list of groups from which the service can be controlled and will be running.
 
-Default is main group of the user returned by C<user()> method.
+First group from list will be used as real and effective gid, other groups will be set as supplementary groups.
 
-Supplementary groups are not supported by this default implementation (yet).
+Default is list of all groups of user as returned by C<user()> method.
 
 =cut
 sub group {

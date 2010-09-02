@@ -5,6 +5,7 @@ Revision history for Ubic
         * ubic-watchdog doesn't require root privileges anymore (unless service requires them, of course)
         * repo and bugtracker resources in META.yml
         * PodWeaver in dist.ini config, so all modules now have proper AUTHOR and COPYRIGHT sections
+        * SimpleDaemon and Common services accept arrayref as 'group' value
 
 1.13    Wed Sep 01, 2010
         * Perl6::Slurp removed from dependencies
