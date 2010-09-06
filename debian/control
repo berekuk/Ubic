@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 5), perl, libmodule-build-perl,
 Package: ubic
 Architecture: all
 Depends: ${perl:Depends},
- libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libtry-tiny-perl, libwww-perl, libjson-perl
+ libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl, libtry-tiny-perl, libwww-perl, libjson-perl, libparent-perl
 Provides: yandex-ubic
 Replaces: yandex-ubic (<< 1.00)
 Conflicts: yandex-ubic (<< 1.00)
