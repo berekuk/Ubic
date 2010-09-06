@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2 + 4 + 4 + 6 + 1 + 1;
+use parent qw(Test::Class);
+use Test::More;
 use Test::Exception;
 
 use lib 'lib';
@@ -15,16 +16,14 @@ use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
 
-# services() method - also check that service_dir works, so these tests are first (2)
-{
+sub services :Test(2) {
     my @services = Ubic->services;
     cmp_ok(scalar(@services), '>', 5, 'enough services returned by services() method');
 
     ok(scalar(grep { $_->name eq 'sleeping-daemon' } @services), 'sleeping-daemon is presented in services list');
 }
 
-# is_enabled, enable, disable (4)
-{
+sub enable_disable :Test(4) {
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled');
     Ubic->enable('sleeping-daemon');
     ok(Ubic->is_enabled('sleeping-daemon'), 'sleeping-daemon is enabled now');
@@ -33,8 +32,7 @@ Ubic->set_service_dir('t/service');
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled again');
 }
 
-# start, stop, restart (4)
-{
+sub start_stop :Test(4) {
     Ubic->start('sleeping-daemon');
     ok(Ubic->is_enabled('sleeping-daemon'), 'sleeping-daemon is enabled after start');
     my $service = Ubic->service('sleeping-daemon');
@@ -45,8 +43,7 @@ Ubic->set_service_dir('t/service');
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled after stop');
 }
 
-# multiservices (6)
-{
+sub multiservices :Test(6) {
     lives_ok(sub { Ubic->service('multi')->service('sleep2') }, 'multi.sleep2 is accessible');
     dies_ok(sub { Ubic->service('multi')->service('sleep3') }, 'multi.sleep3 is non-existent');
     lives_ok(sub { Ubic->service('multi.sleep2') }, 'multi.sleep2 is accessible through short syntax too');
@@ -58,13 +55,12 @@ Ubic->set_service_dir('t/service');
     is(Ubic->service('multi.sleep2')->status, 'not running', 'multiservice can be stopped');
 }
 
-# custom commands (1)
-{
+sub custom_commands :Test(1) {
     is(Ubic->do_custom_command('sleeping-common', '2plus2'), 4, 'do_custom_command method works');
 }
 
-# user
-{
+sub user :Test(1) {
+    return "can't test users when testing from root" unless $>;
     dies_ok(sub { Ubic->start('sleeping-daemon-root') }, "can't start root service"); # this forbids building from root
 }
 
@@ -72,3 +68,4 @@ Ubic->set_service_dir('t/service');
 # TODO - test locks
 # TODO - test cached_status
 
+__PACKAGE__->new->runtests;

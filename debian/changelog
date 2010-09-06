@@ -1,3 +1,9 @@
+ubic (1.15) unstable; urgency=low
+
+  * tests fixed to work under root user (http://github.com/berekuk/Ubic/issues#issue/4)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 06 Sep 2010 18:29:56 +0400
+
 ubic (1.14) unstable; urgency=low
 
   * handle supplementary groups correctly

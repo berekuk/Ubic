@@ -65,11 +65,11 @@ throws_ok(sub {
     start_daemon({
         function => sub { sleep 2 },
         name => 'abc',
-        stdout => '/forbidden.log',
+        stdout => 'tfiles/non-existent/forbidden.log',
         pidfile => 'tfiles/pid',
     })
 },
-qr{\QError: Can't write to '/forbidden.log'\E},
+qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
 'start_daemon reports correct errrors');
 
 # reviving after kill -9 on ubic-guardian (4)
