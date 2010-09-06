@@ -1,7 +1,9 @@
 Revision history for Ubic
 
 {{$NEXT}}
-        * using Test::TCP when testing ubic-ping
+        * test improvements:
+         - using Test::TCP when testing ubic-ping
+         - watchdog.t skips all tests if 'fakeroot' is not present
 
 1.15    Mon Sep 06, 2010
         * tests fixed to work under root user (http://github.com/berekuk/Ubic/issues#issue/4)
