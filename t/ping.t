@@ -7,6 +7,7 @@ use Test::More tests => 24;
 
 use lib 'lib';
 
+use Test::TCP;
 use LWP::UserAgent;
 use Ubic;
 use Ubic::PortMap;
@@ -23,9 +24,10 @@ END {
     Ubic->stop('ubic-ping');
 }
 
+
 $ENV{UBIC_SERVICE_PING_USER} = $ENV{LOGNAME};
 $ENV{UBIC_SERVICE_PING_PID} = 'tfiles/ubic-ping.pid';
-my $port = 12346;
+my $port = empty_port();
 $ENV{UBIC_SERVICE_PING_PORT} = $port;
 
 my $another_port = Ubic->service('fake-http-service')->port;
