@@ -28,6 +28,7 @@ If you really need to get daemon's pid, save it from daemon or ask me for public
 use IO::Handle;
 use POSIX qw(setsid);
 use Ubic::Lockf;
+use Ubic::Daemon::Status;
 use Time::HiRes qw(sleep);
 
 use Carp;
@@ -327,12 +328,12 @@ sub start_daemon($) {
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
-            my $status = shift;
+            my $status = shift; # nobody cares for this status, anyway...
             close($ubic_fh) if $ubic_fh;
             STDOUT->flush;
             STDERR->flush;
             undef $lock;
-            POSIX::_exit($status); # don't allow to lock to be released - this process was forked from unknown environment, don't want to run unknown destructors
+            POSIX::_exit($status); # don't allow any cleanup to happen - this process was forked from unknown environment, don't want to run unknown destructors
         };
 
         eval {
@@ -364,9 +365,9 @@ sub start_daemon($) {
             $SIG{HUP} = 'ignore';
             $0 = "ubic-guardian $name";
             setsid; # ubic-daemon gets it's own session
-            _log($ubic_fh, "self name: $0");
+            _log($ubic_fh, "guardian name: $0");
 
-            _log($ubic_fh, "[$$] getting lock...");
+            _log($ubic_fh, "getting lock...");
 
             # We're passing 'timeout' option to lockf call to get rid of races.
             # There should be no races when Ubic::Daemon is used in context of
@@ -375,7 +376,7 @@ sub start_daemon($) {
             $lock = _lock_pidfile($pidfile, 5) or die "Can't lock $pidfile";
 
             _remove_pidfile($pidfile);
-            _log($ubic_fh, "[$$] got lock");
+            _log($ubic_fh, "got lock");
 
             if (defined $user) {
                 my $id = getpwnam($user);
@@ -406,12 +407,14 @@ sub start_daemon($) {
                     $instant_exit->(0);
                 };
 
+                my $sigterm_sent;
                 $SIG{TERM} = sub {
                     if ($term_timeout > 0) {
                         $SIG{ALRM} = $kill_sub;
                         alarm($term_timeout);
                         _log($ubic_fh, "sending SIGTERM to $child");
                         kill -15 => $child;
+                        $sigterm_sent = 1;
                     }
                     else {
                         $kill_sub->();
@@ -424,13 +427,19 @@ sub start_daemon($) {
                 waitpid($child, 0);
                 if ($? > 0) {
                     my $msg;
-                    if ($? & 127) {
-                        $msg = "Daemon $child failed with signal ".($? & 127);
+                    my $signal = $? & 127;
+                    if ($signal) {
+                        if ($sigterm_sent && $signal == &POSIX::SIGTERM) {
+                            # it's ok, we probably sent this signal ourselves
+                            _log($ubic_fh, "daemon exited by sigterm");
+                            _remove_pidfile($pidfile);
+                            $instant_exit->(0);
+                        }
+                        $msg = "Daemon $child failed with signal $signal";
                     }
                     else {
                         $msg = "Daemon failed: $?";
                     }
-                    warn $msg;
                     _log($ubic_fh, $msg);
                     _remove_pidfile($pidfile);
                     $instant_exit->(1);
@@ -503,12 +512,12 @@ sub check_daemon {
     }
 
     my $lock = _lock_pidfile($pidfile);
+    my $piddata = _read_pidfile($pidfile);
     unless ($lock) {
         # locked => daemon is alive
-        return 1;
+        return Ubic::Daemon::Status->new({ pid => $piddata->{daemon} });
     }
 
-    my $piddata = _read_pidfile($pidfile);
     unless ($piddata) {
         return 0;
     }

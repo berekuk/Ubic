@@ -27,7 +27,7 @@ my $service = Ubic::Service::SimpleDaemon->new({
 
 is($service->status, 'not running', 'status before start');
 $service->start;
-is($service->status, 'running', 'start works');
+like($service->status, qr/^running \(pid \d+\)$/, 'start works');
 
 sleep 1;
 

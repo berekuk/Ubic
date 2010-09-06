@@ -133,8 +133,8 @@ sub stop_impl {
 
 sub status_impl {
     my ($self) = @_;
-    if (check_daemon($self->pidfile)) {
-        return result('running');
+    if (my $daemon = check_daemon($self->pidfile)) {
+        return result('running', "pid ".$daemon->pid);
     }
     else {
         return result('not running');

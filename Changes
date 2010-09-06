@@ -1,6 +1,11 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Ubic::Daemon:
+         - check_daemon() now returns proper Ubic::Daemon::Status object
+         - don't log warning if daemon exited by sigterm
+         - minor logging cleanup
+        * Ubic::Service::SimpleDaemon returns daemon pid in status msg
         * test improvements:
          - using Test::TCP when testing ubic-ping
          - watchdog.t skips all tests if 'fakeroot' is not present
