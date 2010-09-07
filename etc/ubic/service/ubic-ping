@@ -1,6 +1,7 @@
 # vim: ft=perl
 use Ubic::Service::Common;
 use Ubic::Daemon qw(:all);
+use Ubic::Result qw(result);
 use LWP::Simple;
 use POSIX;
 use Time::HiRes qw(sleep);
@@ -25,13 +26,14 @@ Ubic::Service::Common->new({
         stop_daemon($pidfile);
     },
     status => sub {
-        unless (check_daemon($pidfile)) {
+        my $daemon = check_daemon($pidfile);
+        unless ($daemon) {
             return 'not running';
         }
         my $result = get("http://localhost:$port/ping") || '';
         return ((
             $result =~ /^ok$/
-        ) ? 'running' : 'broken');
+        ) ? result('running', "pid ".$daemon->pid) : result('broken'));
     },
     port => $port,
     user => $user,
