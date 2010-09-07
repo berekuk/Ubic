@@ -36,7 +36,7 @@ sub start_stop :Test(4) {
     Ubic->start('sleeping-daemon');
     ok(Ubic->is_enabled('sleeping-daemon'), 'sleeping-daemon is enabled after start');
     my $service = Ubic->service('sleeping-daemon');
-    is($service->status, 'running', 'sleeping-daemon is running');
+    like($service->status, qr/^running \(pid \d+\)$/, 'sleeping-daemon is running');
 
     Ubic->stop('sleeping-daemon');
     is($service->status, 'not running', 'sleeping-daemon is not running');
@@ -46,13 +46,13 @@ sub start_stop :Test(4) {
 sub multiservices :Test(6) {
     lives_ok(sub { Ubic->service('multi')->service('sleep2') }, 'multi.sleep2 is accessible');
     dies_ok(sub { Ubic->service('multi')->service('sleep3') }, 'multi.sleep3 is non-existent');
-    lives_ok(sub { Ubic->service('multi.sleep2') }, 'multi.sleep2 is accessible through short syntax too');
+    lives_ok(sub { Ubic->service('multi.sleep2') }, 'multi.sleep2 is accessible through short syntax');
     dies_ok(sub { Ubic->service('multi.sleep3') }, 'multi.sleep3 is non-existent with short syntax either');
 
     Ubic->start('multi.sleep2');
-    is(Ubic->service('multi.sleep2')->status, 'running', 'multiservice can be started too');
+    like(Ubic->service('multi.sleep2')->status, qr/^running \(pid \d+\)$/, 'subservice can be started too');
     Ubic->stop('multi.sleep2');
-    is(Ubic->service('multi.sleep2')->status, 'not running', 'multiservice can be stopped');
+    is(Ubic->service('multi.sleep2')->status, 'not running', 'subservice can be stopped');
 }
 
 sub custom_commands :Test(1) {

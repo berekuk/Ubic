@@ -42,8 +42,8 @@ Ubic->set_service_dir('t/service');
     like($result, qr/multi.sleep1 \s+ off/x, 'status works for multiservice');
     $result = qx($perl t/bin/multi-init start sleep1 sleep2);
     like($result, qr/
-    Starting \s+ multi\.sleep1\.\.\. \s+ started \s+
-    Starting \s+ multi\.sleep2\.\.\. \s+ started
+    Starting \s+ multi\.sleep1\.\.\. \s+ started \s+ \(pid \s+ \d+\)\s+
+    Starting \s+ multi\.sleep2\.\.\. \s+ started \s+ \(pid \s+ \d+\)
     /msx, 'status works for multiservice');
 }
 

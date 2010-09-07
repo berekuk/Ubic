@@ -22,8 +22,8 @@ my $stdout = select $fh;
 
 Ubic::Cmd->start('sleeping-daemon');
 select $stdout;
-is($out, "Starting sleeping-daemon... started\n", 'Ubic::Cmd logged something on start');
-is(Ubic->status('sleeping-daemon'), 'running', 'Ubic::Cmd really started service');
+like($out, qr/^\QStarting sleeping-daemon... started (pid \E\d+\)\n$/, 'Ubic::Cmd logged something on start');
+is(Ubic->status('sleeping-daemon')->status, 'running', 'Ubic::Cmd really started service');
 
 $out = '';
 open $fh, '>', \$out;
