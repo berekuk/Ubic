@@ -316,7 +316,7 @@ sub print_status($$;$$) {
                 $status = result($@);
             }
         }
-        if ($status eq 'running') {
+        if ($status->status eq 'running') {
             $results->print($status);
         }
         else {

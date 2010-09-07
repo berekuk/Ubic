@@ -8,6 +8,7 @@ ubic (1.16) unstable; urgency=low
   * test improvements:
    - using Test::TCP when testing ubic-ping
    - watchdog.t skips all tests if 'fakeroot' is not present
+  * Ubic::Cmd: print 'running' result as good when it contains extended message
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 07 Sep 2010 17:50:23 +0400
 
