@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.16    Tue Sep 07, 2010
         * Ubic::Daemon:
          - check_daemon() now returns proper Ubic::Daemon::Status object
          - don't log warning if daemon exited by sigterm
