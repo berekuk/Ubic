@@ -16,8 +16,6 @@ When using ubic from simple scripts, you want to print some output about what ha
 
 This package mostly conforms to C<Ubic> module API (i.e. to LSB init-script API).
 
-It also greatly simplifies writing /etc/init.d/ scripts (see synopsis).
-
 =cut
 
 use Params::Validate qw(:all);
