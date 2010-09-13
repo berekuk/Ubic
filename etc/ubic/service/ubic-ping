@@ -8,16 +8,20 @@ use Time::HiRes qw(sleep);
 
 use Ubic::Ping;
 
+use Config;
+
 # ugly; waiting for druxa's Mopheus to save us all...
 my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
 my $pidfile = $ENV{UBIC_SERVICE_PING_PID} || "/var/lib/ubic/ubic-ping.pid";
 my $user = $ENV{UBIC_SERVICE_PING_USER} || 'root';
 
+my $perl = $Config{perlpath};
+
 Ubic::Service::Common->new({
     start => sub {
         my $pid;
         start_daemon({
-            bin => qq{perl -MUbic::Ping -e 'Ubic::Ping->new($port)->run;'},
+            bin => qq{$perl -MUbic::Ping -e 'Ubic::Ping->new($port)->run;'},
             name => 'ubic-ping',
             pidfile => $pidfile,
         });
