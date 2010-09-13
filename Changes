@@ -1,6 +1,11 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Ubic::Run: recognize RedHat init script names
+        (thanks to Sawyer X for the patch, see http://github.com/berekuk/Ubic/issues/#issue/5)
+        * test improvements:
+         - ubic-ping uses Config.pm to determine full perl binary path
+         - memory-leak.t is more robust
 
 1.16    Tue Sep 07, 2010
         * Ubic::Daemon:
