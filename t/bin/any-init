@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    $0 = "/etc/init.d/sleeping-daemon";
+    $0 = $ENV{INIT_SCRIPT_NAME};
 }
 
 use Ubic::Run;

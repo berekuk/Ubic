@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 18;
 
 use lib 'lib';
 
@@ -17,23 +17,35 @@ use Ubic;
 Ubic->set_ubic_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
 
-# single (4)
+# single (5*3 = 15)
 {
     my $result;
 
-    $result = qx($perl t/bin/sleeping-init start);
+    for (qw(/etc/init.d/sleeping-daemon /etc/rc.d/init.d/sleeping-daemon /etc/rc3.d/S98sleeping-daemon)) {
+        $ENV{INIT_SCRIPT_NAME} = '/etc/init.d/sleeping-daemon';
 
-    $result = qx($perl t/bin/sleeping-init status);
-    like($result, qr/sleeping-daemon \s+ running/x, 'Ubic::Run works, sleeping-daemon is running');
+        $result = qx($perl t/bin/any-init start);
+        like($result, qr/^\QStarting sleeping-daemon... started (pid \E\d+\)$/);
 
-    use Test::Exception;
-    dies_ok(sub { xsystem("$perl t/bin/sleeping-init blah 2>>tfiles/blah.stderr") }, "Ubic::Run dies encountering an unknown command");
-    lives_ok(sub { xsystem("$perl t/bin/sleeping-init logrotate") }, "logrotate command implemented"); #FIXME: better fix logrotate configs!
+        $result = qx($perl t/bin/any-init status);
+        like($result, qr/sleeping-daemon \s+ running/x, 'Ubic::Run works, sleeping-daemon is running');
 
-    $result = qx($perl t/bin/sleeping-init stop);
+        use Test::Exception;
+        dies_ok(sub { xsystem("$perl t/bin/any-init blah 2>>tfiles/blah.stderr") }, "Ubic::Run dies encountering an unknown command");
+        lives_ok(sub { xsystem("$perl t/bin/any-init logrotate") }, "logrotate command implemented"); #FIXME: better fix logrotate configs!
 
-    $result = qx($perl t/bin/sleeping-init status);
-    like($result, qr/sleeping-daemon \s+ off/x, 'Ubic::Run works, sleeping-daemon is off');
+        $result = qx($perl t/bin/any-init stop);
+
+        $result = qx($perl t/bin/any-init status);
+        like($result, qr/sleeping-daemon \s+ off/x, 'Ubic::Run works, sleeping-daemon is off');
+    }
+}
+
+# invalid filename (1)
+{
+    $ENV{INIT_SCRIPT_NAME} = '/usr/bin/sleeping-daemon';
+    my $result = qx($perl t/bin/any-init start 2>&1 >/dev/null);
+    like($result, qr{^Strange \$0: /usr/bin/sleeping-daemon}, 'Ubic::Run throws exception when script name is unknown');
 }
 
 # multi (2)
