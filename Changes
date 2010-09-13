@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.17    Mon Sep 13, 2010
         * Ubic::Run: recognize RedHat init script names
         (thanks to Sawyer X for the patch, see http://github.com/berekuk/Ubic/issues/#issue/5)
         * test improvements:
