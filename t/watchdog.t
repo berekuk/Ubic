@@ -16,15 +16,15 @@ use t::Utils;
 
 my $ignore_warn = ignore_warn(qr/Can't construct 'broken': failed/);
 
+# check if we should skip these tests
+{
+    system('fakeroot true >>/dev/null') and plan skip_all => 'fakeroot is not installed';
+}
+
 sub setup :Test(setup) {
     rebuild_tfiles();
     Ubic->set_ubic_dir('tfiles/ubic');
     Ubic->set_service_dir('t/service');
-}
-
-sub SKIP_CLASS {
-    system('fakeroot true') and return 1;
-    return;
 }
 
 sub silence :Test(2) {
