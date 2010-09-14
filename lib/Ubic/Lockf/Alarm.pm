@@ -1,7 +1,20 @@
 package Ubic::Lockf::Alarm;
 
-# we can't use alarm from Time::HiRes, it doesn't return current alarm value on perl 5.8.8 :(
+# ABSTRACT: alarm guard
 
+=head1 DESCRIPTION
+
+This module is necessary to implement timeouts in C<Ubic::Lockf> class.
+
+=head1 METHODS
+
+=over
+
+=item B<< new($timeout) >>
+
+Construct new alarm guard object.
+
+=cut
 sub new ($$) {
     my ($class, $timeout) = @_;
     bless { 'alarm' => alarm($timeout), 'time' => time };
@@ -20,4 +33,7 @@ sub DESTROY ($) {
     alarm($alarm);
 }
 
+=back
+
+=cut
 1;
