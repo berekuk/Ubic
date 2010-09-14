@@ -12,7 +12,8 @@ For full install on Debian/Ubuntu, last .deb package can be downloaded at http:/
 Debian package build can be reproduced with this command:
     dzil build && cp -r debian Ubic*/ && cd Ubic* && debuild
 
-For non-Debian systems, basically you'll need to:
+For non-Debian systems, you'll need to:
+
 - copy all files from etc/ into /etc
 - copy debian/ubic.logrotate into /etc/logrotate.d/ubic and debian/ubic.cron.d into /etc/cron.d/ubic
 - create all dirs from debian/ubic.dirs
