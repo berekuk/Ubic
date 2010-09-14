@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.19    Tue Sep 14, 2010
         * ubic-watchdog always uses Ubic->status interface to check service status
 
 1.18    Tue Sep 14, 2010
