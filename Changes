@@ -3,6 +3,7 @@ Revision history for Ubic
 {{$NEXT}}
         * critical bugfix: ubic-watchdog correctly interpret extended statuses
         (thanks to Sawyer X for noticing this, see http://github.com/berekuk/Ubic/issues#issue/7)
+        * Ubic::Lockf::Alarm moved to separate file, so PODs are now correct
 
 1.17    Mon Sep 13, 2010
         * Ubic::Run: recognize RedHat init script names

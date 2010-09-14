@@ -1,32 +1,36 @@
-package Ubic::Lockf::Alarm;
-
-# we can't use alarm from Time::HiRes, it don't return current alarm value on perl 5.8.8
-
-sub new ($$) {
-    my ($class, $timeout) = @_;
-    bless { 'alarm' => alarm($timeout), 'time' => time };
-}
-
-sub DESTROY ($) {
-    my $self = shift;
-    local $@;
-    my $alarm;
-    if ($self->{alarm}) {
-        $alarm = $self->{alarm} + $self->{time} - time;
-        $alarm = 1 if $alarm <= 0;
-    } else {
-        $alarm = 0;
-    }
-    alarm($alarm);
-}
-
 package Ubic::Lockf;
+
 use strict;
+
+# ABSTRACT: file locker with an automatic out-of-scope unlocking mechanism
+
+=head1 SYNOPSIS
+
+    use Ubic::Lockf;
+    $lock = lockf($filehandle);
+    $lock = lockf($filename);
+    undef $lock; # unlocks either
+
+=head1 DESCRIPTION
+
+C<lockf> is a perlfunc C<flock> wrapper. The lock is autotamically released as soon as the assotiated object is
+no longer referenced.
+
+C<lockf_multi> makes non-blocking C<lockf> calls for multiple files and throws and exception if all are locked.
+
+=head1 METHODS
+
+=over
+
+=cut
+
 use Fcntl qw(:flock);
 
 use Params::Validate;
 use POSIX qw(:errno_h);
 use Carp;
+
+use Ubic::Lockf::Alarm;
 
 use parent qw(Exporter);
 
@@ -49,6 +53,37 @@ my %defaults = (
     mode => undef,
 );
 
+=item B<lockf($file, $options)>
+
+Create an Lockf instance. Always save the result in some variable(s), otherwise the lock will be released immediately.
+
+The lock is automatically released when all the references to the Lockf object are lost. The lockf mandatory parameter
+can be either a string representing a filename or a reference to an already opened filehandle. The second optional
+parameter is a hash of boolean options. Supported options are:
+
+=over
+
+=item I<shared>
+
+OFF by default. Tells to achieve a shared lock. If not set, an exclusive lock is requested.
+
+=item I<blocking>
+
+ON by default. If unset, a non-blocking mode of flock is used. If this flock fails because the lock is already held by some other process,
+C<undef> is returned. If the failure reason is somewhat different, permissions problems or the 
+absence of a target file directory for example, an exception is raisen.
+
+=item I<timeout>
+
+Undef by default. If set, specifies the wait timeout for acquiring the blocking lock. The value of 0 is equivalent to blocking => 0 option.
+
+=item I<mode>
+
+Undef by default. If set, a chmod with the specified mode is performed on a newly created file. Ignored when filehandle is passed instead of a filename.
+
+=back
+
+=cut
 sub lockf ($;$) {
     my ($param, $opts) = validate_pos(@_, 1, 0);
     $opts ||= {};
@@ -116,6 +151,11 @@ sub _lockf ($$;$) {
     return 1;
 }
 
+=item B<name()>
+
+Gives the name of the file, as it was when the lock was taken.
+
+=cut
 sub name($)
 {
     my $self = shift();
@@ -123,60 +163,6 @@ sub name($)
 }
 
 1;
-
-# ABSTRACT: file locker with an automatic out-of-scope unlocking mechanism
-
-=head1 SYNOPSIS
-
-    use Ubic::Lockf;
-    $lock = lockf($filehandle);
-    $lock = lockf($filename);
-    undef $lock; # unlocks either
-
-=head1 DESCRIPTION
-
-C<lockf> is a perlfunc C<flock> wrapper. The lock is autotamically released as soon as the assotiated object is
-no longer referenced.
-
-C<lockf_multi> makes non-blocking C<lockf> calls for multiple files and throws and exception if all are locked.
-
-=head1 METHODS
-
-=over
-
-=item B<lockf($file, $options)>
-
-Create an Lockf instance. Always save the result in some variable(s), otherwise the lock will be released immediately.
-
-The lock is automatically released when all the references to the Lockf object are lost. The lockf mandatory parameter
-can be either a string representing a filename or a reference to an already opened filehandle. The second optional
-parameter is a hash of boolean options. Supported options are:
-
-=over
-
-=item I<shared>
-
-OFF by default. Tells to achieve a shared lock. If not set, an exclusive lock is requested.
-
-=item I<blocking>
-
-ON by default. If unset, a non-blocking mode of flock is used. If this flock fails because the lock is already held by some other process,
-C<undef> is returned. If the failure reason is somewhat different, permissions problems or the 
-absence of a target file directory for example, an exception is raisen.
-
-=item I<timeout>
-
-Undef by default. If set, specifies the wait timeout for acquiring the blocking lock. The value of 0 is equivalent to blocking => 0 option.
-
-=item I<mode>
-
-Undef by default. If set, a chmod with the specified mode is performed on a newly created file. Ignored when filehandle is passed instead of a filename.
-
-=back
-
-=item B<name()>
-
-Gives the name of the file, as it was when the lock was taken.
 
 =back
 
