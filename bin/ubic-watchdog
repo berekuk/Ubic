@@ -64,13 +64,13 @@ sub check($) {
         }
         # TODO - alarm?
         my $status = Ubic->status($name);
-        unless ($status eq 'running') {
+        unless ($status->status eq 'running') {
             Ubic->set_cached_status($name, $status->status); # following start can throw exception
             ERROR("$name is broken, restarting");
             Ubic->start($name);
         }
         $status = $service->status;
-        if ($status ne 'running') {
+        if ($status->status ne 'running') {
             INFO("$name started, but status is still '$status'");
         }
         Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
