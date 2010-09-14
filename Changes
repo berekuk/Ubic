@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * ubic-watchdog always uses Ubic->status interface to check service status
 
 1.18    Tue Sep 14, 2010
         * critical bugfix: ubic-watchdog correctly interpret extended statuses
