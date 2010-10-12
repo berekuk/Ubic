@@ -16,3 +16,4 @@
 /*.deb
 /*.changes
 /*.upload
+/.debuild
