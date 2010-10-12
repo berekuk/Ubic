@@ -92,7 +92,10 @@ sub service_names($) {
     for my $file (glob("$self->{service_dir}/*")) {
         next unless -f $file or -d $file;
         $file = basename($file);
-        next if $file !~ /^[\w-]+$/; # skip files with dots, for example old debian configs like yandex.dpkg-old
+
+        # we skip files with dots, for example old debian configs like my-service.dpkg-old
+        next if $file !~ /^[\w-]+$/;
+
         push @names, $file;
     }
     return @names;

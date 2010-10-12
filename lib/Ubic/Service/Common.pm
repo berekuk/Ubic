@@ -17,7 +17,7 @@ use warnings;
         status => sub {
             # implementation-specific
         },
-        name => "yandex-ppb-something",
+        name => "my-service",
         port => 1234,
     });
     $service->start;

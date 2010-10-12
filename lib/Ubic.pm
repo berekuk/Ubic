@@ -7,25 +7,25 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    Ubic->start("yandex-something");
+    Ubic->start("my-service");
 
-    Ubic->stop("yandex-something");
+    Ubic->stop("my-service");
 
-    $status = Ubic->status("yandex-something");
+    $status = Ubic->status("my-service");
 
 =head1 DESCRIPTION
 
 Ubic is a flexible perl-based service manager.
 
-This module is a main frontend to ubic services.
+This module is a perl frontend to ubic services.
 
 Further directions:
 
-if you are looking for general introduction to Ubic, follow this link: L<http://blogs.perl.org/mt/mt-search.fcgi?blog_id=310&tag=tutorial&limit=20>;
+if you are looking for a general introduction to Ubic, follow this link: L<http://blogs.perl.org/mt/mt-search.fcgi?blog_id=310&tag=tutorial&limit=20>;
+
+if you want to use ubic from command line, see L<ubic>;
 
 if you want to manage ubic services from perl scripts, read this POD;
-
-if you want to use ubic from command line, see L<ubic(1)> and L<Ubic::Cmd>;
 
 if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Service::*> modules. Check out L<Ubic::Run> for integration with SysV init script system too.
 

@@ -19,100 +19,34 @@ use Ubic::Result qw(result);
 
 =head1 DESCRIPTION
 
-All ubic services must be subclasses of this package.
+Ubic::Service is the abstract base class for all ubic service classes.
 
-Action methods (like C<start>, C<stop>, C<reload>) and C<status> should return L<Ubic::Result::Class> objects (usually constructed with C<result> method from L<Ubic::Result>).
-
-Or they can return plain strings, L<Ubic> will care about blessing them into result objects.
-
-See L</"SEE ALSO"> for references to more specific (and useful) versions of services.
+It provides common API for implementing service start/stop operations, custom commands and tuning some metadata properties (C<user()>, C<group()>, C<check_period()>).
 
 =head1 METHODS
 
+=head2 ACTION METHODS
+
+All action methods should return L<Ubic::Result::Class> objects. If action method returns plain string, L<Ubic> will wrap it into result object too.
+
 =over
 
-=cut
-
-=item B<name()>
-
-=item B<name($new_name)>
-
-Name of service.
-
-Each service with the same parent should have an unique name.
-
-In case of subservices, name should be the most lower-level name; use C<full_name> method to get fully-qualified service name.
-
-=cut
-sub name($;$) {
-    my ($self, $name) = @_;
-    if (defined $name) {
-        $self->{name} = $name;
-    }
-    else {
-        return $self->{name};
-    }
-}
-
-=item B<full_name>
-
-Fully qualified name of service.
-
-Each service should have an unique full_name.
-
-It is a concatenation of service's short C<name> and service's <parent_name>.
-
-Service's parent is responsible for setting it (to concatenation of it's own name and service's name) immediately after service's construction.
-
-In case of subservices, initial name should be the most lower-level name; it will be concatenated with names of it's parents by it's parents. (See L<Ubic::Multiservice>'s code for more details).
-
-=cut
-sub full_name($) {
-    my ($self) = @_;
-    my $parent_name = $self->parent_name;
-    if (defined $parent_name) {
-        return $parent_name.".".$self->name;
-    }
-    else {
-        return $self->name;
-    }
-}
-
-=item B<parent_name()>
-
-=item B<parent_name($new_parent_name)>
-
-Get/set name of service's parent.
-
-Service's parent is responsible for calling it immediately after service's construction as C<< $service->parent_name($self->full_name) >>.
-
-=cut
-sub parent_name($;$) {
-    my ($self, $name) = @_;
-    if (defined $name) {
-        $self->{parent_name} = $name;
-    }
-    else {
-        return $self->{parent_name};
-    }
-}
-
-=item B<start>
+=item B<start()>
 
 Start service. Should throw exception on failure and string with operation result otherwise.
 
-Starting already running service should do nothing and return "already running".
+Starting already running service should do nothing and return C<already running>.
 
 =cut
 sub start {
     die "not implemented";
 }
 
-=item B<stop>
+=item B<stop()>
 
 Stop service. Should throw exception on failure and string with operation result otherwise.
 
-Stopping already stopped service should do nothing and return "not running".
+Stopping already stopped service should do nothing and return C<not running>.
 
 Successful stop of a service B<must> disable this service.
 
@@ -121,11 +55,11 @@ sub stop {
     die "not implemented";
 }
 
-=item B<status>
+=item B<status()>
 
 Check real status of service.
 
-It should check that service is running correctly and return "running" if it is so.
+It should check that service is running correctly and return C<running> if it is so.
 
 =cut
 sub status {
@@ -133,7 +67,7 @@ sub status {
     die "not implemented";
 }
 
-=item B<reload>
+=item B<reload()>
 
 Reload service, if possible.
 
@@ -143,20 +77,31 @@ sub reload {
     return result('unknown', 'not implemented');
 }
 
-=item B<port>
+=back
 
-Should return port number if service provides a server which uses TCP protocol.
+=head2 METADATA METHODS
+
+All metadata methods are read-only. All of them provide sane defaults.
+
+=over
+
+=item B<port()>
+
+Get port number if service provides a server which uses TCP protocol.
+
+Default is C<undef>.
 
 =cut
 sub port {
     my ($self) = @_;
     return; # by default, service has no port
-    # TODO - what will this method return when complex services which runs several daemons at once will be implemented?
 }
 
-=item B<user>
+=item B<user()>
 
-Should return user from which the service can be controlled and will be running. Default is C<root>.
+Should return user from which the service can be controlled and will be running.
+
+Default is C<root>.
 
 =cut
 sub user {
@@ -164,11 +109,11 @@ sub user {
     return 'root';
 }
 
-=item B<group>
+=item B<group()>
 
-Should return list of groups from which the service can be controlled and will be running.
+Get list of groups from which the service can be controlled and will be running.
 
-First group from list will be used as real and effective gid, other groups will be set as supplementary groups.
+First group from list will be used as real and effective group id, and other groups will be set as supplementary groups.
 
 Default is list of all groups of user as returned by C<user()> method.
 
@@ -187,9 +132,9 @@ sub group {
     return ($main_group, @groups);
 }
 
-=item B<check_period>
+=item B<check_period()>
 
-Should return period of checking a service by watchdog in seconds.
+Period of checking a service by watchdog in seconds.
 
 Default is 60 seconds and it is unused by ubic-watchdog currently, so don't bother to override it by now :)
 
@@ -198,6 +143,14 @@ sub check_period {
     my ($self) = @_;
     return 60;
 }
+
+=back
+
+=head2 CUSTOM COMMAND METHODS
+
+Services can define custom commands which don't fit into usual C<start/stop/restart/status> set.
+
+=over
 
 =item B<custom_commands()>
 
@@ -219,13 +172,90 @@ sub do_custom_command {
 
 =back
 
+=head2 NAME METHODS
+
+These methods usually should not be overriden by service classes. They are usually used by code which loads service (i.e. some L<Ubic::Multiservice>) to associate service with its name.
+
+=over
+
+=item B<name()>
+
+=item B<name($new_name)>
+
+Name of service.
+
+Each service with the same parent should have an unique name.
+
+In case of subservices, this method should return the most lower-level name.
+
+Service implementation classes shouldn't override this or other C<*_name> methods; it's usually a service's loader job to set them correctly.
+
+=cut
+sub name($;$) {
+    my ($self, $name) = @_;
+    if (defined $name) {
+        $self->{name} = $name;
+    }
+    else {
+        return $self->{name};
+    }
+}
+
+=item B<full_name()>
+
+Fully qualified name of service.
+
+Each service must have a unique full_name.
+
+Full name is a concatenation of service's short C<name> and service's <parent_name>.
+
+=cut
+sub full_name($) {
+    my ($self) = @_;
+    my $parent_name = $self->parent_name;
+    if (defined $parent_name) {
+        return $parent_name.".".$self->name;
+    }
+    else {
+        return $self->name;
+    }
+}
+
+=item B<parent_name()>
+
+=item B<parent_name($new_parent_name)>
+
+Get/set name of service's parent.
+
+Service's loader (i.e. some kind of L<Ubic::Multiservice>) is responsible for calling this method immediately after service's construction as C<< $service->parent_name($self->full_name) >>.
+
+=cut
+sub parent_name($;$) {
+    my ($self, $name) = @_;
+    if (defined $name) {
+        $self->{parent_name} = $name;
+    }
+    else {
+        return $self->{parent_name};
+    }
+}
+
+=back
+
+=head1 FUTURE DIRECTIONS
+
+Current API for custom commands is inconvenient and don't support parameterized commands. It needs some refactoring.
+
+Requiring every service to inherit from this class can be seen as undesirable by some programmers, especially by those who prefer to use Moose and roles.
+If you know how to make this API more role-friendly without too much of converting pains, please contact us at ubic-perl@googlegroups.com or at irc://irc.perl.org#ubic.
+
 =head1 SEE ALSO
 
 L<Ubic::Service::Skeleton> - implement simple start/stop/status methods, and ubic will care about everything else.
 
 L<Ubic::Service::Common> - just like Skeleton, but all code can be passed to constructor as sub references.
 
-L<Ubic::Service::SimpleDaemon> - just give it any binary and it will make service from it.
+L<Ubic::Service::SimpleDaemon> - give it any binary and it will make service from it.
 
 =cut
 

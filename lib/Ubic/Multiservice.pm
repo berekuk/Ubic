@@ -6,7 +6,7 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    $service = $multiservice->service("yandex.yandex-ppb-people-pt.meta-all");
+    $service = $multiservice->service("multiservice-x.multiservice-y.service-z");
     @services = $multiservice->services();
 
 =head1 DESCRIPTION

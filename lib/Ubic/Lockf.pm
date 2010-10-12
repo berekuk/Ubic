@@ -16,8 +16,6 @@ use strict;
 C<lockf> is a perlfunc C<flock> wrapper. The lock is autotamically released as soon as the assotiated object is
 no longer referenced.
 
-C<lockf_multi> makes non-blocking C<lockf> calls for multiple files and throws and exception if all are locked.
-
 =head1 METHODS
 
 =over

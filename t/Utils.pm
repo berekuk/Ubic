@@ -80,11 +80,4 @@ sub DESTROY {
     delete $ENV{IGNORE_WARN};
 }
 
-=head1 AUTHOR
-
-Vyacheslav Matjukhin <mmcleric@yandex-team.ru>
-
-=cut
-
 1;
-
