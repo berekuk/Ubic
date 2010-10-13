@@ -47,6 +47,9 @@ use List::MoreUtils qw(uniq);
 
 our $SINGLETON;
 
+my $service_name_re = qr{^[\w-]+(?:\.[\w-]+)*$};
+my $validate_service = { type => SCALAR, regex => $service_name_re };
+
 # singleton constructor
 sub _obj {
     my ($param) = validate_pos(@_, 1);
@@ -122,7 +125,7 @@ Start service.
 =cut
 sub start($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -138,7 +141,7 @@ Stop service.
 =cut
 sub stop($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     $self->disable($name);
@@ -154,7 +157,7 @@ Restart service; start it if it's not running.
 =cut
 sub restart($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     $self->enable($name);
@@ -172,7 +175,7 @@ Restart service if it is enabled.
 =cut
 sub try_restart($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -190,7 +193,7 @@ Reloads service if reloading is implemented; throw exception otherwise.
 =cut
 sub reload($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -215,7 +218,7 @@ Does nothing if service is disabled.
 =cut
 sub force_reload($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     unless ($self->is_enabled($name)) {
@@ -235,7 +238,7 @@ Get service status.
 =cut
 sub status($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
 
     return $self->do_cmd($name, 'status');
@@ -256,7 +259,7 @@ Enabled service means that service *should* be running. It will be checked by st
 =cut
 sub enable($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
     my $guard = Ubic::AccessGuard->new($self->service($name));
 
@@ -274,7 +277,7 @@ Returns true value if service is enabled, false otherwise.
 =cut
 sub is_enabled($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
 
     die "Service '$name' not found" unless $self->{root}->has_service($name);
     return unless -e $self->status_file($name);
@@ -295,7 +298,7 @@ Disabled service means that service is ignored by ubic. It's state will no longe
 =cut
 sub disable($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
     my $guard = Ubic::AccessGuard->new($self->service($name));
 
@@ -315,7 +318,7 @@ Unlike other methods, it doesn't require user to be root.
 =cut
 sub cached_status($$) {
     my ($self) = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
 
     unless ($self->is_enabled($name)) {
         return result('disabled');
@@ -328,7 +331,7 @@ sub cached_status($$) {
 =cut
 sub do_custom_command($$) {
     my ($self) = _obj(shift);
-    my ($name, $command) = validate_pos(@_, 1, 1);
+    my ($name, $command) = validate_pos(@_, $validate_service, 1);
 
     # TODO - do all custom commands require locks?
     # they can be distinguished in future by some custom_commands_ext method which will provide hash { command => properties }, i think...
@@ -347,7 +350,7 @@ Get service object by name.
 =cut
 sub service($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my ($name) = validate_pos(@_, $validate_service);
     # this guarantees that : will be unambiguous separator in status filename (what??)
     unless ($self->{service_cache}{$name}) {
         # Service construction is a memory-leaking operation (because of package name randomization in Ubic::Multiservice::Dir),
@@ -364,7 +367,7 @@ Check whether service C<$name> exists.
 =cut
 sub has_service($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my ($name) = validate_pos(@_, $validate_service);
     # TODO - it would be safer to do this check without actual service construction
     # but it would require cron-based script which maintains list of all services
     return $self->{root}->has_service($name);
@@ -446,7 +449,7 @@ Write new status into service's status file.
 =cut
 sub set_cached_status($$$) {
     my $self = _obj(shift);
-    my ($name, $status) = validate_pos(@_, 1, 1);
+    my ($name, $status) = validate_pos(@_, $validate_service, 1);
     my $guard = Ubic::AccessGuard->new($self->service($name));
 
     if (blessed $status) {
@@ -512,7 +515,9 @@ sub set_service_dir($$) {
 
 =head1 INTERNAL METHODS
 
-You don't need to call these, usually.
+You don't need to call these from code which doesn't belong to core Ubic distribution
+
+These methods can be changed or removed without further notice.
 
 =over
 
@@ -523,7 +528,7 @@ Get status file name by service's name.
 =cut
 sub status_file($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my ($name) = validate_pos(@_, $validate_service);
     return "$self->{status_dir}/".$name;
 }
 
@@ -536,7 +541,7 @@ It's a bad idea to call this from any other class than C<Ubic>, but if you'll ev
 =cut
 sub status_obj($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     return Ubic::Persistent->new($self->status_file($name));
 }
 
@@ -547,7 +552,7 @@ Get readonly, nonlocked status persistent object by service's name.
 =cut
 sub status_obj_ro($$) {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, 1);
+    my ($name) = validate_pos(@_, $validate_service);
     return Ubic::Persistent->load($self->status_file($name));
 }
 
@@ -560,7 +565,7 @@ You can lock one object twice from the same process, but not from different proc
 =cut
 sub lock($$) {
     my ($self) = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my ($name) = validate_pos(@_, $validate_service);
 
     if ($self->{locks}{$name}) {
         return $self->{locks}{$name};
@@ -603,7 +608,7 @@ sub lock($$) {
 
 sub _free_lock {
     my $self = _obj(shift);
-    my ($name) = validate_pos(@_, { type => SCALAR, regex => qr{^[\w-]+(?:\.[\w-]+)*$} });
+    my ($name) = validate_pos(@_, $validate_service);
     delete $self->{locks}{$name};
 }
 
