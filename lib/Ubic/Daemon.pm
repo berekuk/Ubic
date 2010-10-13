@@ -580,7 +580,7 @@ sub check_daemon {
 
 =head1 BUGS AND CAVEATS
 
-Probably. But it's definitely is ready for production usage.
+Probably. But it definitely is ready for production usage.
 
 This module currently is Linux-specific, because it uses C</proc> some magic. Patches are very welcome to fix this.
 
@@ -597,4 +597,3 @@ L<MooseX::Daemonize>, L<Proc::Daemon>, L<Daemon::Generic>, L<Net::ServeR::Daemon
 =cut
 
 1;
-
