@@ -1,10 +1,10 @@
 #!/usr/bin/perl
-package bin::ubic;
+package ubic;
 
 use strict;
 use warnings;
 
-# ABSTRACT: simple viewer of ubic services
+# ABSTRACT: command-line frontend to ubic services
 
 =head1 SYNOPSIS
 
@@ -20,6 +20,42 @@ use warnings;
     cached-status
     try-restart
     ...and any service-specific commands
+
+=head1 DESCRIPTION
+
+This program can start, stop and display status of any services. It is a main tool for system administrator who wants to operate ubic services.
+
+B<ubic> conforms to LSB interface for init scripts (L<http://refspecs.freestandards.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html>) with obvious exception that it is invoked as C<ubic COMMAND SERVICE> instead of C</etc/init.d/SERVICE COMMAND>.
+
+It also can operate several services at once:
+
+=over
+
+=item *
+
+if invoked as C<ubic start service1 service2>, it will try to start both services;
+
+=item *
+
+if invoked as C<ubic start multiservice>, it will start all subservices of given multiservice;
+
+=item *
+
+if invoked as C<ubic start>, it will start all existing services.
+
+=back
+
+When operating multiservices, flag B<-f> can be used to force operations on "protected" multiservices. For example, you can't restart all services on host using C<ubic restart>, you have to say C<ubic restart -f>.
+
+=head1 EXIT STATUS
+
+When managing one service, exit status conforms to LSB specification when it makes sense.
+
+When managing several services, exit code is non-zero if any service fails, and zero if all operations succeeded.
+
+=head1 SEE ALSO
+
+L<LSB - Init Script Actions|http://refspecs.freestandards.org/LSB_4.0.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html>
 
 =cut
 
