@@ -9,8 +9,8 @@ use warnings;
 
     use Ubic::AccessGuard;
 
-    $guard = Ubic::AccessGuard->new($service); # take lock under $service->user
-    undef $guard; # free lock
+    $guard = Ubic::AccessGuard->new($service); # change effective uid and effective gid to $service->user and $service->group
+    undef $guard; # change them back
 
 =head1 DESCRIPTION
 
