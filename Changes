@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * more consistent params validation in Ubic.pm
+        * deprecated Ubic::Catalog module removed (it was renamed into Ubic::Multiservice ages ago)
 
 1.20    Wed Oct 13, 2010
         * documentation improvements
