@@ -20,7 +20,7 @@ Every service is checked in parallel fashion, each one in separate forked proces
 
 =head1 DEPLOYMENT
 
-This script should be invoked every minute (or as often as you like), usually as cron job.
+This script should be invoked every minute (or as often as you like), usually as a cron job.
 
 =cut
 
