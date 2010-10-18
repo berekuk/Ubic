@@ -41,7 +41,7 @@ use IO::Handle;
 use Storable qw(freeze thaw);
 use Try::Tiny;
 use Ubic::Persistent;
-use Ubic::Lockf;
+use Ubic::SingletonLock;
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 
@@ -261,7 +261,7 @@ sub enable($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
-    my $guard = Ubic::AccessGuard->new($self->service($name));
+    my $guard = $self->access_guard($name);
 
     my $status_obj = $self->status_obj($name);
     $status_obj->{status} = 'unknown';
@@ -300,7 +300,7 @@ sub disable($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, $validate_service);
     my $lock = $self->lock($name);
-    my $guard = Ubic::AccessGuard->new($self->service($name));
+    my $guard = $self->access_guard($name);
 
     my $status_obj = $self->status_obj($name);
     delete $status_obj->{status};
@@ -450,7 +450,7 @@ Write new status into service's status file.
 sub set_cached_status($$$) {
     my $self = _obj(shift);
     my ($name, $status) = validate_pos(@_, $validate_service, 1);
-    my $guard = Ubic::AccessGuard->new($self->service($name));
+    my $guard = $self->access_guard($name);
 
     if (blessed $status) {
         croak "Wrong status param '$status'" unless $status->isa('Ubic::Result::Class');
@@ -556,6 +556,17 @@ sub status_obj_ro($$) {
     return Ubic::Persistent->load($self->status_file($name));
 }
 
+=item B<access_guard($name)>
+
+Get access guard (L<Ubic::AccessGuard> object) for given service.
+
+=cut
+sub access_guard($$) {
+    my $self = _obj(shift);
+    my ($name) = validate_pos(@_, $validate_service);
+    return Ubic::AccessGuard->new($self->service($name));
+}
+
 =item B<lock($name)>
 
 Acquire lock object for given service.
@@ -567,49 +578,11 @@ sub lock($$) {
     my ($self) = _obj(shift);
     my ($name) = validate_pos(@_, $validate_service);
 
-    if ($self->{locks}{$name}) {
-        return $self->{locks}{$name};
-    }
-
-    my $lock = Ubic::ServiceLock->new($name, $self);
-    use Scalar::Util qw(weaken);
-    $self->{locks}{$name} = $lock;
-    weaken $self->{locks}{$name};
+    my $lock = do {
+        my $guard = $self->access_guard($name);
+        Ubic::SingletonLock->new($self->{lock_dir}."/".$name);
+    };
     return $lock;
-}
-
-{
-    package Ubic::ServiceLock;
-    use strict;
-    use warnings;
-    use Ubic::Lockf;
-    use Carp qw(longmess);
-    sub new {
-        my ($class, $name, $ubic) = @_;
-
-        my $lock = do {
-            my $guard = Ubic::AccessGuard->new($ubic->service($name));
-            lockf($ubic->{lock_dir}."/".$name);
-        };
-
-        my $ubic_ref = \$ubic;
-        my $self = bless { name => $name, ubic_ref => $ubic_ref, lock => $lock } => $class;
-        return $self;
-    }
-    sub DESTROY {
-        my $self = shift;
-        local $@;
-        my $ubic = ${$self->{ubic_ref}};
-        if (defined $ubic) {
-            $ubic->_free_lock($self->{name});
-        }
-    }
-}
-
-sub _free_lock {
-    my $self = _obj(shift);
-    my ($name) = validate_pos(@_, $validate_service);
-    delete $self->{locks}{$name};
 }
 
 =item B<< do_sub($code) >>
