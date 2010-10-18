@@ -10,13 +10,23 @@ use warnings;
 
     ubic-watchdog [-v]
 
+    ubic-watchdog SERVICE SERVICE2 SERVICE_GLOB ...
+
 =head1 DESCRIPTION
 
 This is a generic watchdog for all ubic services.
 
 It checks every enabled service by asking for its status and tries to start it if service is down or broken.
 
-Every service is checked in parallel fashion, each one in separate forked process.
+Services are checked in parallel fashion, each one in separate forked process.
+
+=head1 PARAMETERS
+
+B<-v> or B<--verbose> flag can be used to enable detailed logging.
+
+All other arguments are interpreted as service names. Arguments can contain C<*> symbol, which will be expanded in Unix shell fashion.
+
+If service names are omitted, all services will be checked.
 
 =head1 DEPLOYMENT
 
