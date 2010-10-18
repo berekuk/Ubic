@@ -24,7 +24,7 @@ sub new {
 sub setup :Test(setup) {
     rebuild_tfiles();
     Ubic->set_service_dir('root_t/service');
-    Ubic->set_ubic_dir('tfiles');
+    Ubic->set_data_dir('tfiles');
     xsystem('chmod -R 777 tfiles');
 }
 

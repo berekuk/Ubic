@@ -11,7 +11,7 @@ use t::Utils;
 rebuild_tfiles();
 
 use Ubic;
-Ubic->set_ubic_dir('tfiles/ubic');
+Ubic->set_data_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
 
 # These tests check that ubic-ping don't waste memory in long runs.

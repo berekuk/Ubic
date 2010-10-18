@@ -23,7 +23,7 @@ my $ignore_warn = ignore_warn(qr/Can't construct 'broken': failed/);
 
 sub setup :Test(setup) {
     rebuild_tfiles();
-    Ubic->set_ubic_dir('tfiles/ubic');
+    Ubic->set_data_dir('tfiles/ubic');
     Ubic->set_service_dir('t/service');
 }
 

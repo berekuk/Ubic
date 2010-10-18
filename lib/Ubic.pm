@@ -463,7 +463,7 @@ sub set_cached_status($$$) {
     $status_obj->commit;
 }
 
-=item B<< set_ubic_dir($dir) >>
+=item B<< set_data_dir($dir) >>
 
 Create and set ubic dir.
 
@@ -471,13 +471,13 @@ Ubic dir is a directory with service statuses and locks. By default, ubic dir is
 
 These settings will be propagated into subprocesses using environment, so following code works:
 
-    Ubic->set_ubic_dir('tfiles/ubic');
+    Ubic->set_data_dir('tfiles/ubic');
     Ubic->set_service_dir('etc/ubic/service');
     system('ubic start some_service');
     system('ubic stop some_service');
 
 =cut
-sub set_ubic_dir($$) {
+sub set_data_dir($$) {
     my $self = _obj(shift);
     my ($dir) = validate_pos(@_, 1);
     unless (-d $dir) {
@@ -497,6 +497,14 @@ sub set_ubic_dir($$) {
     $ENV{UBIC_DIR} = $dir;
     $ENV{UBIC_DAEMON_PID_DIR} = "$dir/pid";
 }
+
+=item B<< set_ubic_dir($dir) >>
+
+Deprecated. This method got renamed to C<set_data_dir()>.
+
+=cut
+sub set_ubic_dir($$);
+*set_ubic_dir = \&set_data_dir;
 
 =item B<< set_service_dir($dir) >>
 

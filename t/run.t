@@ -14,7 +14,7 @@ use t::Utils;
 rebuild_tfiles();
 
 use Ubic;
-Ubic->set_ubic_dir('tfiles/ubic');
+Ubic->set_data_dir('tfiles/ubic');
 Ubic->set_service_dir('t/service');
 
 # single (5*3 = 15)
