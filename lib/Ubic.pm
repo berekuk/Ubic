@@ -93,14 +93,46 @@ Dir with services' locks.
 =cut
 sub new {
     my $class = shift;
-    my $ubic_dir = $ENV{UBIC_DIR} || '/var/lib/ubic';
     my $self = validate(@_, {
         service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
-        status_dir => { type => SCALAR, default => $ENV{UBIC_WATCHDOG_DIR} || "$ubic_dir/status" },
-        lock_dir =>  { type => SCALAR, default => $ENV{UBIC_LOCK_DIR} || "$ubic_dir/lock" },
-        tmp_dir =>  { type => SCALAR, default => $ENV{UBIC_TMP_DIR} || "$ubic_dir/tmp" },
+        data_dir => { type => SCALAR, default => $ENV{UBIC_DIR} || '/var/lib/ubic' },
+        status_dir =>  { type => SCALAR, optional => 1 },
+        lock_dir =>  { type => SCALAR, optional => 1 },
+        tmp_dir =>  { type => SCALAR, optional => 1 },
     });
-    $self->{locks} = {};
+    if ($self->{status_dir}) {
+        warn "'status_dir' option is deprecated; use 'data_dir' instead";
+    }
+    elsif ($ENV{UBIC_WATCHDOG_DIR}) {
+        warn "'UBIC_WATCHDOG_DIR' env variable is deprecated; use 'UBIC_DIR' instead";
+        $self->{status_dir} = $ENV{UBIC_WATCHDOG_DIR};
+    }
+    else {
+        $self->{status_dir} = "$self->{data_dir}/status";
+    }
+
+    if ($self->{lock_dir}) {
+        warn "'lock_dir' option is deprecated; use 'data_dir' instead";
+    }
+    elsif ($ENV{UBIC_LOCK_DIR}) {
+        warn "'UBIC_LOCK_DIR' env variable is deprecated; use 'UBIC_DIR' instead";
+        $self->{lock_dir} = $ENV{UBIC_LOCK_DIR};
+    }
+    else {
+        $self->{lock_dir} = "$self->{data_dir}/lock";
+    }
+
+    if ($self->{tmp_dir}) {
+        warn "'tmp_dir' option is deprecated; use 'data_dir' instead";
+    }
+    elsif ($ENV{UBIC_TMP_DIR}) {
+        warn "'UBIC_TMP_DIR' env variable is deprecated; use 'UBIC_DIR' instead";
+        $self->{tmp_dir} = $ENV{UBIC_TMP_DIR};
+    }
+    else {
+        $self->{tmp_dir} = "$self->{data_dir}/tmp";
+    }
+
     $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
     $self->{service_cache} = {};
     return bless $self => $class;
@@ -463,11 +495,22 @@ sub set_cached_status($$$) {
     $status_obj->commit;
 }
 
+=item B<< get_data_dir() >>
+
+Get data dir.
+
+=cut
+sub get_data_dir($) {
+    my $self = _obj(shift);
+    validate_pos(@_);
+    return $self->{data_dir};
+}
+
 =item B<< set_data_dir($dir) >>
 
-Create and set ubic dir.
+Create and set data dir.
 
-Ubic dir is a directory with service statuses and locks. By default, ubic dir is C</var/lib/ubic>, but in tests you may want to change it.
+Data dir is a directory with service statuses and locks. By default, ubic dir is C</var/lib/ubic>, but in tests you may want to change it.
 
 These settings will be propagated into subprocesses using environment, so following code works:
 
@@ -494,6 +537,7 @@ sub set_data_dir($$) {
     $self->{lock_dir} = "$dir/lock";
     $self->{status_dir} = "$dir/status";
     $self->{tmp_dir} = "$dir/tmp";
+    $self->{data_dir} = $dir;
     $ENV{UBIC_DIR} = $dir;
     $ENV{UBIC_DAEMON_PID_DIR} = "$dir/pid";
 }
@@ -505,6 +549,17 @@ Deprecated. This method got renamed to C<set_data_dir()>.
 =cut
 sub set_ubic_dir($$);
 *set_ubic_dir = \&set_data_dir;
+
+=item B<< get_service_dir() >>
+
+Get ubic services dir.
+
+=cut
+sub get_service_dir($) {
+    my $self = _obj(shift);
+    validate_pos(@_, 0);
+    return $self->{service_dir};
+}
 
 =item B<< set_service_dir($dir) >>
 
