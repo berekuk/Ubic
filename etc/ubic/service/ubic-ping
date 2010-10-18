@@ -14,6 +14,7 @@ use Config;
 my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
 my $pidfile = $ENV{UBIC_SERVICE_PING_PID} || "/var/lib/ubic/ubic-ping.pid";
 my $user = $ENV{UBIC_SERVICE_PING_USER} || 'root';
+my $log = $ENV{UBIC_SERVICE_PING_LOG} || '/dev/null';
 
 my $perl = $Config{perlpath};
 
@@ -24,6 +25,9 @@ Ubic::Service::Common->new({
             bin => qq{$perl -MUbic::Ping -e 'Ubic::Ping->new($port)->run;'},
             name => 'ubic-ping',
             pidfile => $pidfile,
+            stdout => $log,
+            stderr => $log,
+            ubic_log => $log,
         });
     },
     stop => sub {

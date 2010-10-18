@@ -12,6 +12,7 @@ use LWP::UserAgent;
 use Ubic;
 use Ubic::PortMap;
 use Cwd;
+use Try::Tiny;
 
 use t::Utils;
 rebuild_tfiles();
@@ -29,11 +30,21 @@ $ENV{UBIC_SERVICE_PING_USER} = $ENV{LOGNAME};
 $ENV{UBIC_SERVICE_PING_PID} = 'tfiles/ubic-ping.pid';
 my $port = empty_port();
 $ENV{UBIC_SERVICE_PING_PORT} = $port;
+$ENV{UBIC_SERVICE_PING_LOG} = 'tfiles/ubic-ping.log';
+
+try {
+    Ubic->start('ubic-ping');
+}
+catch {
+    open my $log_fh, '<', 'tfiles/ubic-ping.log' or die "Can't open log: $!";
+    my $log = do { local $/ = undef; <$log_fh> };
+    $log =~ s/\n/\\n/g;
+    BAIL_OUT("Failed to start ubic-ping: $log");
+};
+
+Ubic::PortMap::update;
 
 my $another_port = Ubic->service('fake-http-service')->port;
-
-Ubic->start('ubic-ping');
-Ubic::PortMap::update;
 
 my $ua = LWP::UserAgent->new;
 

@@ -12,6 +12,7 @@ use Config;
 my $perl = $Config{perlpath};
 
 use t::Utils;
+use IO::Handle;
 rebuild_tfiles();
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
@@ -111,6 +112,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
         function => sub {
             $SIG{TERM} = sub {
                 print "sigterm caught\n";
+                STDOUT->flush;
                 exit;
             };
             sleep 100;
@@ -121,7 +123,12 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
         ubic_log => 'tfiles/ubic.term.log',
     });
     stop_daemon('tfiles/pid');
-    is(slurp('tfiles/kill_default.log'), "sigterm caught\n", 'default kill signal is SIGTERM - log written');
+    unless( is(slurp('tfiles/kill_default.log'), "sigterm caught\n", 'default kill signal is SIGTERM - log written') ) {
+        # something is wrong
+        # this diag can look ugly, but it's the easiest way to figure out what's wrong with some cpantesters
+        diag(slurp('tfiles/ubic.term.log'));
+    }
+
 
     start_daemon({
         function => sub {
@@ -214,10 +221,10 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
 
     $start->();
     throws_ok(sub {
-        stop_daemon('tfiles/pid', { timeout => 2 });
+        stop_daemon('tfiles/pid', { timeout => 1 });
     }, qr/failed to stop daemon/, 'stop with small timeout fails');
 
-    is(stop_daemon('tfiles/pid', { timeout => 4 }), 'stopped', 'start and stop with large enough timeout is ok');
+    is(stop_daemon('tfiles/pid', { timeout => 5 }), 'stopped', 'start and stop with large enough timeout is ok');
 
     throws_ok(sub {
         stop_daemon('tfiles/pid', { timeout => 'abc' });
