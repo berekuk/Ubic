@@ -741,7 +741,7 @@ Interaction happens through temporary file in C<$ubic->{tmp_dir}> dir.
 =cut
 sub forked_call {
     my ($self, $callback) = @_;
-    my $tmp_file = $self->{tmp_dir}."/".time.".".rand(1000000);
+    my $tmp_file = $self->{tmp_dir}."/".time.".$$.".rand(1000000);
     my $child;
     unless ($child = fork) {
         unless (defined $child) {
@@ -772,7 +772,7 @@ sub forked_call {
     }
     waitpid($child, 0);
     unless (-e $tmp_file) {
-        die "temp file not found after fork (probably failed write to $self->{tmp_dir})";
+        die "temp file $tmp_file not found after fork";
     }
     open my $fh, '<', $tmp_file or die "Can't read $tmp_file: $!";
     my $content = do { local $/; <$fh>; };
