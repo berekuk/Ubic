@@ -3,4 +3,6 @@ var/lib/ubic/status
 var/lib/ubic/simple-daemon/pid
 var/lib/ubic/lock
 var/lib/ubic/tmp
+var/lib/ubic/watchdog/lock
+var/lib/ubic/watchdog/status
 var/log/ubic

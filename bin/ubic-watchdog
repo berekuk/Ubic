@@ -64,6 +64,17 @@ sub check($) {
     }
 
     try {
+        my $watchdog_lock = do {
+            my $guard = Ubic->access_guard($name);
+            Ubic::SingletonLock->new(Ubic->get_data_dir()."/watchdog/lock/".$name, { blocking => 0 });
+        };
+        unless ($watchdog_lock) {
+            if ($verbose) {
+                INFO "$name is locked by another watchdog process";
+            }
+            return;
+        }
+
         my $lock = Ubic->lock($name);
         if ($service->isa('Ubic::Multiservice')) {
             INFO("$name is multiservice, checking subservices") if $verbose;

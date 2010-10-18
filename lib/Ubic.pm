@@ -523,16 +523,19 @@ These settings will be propagated into subprocesses using environment, so follow
 sub set_data_dir($$) {
     my $self = _obj(shift);
     my ($dir) = validate_pos(@_, 1);
-    unless (-d $dir) {
-        mkdir $dir or die "mkdir $dir failed: $!";
-    }
+
+    my $md = sub {
+        my $new_dir = shift;
+        mkdir $new_dir or die "mkdir $new_dir failed: $!" unless -d $new_dir;
+    };
 
     # TODO - chmod 777, chmod +t?
-    # TODO - call this method from postinst too?
-    mkdir "$dir/lock" or die "mkdir $dir/lock failed: $!" unless -d "$dir/lock";
-    mkdir "$dir/status" or die "mkdir $dir/status failed: $!" unless -d "$dir/status";
-    mkdir "$dir/tmp" or die "mkdir $dir/tmp failed: $!" unless -d "$dir/tmp";
-    mkdir "$dir/pid" or die "mkdir $dir/pid failed: $!" unless -d "$dir/pid"; # Ubic don't use /pid/, but Ubic::Daemon does
+    # TODO - call set_data_dir method from postinst too?
+    $md->($dir);
+    for my $subdir (qw(lock status tmp pid watchdog)) {
+        $md->("$dir/$subdir");
+    }
+    $md->("$dir/watchdog/lock");
 
     $self->{lock_dir} = "$dir/lock";
     $self->{status_dir} = "$dir/status";
