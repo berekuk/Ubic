@@ -30,6 +30,7 @@ use Pod::Usage;
 use Ubic::Logger;
 use Ubic;
 use Try::Tiny;
+use List::MoreUtils qw(any);
 
 return 1 if caller();
 
@@ -38,11 +39,33 @@ GetOptions(
     'v|verbose' => \$verbose,
 ) or pod2usage(2);
 
+my @filter;
+{
+    for my $arg (@ARGV) {
+        $arg =~ /^[*\w.-]+$/ or die "Invalid argument '$arg', expected service name or shell-style glob";
+        $arg =~ s/\./\\./g;
+        $arg =~ s/\*/.*/g;
+        push @filter, qr/^$arg$/;
+    }
+}
+
 sub check($);
+
+sub match($$) {
+    my ($name, $filter) = @_;
+    do {
+        return 1 if $name =~ $filter;
+    } while ($name =~ s/\.[^.]+$//);
+    return;
+}
 
 sub check_all {
     my @services = @_;
     for my $service (@services) {
+        if (@filter) {
+            my $name = $service->full_name;
+            next unless any { match($name, $_) } @filter;
+        }
         my $child = fork;
         unless (defined $child) {
             die "fork failed";
