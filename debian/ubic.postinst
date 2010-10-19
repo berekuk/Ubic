@@ -16,8 +16,8 @@ if [ "$1" = "configure" ]; then
             chmod +t /var/lib/ubic/$dir
         done
         update-rc.d ubic-ping defaults >/dev/null
-        invoke-rc.d ubic-ping start
     fi
+    invoke-rc.d ubic-ping start
 fi
 
 #DEBHELPER#
