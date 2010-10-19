@@ -70,6 +70,9 @@ sub new {
         if (ref $prev_sig and ref $prev_sig eq 'CODE') {
             $prev_sig->(@_);
         }
+        else {
+            warn @_;
+        }
     };
     return bless { prev_sig => $prev_sig } => $class;
 }
