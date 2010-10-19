@@ -10,7 +10,7 @@ Revision history for Ubic
          - bugfix in forked_call() method - it thrown "temp file not found after fork" exception occasionally in some cases
          - more consistent params validation in many methods
         * ubic-watchdog improvements:
-         - seperate non-blocking per-service lock (http://github.com/berekuk/ubic/issues#issue/1)
+         - separate non-blocking per-service lock (http://github.com/berekuk/ubic/issues#issue/1)
          - ubic-watchdog can now check selected set of services by name or glob
          - ubic-watchdog kills itself after $service->check_timeout() seconds
         * deprecated Ubic::Catalog module removed (it was renamed into Ubic::Multiservice long time ago)
