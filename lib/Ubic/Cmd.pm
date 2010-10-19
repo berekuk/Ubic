@@ -247,9 +247,9 @@ sub usage {
 }
 
 
-=item B<< traverse($name, $callback) >>
+=item B<< traverse($name_or_service, $callback) >>
 
-Process each subservice of C<$name> with C<$callback>, printing correct indentations.
+Process each subservice of C<$name_or_service> with C<$callback>, printing correct indentations.
 
 =cut
 sub traverse($$$) {
