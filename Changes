@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.21    Tue Oct 19, 2010
         * Ubic.pm:
          - set_ubic_dir() renamed to set_data_dir()
          (set_ubic_dir still remains in code for backward compatibility)
