@@ -144,6 +144,21 @@ sub check_period {
     return 60;
 }
 
+=item B<check_timeout()>
+
+Timeout after which watchdog will give up on checking a service and kill itself.
+
+This parameter exists as a precaution against incorrectly implemented C<status()> or C<start()> methods. If C<status()> method hangs, without this timeout, watchdog would stay in memory forever and never get a chance to restart a service.
+
+This parameter is *not* a timeout for querying your service by HTTP or whatever your status check is. Service-specific timeouts should be configured by other means.
+
+Default value is 60 seconds. It should not be changed unless you have a very good reason to do so (i.e., your service is so horribly slow that it can't start in one minute).
+
+=cut
+sub check_timeout {
+    return 60;
+}
+
 =back
 
 =head2 CUSTOM COMMAND METHODS

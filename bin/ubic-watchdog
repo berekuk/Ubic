@@ -41,6 +41,7 @@ use Ubic::Logger;
 use Ubic;
 use Try::Tiny;
 use List::MoreUtils qw(any);
+use POSIX;
 
 return 1 if caller();
 
@@ -81,6 +82,7 @@ sub check_all {
             die "fork failed";
         }
         unless ($child) {
+            POSIX::setsid; # so we could kill this watchdog and its children safely later
             check($service);
             exit;
         }
@@ -119,6 +121,15 @@ sub check($) {
             return;
         }
         # TODO - alarm?
+        alarm($service->check_timeout);
+        $SIG{ALRM} = sub {
+            ERROR("$name check_timeout exceeded");
+            STDOUT->flush;
+            STDERR->flush;
+            kill -9 => $$; # suicide
+            ERROR "kill sent, still alive"; # should never happen, we called setsid earlier
+        };
+
         my $status = Ubic->status($name);
         unless ($status->status eq 'running') {
             Ubic->set_cached_status($name, $status->status); # following start can throw exception
@@ -126,6 +137,8 @@ sub check($) {
             Ubic->start($name);
         }
         $status = Ubic->status($name);
+        alarm(0);
+
         if ($status->status ne 'running') {
             INFO("$name started, but status is still '$status'");
         }

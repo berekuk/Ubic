@@ -61,7 +61,7 @@ sub _services_from_log {
 
 sub verbose :Test {
     xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is(scalar( @{ _services_from_log() }), 13, 'watchdog checks all services by default');
+    is(scalar( @{ _services_from_log() }), 14, 'watchdog checks all services by default');
 }
 
 sub filter_exact :Test {
@@ -92,6 +92,12 @@ sub filter_complex_glob :Test {
 sub filter_validation :Test {
     system("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v '[multi]' >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
     like(slurp('tfiles/watchdog.err.log'), qr/expected service name or shell-style glob/, 'ubic-watchdog validates arguments');
+}
+
+sub check_timeout :Test {
+    Ubic->start('slow-service');
+    system("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
+    like(slurp('tfiles/watchdog.log'), qr/slow-service check_timeout exceeded/);
 }
 
 __PACKAGE__->new->runtests;
