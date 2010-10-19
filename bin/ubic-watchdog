@@ -120,7 +120,7 @@ sub check($) {
             INFO("$name disabled") if $verbose;
             return;
         }
-        # TODO - alarm?
+
         alarm($service->check_timeout);
         $SIG{ALRM} = sub {
             ERROR("$name check_timeout exceeded");
