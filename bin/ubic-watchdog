@@ -73,8 +73,13 @@ sub match($$) {
 sub check_all {
     my @services = @_;
     for my $service (@services) {
+        my $name = $service->full_name;
+        if ($service->isa('Ubic::Multiservice')) {
+            INFO("$name is multiservice, checking subservices") if $verbose;
+            check_all($service->services);
+            next;
+        }
         if (@filter) {
-            my $name = $service->full_name;
             next unless any { match($name, $_) } @filter;
         }
         my $child = fork;
@@ -111,11 +116,6 @@ sub check($) {
         }
 
         my $lock = Ubic->lock($name);
-        if ($service->isa('Ubic::Multiservice')) {
-            INFO("$name is multiservice, checking subservices") if $verbose;
-            check_all($service->services);
-            return;
-        }
         unless (Ubic->is_enabled($name)) {
             INFO("$name disabled") if $verbose;
             return;

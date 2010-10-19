@@ -61,7 +61,7 @@ sub _services_from_log {
 
 sub verbose :Test {
     xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is(scalar( @{ _services_from_log() }), 14, 'watchdog checks all services by default');
+    is(scalar( @{ _services_from_log() }), 12, 'watchdog checks all services by default');
 }
 
 sub filter_exact :Test {
@@ -76,17 +76,22 @@ sub filter_three_exact :Test {
 
 sub filter_multi :Test {
     xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v multi >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is_deeply(_services_from_log(), [qw( multi multi.sleep1 multi.sleep2 )], 'checking multiservice');
+    is_deeply(_services_from_log(), [qw( multi.sleep1 multi.sleep2 )], 'checking multiservice');
 }
 
 sub filter_glob :Test {
     xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v '*lti' >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is_deeply(_services_from_log(), [qw( multi multi.sleep1 multi.sleep2 )], 'checking using glob');
+    is_deeply(_services_from_log(), [qw( multi.sleep1 multi.sleep2 )], 'checking using glob');
 }
 
 sub filter_complex_glob :Test {
     xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v '*ulti*' >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is_deeply(_services_from_log(), [qw( multi multi-impl multi-impl.abc multi.sleep1 multi.sleep2 )], 'more complex glob');
+    is_deeply(_services_from_log(), [qw( multi-impl.abc multi.sleep1 multi.sleep2 )], 'more complex glob');
+}
+
+sub filter_subservice_glob :Test {
+    xsystem("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog -v 'multi.sleep*' >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
+    is_deeply(_services_from_log(), [qw( multi.sleep1 multi.sleep2 )], 'glob matching subservices');
 }
 
 sub filter_validation :Test {
