@@ -82,6 +82,11 @@ sub check_all {
         if (@filter) {
             next unless any { match($name, $_) } @filter;
         }
+
+        # trying to get logs a little bit more ordered
+        STDOUT->flush;
+        STDERR->flush;
+
         my $child = fork;
         unless (defined $child) {
             die "fork failed";
