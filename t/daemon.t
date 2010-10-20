@@ -122,6 +122,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
         pidfile => 'tfiles/pid',
         ubic_log => 'tfiles/ubic.term.log',
     });
+    sleep 1;
     stop_daemon('tfiles/pid');
     unless( is(slurp('tfiles/kill_default.log'), "sigterm caught\n", 'default kill signal is SIGTERM - log written') ) {
         # something is wrong
@@ -144,6 +145,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
         ubic_log => 'tfiles/ubic.term.log',
         term_timeout => 0,
     });
+    sleep 1;
     stop_daemon('tfiles/pid');
     is(slurp('tfiles/kill_zero_timeout.log'), "", 'when term_timeout is 0, SIGKILL is sent immediately');
 
@@ -160,8 +162,9 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
         stdout => 'tfiles/kill_term.log',
         pidfile => 'tfiles/pid',
         ubic_log => 'tfiles/ubic.term.log',
-        term_timeout => 1,
+        term_timeout => 2,
     });
+    sleep 1;
     stop_daemon('tfiles/pid');
     is(slurp('tfiles/kill_term.log'), "sigterm caught\n", 'process caught SIGTERM and written something in log');
 
@@ -178,8 +181,9 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
         stdout => 'tfiles/kill_4.log',
         pidfile => 'tfiles/pid',
         ubic_log => 'tfiles/ubic.term.log',
-        term_timeout => 1,
+        term_timeout => 2,
     });
+    sleep 1;
     stop_daemon('tfiles/pid');
     is(slurp('tfiles/kill_4.log'), '', 'process caught SIGTERM but was too slow to do anything about it');
 
@@ -214,6 +218,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
             ubic_log => 'tfiles/ubic.term.log',
             term_timeout => 3,
         });
+        sleep 1;
     };
 
     $start->();
