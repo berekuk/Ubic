@@ -31,6 +31,7 @@ use IO::Handle;
 use POSIX qw(setsid);
 use Ubic::Lockf;
 use Ubic::Daemon::Status;
+use Ubic::Daemon::PidState;
 use Time::HiRes qw(sleep);
 
 use Carp;
@@ -63,98 +64,6 @@ sub _pid2guid($) {
     my @fields = split /\s+/, $line;
     my $guid = $fields[21];
     return $guid;
-}
-
-# this method should be called only when pidfile is locked (check before removing?)
-sub _remove_pidfile($) {
-    my ($file) = validate_pos(@_, { type => SCALAR });
-    if (-d $file) {
-        if (-e "$file/pid") {
-            unlink "$file/pid" or die "Can't remove $file/pid: $!";
-        }
-    }
-    else {
-        unlink $file or die "Can't remove $file: $!";
-    }
-}
-
-sub _lock_pidfile($;$) {
-    my ($pidfile, $timeout) = validate_pos(@_, { type => SCALAR }, 0);
-    $timeout ||= 0;
-    if (-d $pidfile) {
-        # new-style pidfile
-        return lockf("$pidfile/lock", { timeout => $timeout });
-    }
-    else {
-        return lockf($pidfile, { blocking => 0 });
-    }
-}
-
-# write guardian pid and guid to pidfile
-sub _write_pidfile($$) {
-    my $file = shift;
-    unless (-d $file) {
-        die "piddir $file not exists";
-    }
-    my $params = validate(@_, {
-        pid => 1,
-        guid => 1,
-    });
-    my ($pid, $guid) = @$params{qw/ pid guid /};
-    my $self_pid = $$;
-    open my $fh, '>', "$file/pid.new" or die "Can't write '$file/pid.new': $!";
-    print {$fh} "pid $self_pid\n";
-    print {$fh} "guid $guid\n";
-    print {$fh} "daemon $pid\n";
-    $fh->flush;
-    close $fh or die "Can't close '$file/pid.new': $!";
-    rename "$file/pid.new" => "$file/pid" or die "Can't commit pidfile $file: $!";
-}
-
-# read daemon info from pidfile
-# returns undef if pidfile not found
-# throws exceptions when content is invalid
-sub _read_pidfile($) {
-    my ($file) = validate_pos(@_, { type => SCALAR });
-    my $content;
-    my $parse_content = sub {
-        if ($content =~ /\A pid \s+ (\d+) \n guid \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
-            # new format
-            return { pid => $1, guid => $2, daemon => $3, format => 'new' };
-        }
-        else {
-            die "invalid pidfile content in pidfile $file";
-        }
-    };
-    if (-d $file) {
-        # pidfile as dir
-        my $open_success = open my $fh, '<', "$file/pid";
-        unless ($open_success) {
-            if ($!{ENOENT}) {
-                return; # pidfile not found, daemon is not running
-            }
-            else {
-                die "Failed to open '$file/pid': $!";
-            }
-        }
-        $content = join '', <$fh>;
-        return $parse_content->();
-    }
-    else {
-        # deprecated - single pidfile without piddir
-        if (-f $file and not -s $file) {
-            return; # empty pidfile - old way to stop services
-        }
-        open my $fh, '<', $file or die "Failed to open $file: $!";
-        $content = join '', <$fh>;
-        if ($content =~ /\A (\d+) \Z/x) {
-            # old format
-            return { pid => $1, format => 'old' };
-        }
-        else {
-            return $parse_content->();
-        }
-    }
 }
 
 sub _log {
@@ -193,10 +102,11 @@ sub stop_daemon($;@) {
     });
     my $timeout = $options->{timeout} if defined $options->{timeout};
 
-    if (not -d $pidfile and not -s $pidfile) {
-        return 'not running';
-    }
-    my $piddata = _read_pidfile($pidfile);
+    # TODO - move this check into Ubic::Daemon::PidState
+    my $pid_state = Ubic::Daemon::PidState->new($pidfile);
+    return 'not running' if $pid_state->is_empty;
+
+    my $piddata = $pid_state->read;
     unless ($piddata) {
         return 'not running';
     }
@@ -320,13 +230,9 @@ sub start_daemon($) {
     if (check_daemon($pidfile)) {
         croak "Daemon with pidfile $pidfile already running, can't start";
     }
-    if (-e $pidfile and not -d $pidfile) {
-        print "converting $pidfile to dir\n";
-        unlink $pidfile or die "Can't unlink $pidfile: $!";
-    }
-    unless (-d $pidfile) {
-        mkdir $pidfile or die "Can't create $pidfile: $!";
-    }
+
+    my $pid_state = Ubic::Daemon::PidState->new($pidfile);
+    $pid_state->init;
 
     my $stdin = '/dev/null';
 
@@ -387,9 +293,9 @@ sub start_daemon($) {
             # There should be no races when Ubic::Daemon is used in context of
             # ubic service, because services has additional lock, but
             # Ubic::Daemon can be useful without services as well.
-            $lock = _lock_pidfile($pidfile, 5) or die "Can't lock $pidfile";
+            $lock = $pid_state->lock(5) or die "Can't lock $pid_state";
 
-            _remove_pidfile($pidfile);
+            $pid_state->remove;
             _log($ubic_fh, "got lock");
 
             if (defined $user) {
@@ -405,7 +311,7 @@ sub start_daemon($) {
                 # guardian
 
                 my $child_guid = _pid2guid($child);
-                _write_pidfile($pidfile, { pid => $child, guid => $child_guid });
+                $pid_state->write({ pid => $child, guid => $child_guid });
 
                 _log($ubic_fh, "guardian pid: $$");
                 _log($ubic_fh, "daemon pid: $child");
@@ -417,7 +323,7 @@ sub start_daemon($) {
                     _log($ubic_fh, "sending SIGKILL to $child");
                     kill -9 => $child;
                     _log($ubic_fh, "child probably killed by SIGKILL");
-                    _remove_pidfile($pidfile);
+                    $pid_state->remove();
                     $instant_exit->(0);
                 };
 
@@ -446,7 +352,7 @@ sub start_daemon($) {
                         if ($sigterm_sent && $signal == &POSIX::SIGTERM) {
                             # it's ok, we probably sent this signal ourselves
                             _log($ubic_fh, "daemon exited by sigterm");
-                            _remove_pidfile($pidfile);
+                            $pid_state->remove;
                             $instant_exit->(0);
                         }
                         $msg = "Daemon $child failed with signal $signal";
@@ -455,11 +361,11 @@ sub start_daemon($) {
                         $msg = "Daemon failed: $?";
                     }
                     _log($ubic_fh, $msg);
-                    _remove_pidfile($pidfile);
+                    $pid_state->remove;
                     $instant_exit->(1);
                 }
                 _log($ubic_fh, "daemon exited");
-                _remove_pidfile($pidfile);
+                $pid_state->remove;
                 $instant_exit->(0);
             }
             else {
@@ -518,15 +424,12 @@ Returns instance of L<Ubic::Daemon::Status> class if daemon is alive, and false 
 =cut
 sub check_daemon {
     my ($pidfile) = @_;
-    if (not -d $pidfile and not -s $pidfile) {
-        return undef; # empty, old-style pidfile
-    }
-    if (-d $pidfile and not -e "$pidfile/pid") {
-        return undef;
-    }
 
-    my $lock = _lock_pidfile($pidfile);
-    my $piddata = _read_pidfile($pidfile);
+    my $pid_state = Ubic::Daemon::PidState->new($pidfile);
+    return undef if $pid_state->is_empty;
+
+    my $lock = $pid_state->lock;
+    my $piddata = $pid_state->read;
     unless ($lock) {
         # locked => daemon is alive
         return Ubic::Daemon::Status->new({ pid => $piddata->{daemon} });
@@ -546,7 +449,7 @@ sub check_daemon {
         die "pidfile $pidfile exists, but daemon pid is not saved in it, so existing unguarded daemon can't be killed (piddata: ".Dumper($piddata).")";
     }
     unless (-d "/proc/$piddata->{daemon}") {
-        _remove_pidfile($pidfile);
+        $pid_state->remove;
         print "pidfile $pidfile removed - daemon with cached pid $piddata->{daemon} not found\n";
         return undef;
     }
@@ -565,14 +468,14 @@ sub check_daemon {
     if ($guid eq $piddata->{guid}) {
         warn "killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile\n";
         kill -9 => $piddata->{daemon};
-        _remove_pidfile($pidfile);
+        $pid_state->remove;
         print "pidfile $pidfile removed\n";
         return undef;
     }
     print "daemon pid $piddata->{daemon} cached in pidfile $pidfile, ubic-guardian not found\n";
     print "current process '$daemon_cmd' with that pid looks too fresh and will not be killed\n";
     print "pidfile $pidfile removed\n";
-    _remove_pidfile($pidfile);
+    $pid_state->remove;
     return undef;
 }
 

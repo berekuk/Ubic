@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Ubic::Daemon: pidfile code refactored away into Ubic::Daemon::PidState module
 
 1.21_01 Thu Oct 21, 2010
         * fixed races in t/daemon.t
