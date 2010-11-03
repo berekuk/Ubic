@@ -29,12 +29,13 @@ so if you need to get daemon's pid, use check_daemon() result.
 
 use IO::Handle;
 use POSIX qw(setsid);
+use Time::HiRes qw(sleep);
+use Params::Validate qw(:all);
+use Carp;
+
 use Ubic::Lockf;
 use Ubic::Daemon::Status;
 use Ubic::Daemon::PidState;
-use Time::HiRes qw(sleep);
-
-use Carp;
 
 use parent qw(Exporter);
 our @EXPORT_OK = qw(start_daemon stop_daemon check_daemon);
@@ -42,10 +43,22 @@ our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
 
-use Ubic::Daemon::OS::Linux;
-our $OS = Ubic::Daemon::OS::Linux->new;
+our $OS;
+sub import {
+    my %module = (
+        linux   => 'Linux',
+    );
 
-use Params::Validate qw(:all);
+    # UBIC_DAEMON_OS support is here only for tests
+    my $module = $ENV{UBIC_DAEMON_OS} || $module{$^O} || 'POSIX';
+
+    require "Ubic/Daemon/OS/$module.pm";
+    $OS = eval "Ubic::Daemon::OS::$module->new";
+    unless ($OS) {
+        die "failed to initialize OS-specific module $module: $@";
+    }
+    __PACKAGE__->export_to_level(1, @_);
+}
 
 sub _log {
     my $fh = shift;

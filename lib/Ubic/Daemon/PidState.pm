@@ -79,7 +79,7 @@ sub read {
 
     my $content;
     my $parse_content = sub {
-        if ($content =~ /\A pid \s+ (\d+) \n guid \s+ (\d+) (?: \n daemon \s+ (\d+) )? \Z/x) {
+        if ($content =~ /\A pid \s+ (\d+) \n guid \s+ (.+) (?: \n daemon \s+ (\d+) )? \Z/x) {
             # new format
             return { pid => $1, guid => $2, daemon => $3, format => 'new' };
         }

@@ -3,6 +3,8 @@ package Ubic::Daemon::OS::Linux;
 use strict;
 use warnings;
 
+use POSIX;
+
 use parent qw(Ubic::Daemon::OS);
 
 sub pid2guid {
