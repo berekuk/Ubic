@@ -6,10 +6,6 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-unless ($^O =~ /linux/) {
-    BAIL_OUT("OS unsupported");
-}
-
 use lib 'lib';
 use File::Find;
 
