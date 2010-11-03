@@ -42,29 +42,10 @@ our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
 
-use Params::Validate qw(:all);
+use Ubic::Daemon::OS::Linux;
+our $OS = Ubic::Daemon::OS::Linux->new;
 
-# get pid's guid
-# returns undef if pid not found, throws exception on other errors
-sub _pid2guid($) {
-    my $pid = shift;
-    unless (-d "/proc/$pid") {
-        return; # process not found
-    }
-    my $opened = open(my $fh, '<', "/proc/$pid/stat");
-    unless ($opened) {
-        # open failed
-        my $error = $!;
-        unless (-d "/proc/$pid") {
-            return; # process exited right now
-        }
-        die "Open /proc/$pid/stat failed: $!";
-    }
-    my $line = <$fh>;
-    my @fields = split /\s+/, $line;
-    my $guid = $fields[21];
-    return $guid;
-}
+use Params::Validate qw(:all);
 
 sub _log {
     my $fh = shift;
@@ -266,13 +247,11 @@ sub start_daemon($) {
             }
 
             # Close all inherited filehandles except $write_pipe (it will be closed explicitly).
-            # Do not close fh if uses 'function' option instead of 'bin' ('function' should be deprecated).
+            # Do not close fh if uses 'function' option instead of 'bin'
+            # ('function' support should be removed altogether because of this, actually; it's evil).
             if ($bin) {
-                my @fd_nums = map { s!^.*/!!; $_ } glob("/proc/$$/fd/*");
                 my $write_pipe_fd_num = fileno($write_pipe);
-                foreach (@fd_nums) {
-                    POSIX::close($_) if ($_ != $write_pipe_fd_num);
-                }
+                $OS->close_all_fh($write_pipe_fd_num); # except pipe
             }
 
             open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
@@ -310,7 +289,7 @@ sub start_daemon($) {
             if ($child = fork) {
                 # guardian
 
-                my $child_guid = _pid2guid($child);
+                my $child_guid = $OS->pid2guid($child);
                 $pid_state->write({ pid => $child, guid => $child_guid });
 
                 _log($ubic_fh, "guardian pid: $$");
@@ -448,19 +427,15 @@ sub check_daemon {
         use Data::Dumper;
         die "pidfile $pidfile exists, but daemon pid is not saved in it, so existing unguarded daemon can't be killed (piddata: ".Dumper($piddata).")";
     }
-    unless (-d "/proc/$piddata->{daemon}") {
+    unless ($OS->pid_exists($piddata->{daemon})) {
         $pid_state->remove;
         print "pidfile $pidfile removed - daemon with cached pid $piddata->{daemon} not found\n";
         return undef;
     }
-    open my $daemon_cmd_fh, '<', "/proc/$piddata->{daemon}/cmdline" or die "Can't open daemon's cmdline: $!";
-    my $daemon_cmd = <$daemon_cmd_fh>;
-    $daemon_cmd =~ s/\x{00}$//;
-    $daemon_cmd =~ s/\x{00}/ /g;
-    close $daemon_cmd_fh;
 
-    my @procdir_stat = stat("/proc/$piddata->{daemon}");
-    my $guid = _pid2guid($piddata->{daemon});
+    my $daemon_cmd = $OS->pid2cmd($piddata->{daemon});
+
+    my $guid = $OS->pid2guid($piddata->{daemon});
     unless ($guid) {
         print "daemon '$daemon_cmd' from $pidfile just disappeared\n";
         return undef;
