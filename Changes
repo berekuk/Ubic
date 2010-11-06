@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.22    Sun Nov 07, 2010
         * Ubic::Multiservice:
          - default implementation of 'has_simple_service' method
          - POD improvements
