@@ -26,20 +26,6 @@ sub new($$) {
     return bless { service_dir => $dir } => $class;
 }
 
-=item B<< set_service_dir($dir) >>
-
-Set service dir in runtime.
-
-This class can be mixin to another service, in this case constructor will never be invoked.
-
-=cut
-sub set_service_dir {
-    my $self = shift;
-    my $dir = shift;
-    $self->{service_dir} = $dir; # TODO - check that dir exists?
-}
-
-
 sub has_simple_service($$) {
     my $self = shift;
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});

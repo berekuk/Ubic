@@ -1,6 +1,9 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Ubic::Multiservice:
+         - default implementation of 'has_simple_service' method
+         - POD improvements
 
 1.21_01 Thu Oct 21, 2010
         * fixed races in t/daemon.t
