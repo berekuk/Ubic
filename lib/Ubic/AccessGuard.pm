@@ -31,6 +31,8 @@ use Ubic::Result qw(result);
 use Carp;
 use Scalar::Util qw(weaken);
 
+use Ubic::UserGroupInspection qw( effective_group_id effective_user_id );
+
 BEGIN {
     return if $^O ne 'MSWin32';
 
@@ -70,10 +72,11 @@ sub new {
     my $user = $service->user;
     my ($group) = $service->group;
 
-    my $euid = $>;
-    my $egid = $);
+    my $euid = effective_user_id();
+    my $egid = effective_group_id();
     $egid =~ s/^(\d+).*/$1/;
-    my $current_user = getpwuid($>);
+
+    my $current_user = getpwuid( $euid );
     my $current_group = getgrgid($egid);
 
     my $self = bless {
