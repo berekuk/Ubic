@@ -20,7 +20,7 @@ use Ubic::Service::SimpleDaemon;
 my $service = Ubic::Service::SimpleDaemon->new({
     name => 'simple1',
     bin => ['perl', '-e', 'use IO::Handle; $SIG{TERM} = sub { exit 0 }; print "stdout\n"; print STDERR "stderr\n"; STDOUT->flush; STDERR->flush; sleep 1000'],
-    user => $ENV{LOGNAME},
+    user => $ENV{LOGNAME} || $ENV{USERNAME},
     stdout => 'tfiles/stdout',
     stderr => 'tfiles/stderr',
 });
@@ -36,4 +36,3 @@ is($service->status, 'not running', 'stop works');
 
 is(slurp('tfiles/stdout'), "stdout\n", 'daemon stdout');
 is(slurp('tfiles/stderr'), "stderr\n", 'daemon stderr');
-

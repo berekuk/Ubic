@@ -31,7 +31,7 @@ sub status_impl {
 }
 
 sub user {
-    return $ENV{LOGNAME};
+    return $ENV{LOGNAME} || $ENV{USERNAME};
 }
 
 sub check_timeout {

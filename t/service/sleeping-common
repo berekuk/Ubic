@@ -23,5 +23,5 @@ Ubic::Service::Common->new({
         '2plus2' => sub { return 4 },
         '3plus3' => sub { return 6 },
     },
-    user => $ENV{LOGNAME},
+    user => $ENV{LOGNAME} || $ENV{USERNAME},
 });
