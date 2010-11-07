@@ -3,5 +3,5 @@ use Ubic::Service::SimpleDaemon;
 
 Ubic::Service::SimpleDaemon->new({
     bin => 'sleep 100',
-    user => $ENV{LOGNAME},
+    user => $ENV{LOGNAME} || $ENV{USERNAME},
 });

@@ -19,5 +19,5 @@ return Ubic::Service::Common->new({
         return retrieve($file)->{status};
     },
     port => 12347, # conflicts with fake-http-service
-    user => $ENV{LOGNAME},
+    user => $ENV{LOGNAME} || $ENV{USERNAME},
 });
