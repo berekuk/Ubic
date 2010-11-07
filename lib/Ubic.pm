@@ -44,6 +44,8 @@ use Ubic::Persistent;
 use Ubic::SingletonLock;
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
+use Ubic::UserGroupInspection qw( effective_group_id real_group_id effective_user_id real_user_id );
+
 BEGIN {
     return if $^O ne 'MSWin32';
 
@@ -710,10 +712,10 @@ sub do_cmd($$$) {
         my $service_gid = join ' ', @gid;
 
         if (
-            $service_uid == $>
-            and $service_uid == $<
-            and _groups_equal($service_gid, $))
-            and _groups_equal($service_gid, $()
+            $service_uid == effective_user_id()
+            and $service_uid == real_user_id()
+            and _groups_equal($service_gid, effective_group_id())
+            and _groups_equal($service_gid, real_group_id())
         ) {
             # current euid, ruid, egid, rgid and supplementary groups are all conform to service expectations
             return $service->$cmd();
