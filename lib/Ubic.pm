@@ -44,6 +44,13 @@ use Ubic::Persistent;
 use Ubic::SingletonLock;
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
+BEGIN {
+    return if $^O ne 'MSWin32';
+
+    require Win32::pwent;
+    push @Win32::pwent::EXPORT_OK, 'endgrent';
+    Win32::pwent->import( qw( getpwent endpwent setpwent getpwnam getpwuid getgrent endgrent setgrent getgrnam getgrgid ) );
+}
 
 our $SINGLETON;
 
