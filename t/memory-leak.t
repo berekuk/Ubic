@@ -3,7 +3,12 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More;
+BEGIN {
+    plan skip_all => 'memory leak test is linux-specific' unless $^O eq 'Linux';
+}
+
+plan tests => 2;
 
 use lib 'lib';
 
