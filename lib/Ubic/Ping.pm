@@ -92,7 +92,7 @@ sub handle_request {
         }
         else {
             print "HTTP/1.0 404 Not found\r\n\r\n";
-            print "Expected /status/name/NAME or /status/port/PORT query\n";
+            print "Expected /status/service/NAME or /status/port/PORT query\n";
             return;
         }
     }

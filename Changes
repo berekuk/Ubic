@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * ubic-ping: 404 message content fixed
 
 1.22    Sun Nov 07, 2010
         * Ubic::Multiservice:
