@@ -8,7 +8,7 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    ubic-watchdog [-v]
+    ubic-watchdog [-v] [--compile-timeout=N]
 
     ubic-watchdog SERVICE SERVICE2 SERVICE_GLOB ...
 
@@ -23,6 +23,8 @@ Services are checked in parallel fashion, each one in separate forked process.
 =head1 PARAMETERS
 
 B<-v> or B<--verbose> flag can be used to enable detailed logging.
+
+B<--compile-timeout=N> option can be used to override service compilation timeout in seconds. Default is 10 seconds. This option is experimental and can be removed in future releases.
 
 All other arguments are interpreted as service names. Arguments can contain C<*> symbol, which will be expanded in Unix shell fashion.
 
@@ -45,9 +47,12 @@ use POSIX;
 
 return 1 if caller();
 
+my $COMPILE_TIMEOUT = 10;
+
 my $verbose;
 GetOptions(
     'v|verbose' => \$verbose,
+    'compile-timeout=i' => \$COMPILE_TIMEOUT,
 ) or pod2usage(2);
 
 my @filter;
@@ -70,13 +75,24 @@ sub match($$) {
     return;
 }
 
+sub load_services {
+    my ($parent) = @_; # $parent can be a multiservice, or it can be "Ubic" class itself
+    alarm($COMPILE_TIMEOUT);
+    $SIG{ALRM} = sub {
+        die "Couldn't compile $parent services in $COMPILE_TIMEOUT seconds";
+    };
+    my @services = $parent->services;
+    alarm(0);
+    return @services;
+}
+
 sub check_all {
     my @services = @_;
     for my $service (@services) {
         my $name = $service->full_name;
         if ($service->isa('Ubic::Multiservice')) {
             INFO("$name is multiservice, checking subservices") if $verbose;
-            check_all($service->services);
+            check_all(load_services($service));
             next;
         }
         if (@filter) {
@@ -109,6 +125,15 @@ sub check($) {
     }
 
     try {
+        alarm($service->check_timeout);
+        $SIG{ALRM} = sub {
+            ERROR("$name check_timeout exceeded");
+            STDOUT->flush;
+            STDERR->flush;
+            kill -9 => $$; # suicide
+            ERROR "kill sent, still alive"; # should never happen, we called setsid earlier
+        };
+
         my $watchdog_lock = do {
             my $guard = Ubic->access_guard($name);
             Ubic::SingletonLock->new(Ubic->get_data_dir()."/watchdog/lock/".$name, { blocking => 0 });
@@ -125,15 +150,6 @@ sub check($) {
             INFO("$name disabled") if $verbose;
             return;
         }
-
-        alarm($service->check_timeout);
-        $SIG{ALRM} = sub {
-            ERROR("$name check_timeout exceeded");
-            STDOUT->flush;
-            STDERR->flush;
-            kill -9 => $$; # suicide
-            ERROR "kill sent, still alive"; # should never happen, we called setsid earlier
-        };
 
         my $status = Ubic->status($name);
         unless ($status->status eq 'running') {
@@ -156,5 +172,5 @@ sub check($) {
     INFO("$name checked") if $verbose;
 }
 
-my @services = Ubic->services;
+my @services = load_services('Ubic');
 check_all(@services);

@@ -105,4 +105,13 @@ sub check_timeout :Test {
     like(slurp('tfiles/watchdog.log'), qr/slow-service check_timeout exceeded/);
 }
 
+sub compile_timeout :Test(3) {
+    Ubic->set_service_dir('t/service-slow-compile');
+    my $time = time;
+    system("fakeroot -- $perl -Mt::Utils bin/ubic-watchdog --compile-timeout=2 >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
+    ok(time - $time < 4, 'ubic-watchdog compile-timeout happened');
+    ok(time - $time >= 2, 'ubic-watchdog compile-timeout happened');
+    like(slurp('tfiles/watchdog.err.log'), qr/Couldn't compile Ubic services in 2 seconds/);
+}
+
 __PACKAGE__->new->runtests;

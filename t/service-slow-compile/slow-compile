@@ -1,0 +1,45 @@
+# vim: ft=perl
+
+use parent qw(Ubic::Service::Skeleton);
+use Ubic::Daemon qw(:all);
+
+BEGIN {
+    sleep(10);
+}
+
+my $pidfile = 'tfiles/slow.pid';
+
+sub new {
+    return bless {} => shift;
+}
+
+sub start_impl {
+    start_daemon({
+        bin => 'sleep 1000',
+        pidfile => $pidfile,
+    });
+}
+
+sub stop_impl {
+    stop_daemon($pidfile);
+}
+
+sub status_impl {
+    sleep 2;
+    if (check_daemon($pidfile)) {
+        return 'running';
+    }
+    else {
+        return 'not running';
+    }
+}
+
+sub user {
+    return $ENV{LOGNAME};
+}
+
+sub check_timeout {
+    return 1;
+}
+
+return __PACKAGE__->new;

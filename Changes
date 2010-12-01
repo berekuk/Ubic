@@ -2,6 +2,9 @@ Revision history for Ubic
 
 {{$NEXT}}
         * ubic-ping: 404 message content fixed
+        * ubic-watchdog:
+         - set check_timeout alarm a bit earlier
+         - another alarm before compiling services
 
 1.22    Sun Nov 07, 2010
         * Ubic::Multiservice:
