@@ -1,3 +1,12 @@
+ubic (1.23) unstable; urgency=low
+
+  * ubic-ping: 404 message content fixed
+  * ubic-watchdog:
+   - set check_timeout alarm a bit earlier
+   - another alarm before compiling services
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 02 Dec 2010 19:59:13 +0300
+
 ubic (1.22) unstable; urgency=low
 
   * Ubic::Multiservice: default implementation of 'has_simple_service' method
