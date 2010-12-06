@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More;
 BEGIN {
-    plan skip_all => 'memory leak test is linux-specific' unless $^O eq 'Linux';
+    plan skip_all => 'memory leak test is linux-specific' unless $^O eq 'linux';
 }
 
 plan tests => 2;
