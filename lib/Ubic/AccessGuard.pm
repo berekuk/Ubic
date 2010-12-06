@@ -31,6 +31,16 @@ use Ubic::Result qw(result);
 use Carp;
 use Scalar::Util qw(weaken);
 
+use Ubic::UserGroupInspection qw( effective_group_id effective_user_id );
+
+BEGIN {
+    return if $^O ne 'MSWin32';
+
+    require Win32::pwent;
+    push @Win32::pwent::EXPORT_OK, 'endgrent';
+    Win32::pwent->import( qw( getpwent endpwent setpwent getpwnam getpwuid getgrent endgrent setgrent getgrnam getgrgid ) );
+}
+
 # AccessGuard is actually a singleton - there can't be two guards for two different services, because process can't have two euids.
 # So we keep weakref to any created AccessGuard.
 my $ag_ref;
@@ -42,6 +52,7 @@ Construct new access guard object.
 User will be changed into user apporpriate for running C<$service>. It will be changed back on guard's desctruction.
 
 =cut
+
 sub new {
     my $class = shift;
     my ($service) = validate_pos(@_, { isa => 'Ubic::Service' });
@@ -61,10 +72,11 @@ sub new {
     my $user = $service->user;
     my ($group) = $service->group;
 
-    my $euid = $>;
-    my $egid = $);
+    my $euid = effective_user_id();
+    my $egid = effective_group_id();
     $egid =~ s/^(\d+).*/$1/;
-    my $current_user = getpwuid($>);
+
+    my $current_user = getpwuid( $euid );
     my $current_group = getgrgid($egid);
 
     my $self = bless {
@@ -130,4 +142,3 @@ sub DESTROY {
 =cut
 
 1;
-
