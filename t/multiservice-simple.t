@@ -48,7 +48,7 @@ sub nested : Test(4) {
             s2 => $s2,
         }),
     });
-    diag("testing has_service for nested unexistent services");
+    # testing has_service for nested unexistent services
     lives_ok(sub { scalar $ms->has_service('s1.blah') });
     lives_ok(sub { scalar $ms->has_service('s1.blah.blah') });
     lives_ok(sub { scalar $ms->has_service('m1.blah.blah') });

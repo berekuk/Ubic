@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Ubic::Daemon: pidfile code refactored away into Ubic::Daemon::PidState module
 
 1.23    Thu Dec 02, 2010
         * ubic-ping: 404 message content fixed
