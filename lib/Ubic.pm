@@ -35,6 +35,7 @@ use POSIX qw();
 use Ubic::Result qw(result);
 use Ubic::Multiservice::Dir;
 use Ubic::AccessGuard;
+use Ubic::Credentials;
 use Params::Validate qw(:all);
 use Carp;
 use IO::Handle;
@@ -43,7 +44,6 @@ use Try::Tiny;
 use Ubic::Persistent;
 use Ubic::SingletonLock;
 use Scalar::Util qw(blessed);
-use List::MoreUtils qw(uniq);
 use Ubic::UserGroupInspection qw( effective_group_id real_group_id effective_user_id real_user_id );
 
 BEGIN {
@@ -675,13 +675,6 @@ sub do_sub($$) {
     return result($result);
 }
 
-sub _groups_equal {
-    my ($g1, $g2) = @_;
-    my ($main1, @other1) = split / /, $g1;
-    my ($main2, @other2) = split / /, $g2;
-    return ($main1 == $main2 and join(' ', sort { $a <=> $b } uniq($main1, @other1)) eq join(' ', sort { $a <=> $b } uniq($main2, @other2)));
-}
-
 =item B<< do_cmd($name, $cmd) >>
 
 Run C<$cmd> method from service C<$name> and wrap any result or exception into C<Ubic::Result::Class> object.
@@ -698,26 +691,14 @@ sub do_cmd($$$) {
             die "user $user not found";
         }
 
-        my @group = $service->group;
+        my @service_groups = $service->group;
+        my $creds = Ubic::Credentials->new(
+            user => $service->user,
+            (scalar(@service_groups) ? (group => [@service_groups]) : ()),
+        );
 
-        my @gid;
-        for my $group (@group) {
-            my $gid = getgrnam($group);
-            unless (defined $gid) {
-                die "group $group not found";
-            }
-            push @gid, $gid;
-        }
-        @gid = (@gid, @gid) if @gid == 1; # otherwise $) = "1 0"; $) = "1" leaves 0 in group list
-        my $service_gid = join ' ', @gid;
-
-        if (
-            $service_uid == effective_user_id()
-            and $service_uid == real_user_id()
-            and _groups_equal($service_gid, effective_group_id())
-            and _groups_equal($service_gid, real_group_id())
-        ) {
-            # current euid, ruid, egid, rgid and supplementary groups are all conform to service expectations
+        if ($creds->eq(Ubic::Credentials->new())) {
+            # current credentials fit service expectations
             return $service->$cmd();
         }
 
@@ -726,16 +707,7 @@ sub do_cmd($$$) {
         # - local administrator may want to allow everyone to write service, and leaving root as real uid is an obvious security breach
         # (ubic will have to learn to compare service user with service file's owner for such policy to be save, though - this is not implemented yet)
         $self->forked_call(sub {
-            $) = $service_gid;
-            unless (_groups_equal($), $service_gid)) {
-                die "Failed to set effective gid to $service_gid: $!";
-            }
-            $( = $gid[0];
-            unless (_groups_equal($(, $service_gid)) {
-                die "Failed to set real gid to $service_gid: $!";
-            }
-            $> = $service_uid;
-            $< = $service_uid;
+            $creds->set();
             return $service->$cmd();
         });
     });

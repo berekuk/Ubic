@@ -61,6 +61,7 @@ sub custom_commands :Test(1) {
 
 sub user :Test(1) {
     return "can't test users when testing from root" unless $>;
+    return "can't test credential stuff on win32" if $^O eq 'MSWin32';
     dies_ok(sub { Ubic->start('sleeping-daemon-root') }, "can't start root service"); # this forbids building from root
 }
 
