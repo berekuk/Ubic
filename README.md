@@ -8,7 +8,8 @@ INSTALLATION
 Full ubic installation requires crontab, configs and running watchdog,
 so installing through 'cpan -i' is currently incomplete.
 
-For full install on Debian/Ubuntu, last .deb package can be downloaded at http://github.com/berekuk/Ubic/downloads.
+For full install on Debian/Ubuntu, last .deb package can be downloaded from ppa:berekuk/ubic (see https://launchpad.net/~berekuk/+archive/ubic for details).
+
 Debian package build can be reproduced with this command:
     dzil build && cp -r debian Ubic*/ && cd Ubic* && debuild
 
