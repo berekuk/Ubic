@@ -726,7 +726,13 @@ sub do_cmd($$$) {
                 die "Failed to set real gid to $service_gid: $!";
             }
             $> = $service_uid;
+            unless ($> == $service_uid) {
+                die "Failed to set effective uid to $service_uid: $!";
+            }
             $< = $service_uid;
+            unless ($< == $service_uid) {
+                die "Failed to set real uid to $service_uid: $!";
+            }
             return $service->$cmd();
         });
     });
