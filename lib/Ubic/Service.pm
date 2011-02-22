@@ -152,11 +152,11 @@ This parameter exists as a precaution against incorrectly implemented C<status()
 
 This parameter is *not* a timeout for querying your service by HTTP or whatever your status check is. Service-specific timeouts should be configured by other means.
 
-Default value is 600 seconds. It should not be changed unless you have a very good reason to do so (i.e., your service is so horribly slow that it can't start in 10 minutes).
+Default value is 60 seconds. It should not be changed unless you have a very good reason to do so (i.e., your service is so horribly slow that it can't start in 1 minute).
 
 =cut
 sub check_timeout {
-    return 600;
+    return 60;
 }
 
 =back
