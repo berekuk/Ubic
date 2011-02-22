@@ -8,7 +8,7 @@ INSTALLATION
 Full ubic installation requires crontab, configs and running watchdog,
 so installing through 'cpan -i' is currently incomplete.
 
-For full install on Debian/Ubuntu, last .deb package can be downloaded from ppa:berekuk/ubic (see https://launchpad.net/~berekuk/+archive/ubic for details).
+For full install on Debian/Ubuntu, last .deb package can be downloaded from ppa:berekuk/ubic (see <https://launchpad.net/~berekuk/+archive/ubic>G for details).
 
 Debian package build can be reproduced with this command:
     dzil build && cp -r debian Ubic*/ && cd Ubic* && debuild
@@ -32,21 +32,19 @@ and man commands.
 
 You can also look for information at:
 
-    Github Wiki:
-        http://github.com/berekuk/Ubic/wiki
+    (Github Wiki)[http://github.com/berekuk/Ubic/wiki]
 
-    Search CPAN
-        http://search.cpan.org/dist/Ubic/
+    (Search CPAN)[http://search.cpan.org/dist/Ubic/]
 
 SUPPORT
 
-Our mailing list is ubic-perl@googlegroups.com. Send an empty message to ubic-perl+subscribe@googlegroups.com to subscribe.
+Our mailing list is <ubic-perl@googlegroups.com>. Send an empty message to <ubic-perl+subscribe@googlegroups.com> to subscribe.
 
-These is also an IRC channel: irc://irc.perl.org#ubic.
+These is also an IRC channel: <irc://irc.perl.org#ubic>.
 
 COPYRIGHT AND LICENCE
 
-Copyright (c) 2009-2010 Yandex LTD. All rights reserved.
+Copyright (c) 2009-2011 Yandex LTD. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
