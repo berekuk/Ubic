@@ -1,3 +1,11 @@
+ubic (1.24) unstable; urgency=low
+
+  * ubic-watchdog: change process name while checking specific service
+  * check that uid change was successful before calling service action methods
+  * default check_timeout() lowered from 10 minutes to 1 minute
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 23 Feb 2011 00:04:18 +0300
+
 ubic (1.23) unstable; urgency=low
 
   * ubic-ping: 404 message content fixed

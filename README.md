@@ -32,8 +32,8 @@ and man commands.
 
 You can also look for information at:
 
-* (Github Wiki)[http://github.com/berekuk/Ubic/wiki]
-* (Search CPAN)[http://search.cpan.org/dist/Ubic/]
+* [Github Wiki](http://github.com/berekuk/Ubic/wiki)
+* [Search CPAN](http://search.cpan.org/dist/Ubic/)
 
 SUPPORT
 
