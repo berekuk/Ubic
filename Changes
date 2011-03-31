@@ -3,6 +3,11 @@ Revision history for Ubic
 {{$NEXT}}
         * Ubic::Daemon: pidfile code refactored away into Ubic::Daemon::PidState module
 
+1.24    Wed Feb 23, 2011
+        * ubic-watchdog: change process name while checking specific service
+        * check that uid change was successful before calling service action methods
+        * default check_timeout() lowered from 10 minutes to 1 minute
+
 1.23    Thu Dec 02, 2010
         * ubic-ping: 404 message content fixed
         * ubic-watchdog:

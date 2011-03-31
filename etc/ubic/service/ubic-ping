@@ -6,8 +6,6 @@ use LWP::Simple;
 use POSIX;
 use Time::HiRes qw(sleep);
 
-use Ubic::Ping;
-
 use Config;
 
 # ugly; waiting for druxa's Mopheus to save us all...

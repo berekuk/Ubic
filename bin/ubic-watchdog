@@ -123,6 +123,7 @@ sub check($) {
     if ($verbose) {
         INFO("Checking $name");
     }
+    $0 = "ubic-watchdog $name";
 
     try {
         alarm($service->check_timeout);
