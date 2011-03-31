@@ -30,7 +30,8 @@ our $OS_CLASS;
 
 sub import {
     my %module = (
-        MSWin32   => 'Windows',
+        MSWin32 => 'Windows',
+        darwin  => 'MacOSX',
     );
 
     my $module = $ENV{UBIC_CREDENTIALS_OS} || $ENV{UBIC_OS} || $module{$^O} || 'POSIX';

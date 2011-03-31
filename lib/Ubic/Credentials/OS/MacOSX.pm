@@ -1,11 +1,11 @@
-package Ubic::Credentials::OS::POSIX;
+package Ubic::Credentials::OS::MacOSX;
 
 use strict;
 use warnings;
 
 use parent qw(Ubic::Credentials);
 
-# ABSTRACT: POSIX-specific credentials implementation
+# ABSTRACT: MacOSX-specific credentials implementation
 
 =head1 METHODS
 
@@ -33,17 +33,20 @@ sub new {
         }
         $self->{user} = $params->{user};
         $self->{group} = $params->{group} if defined $params->{group};
+        if (ref $self->{group}) {
+            $self->{group} = $self->{group}[0];
+        }
     }
     elsif (defined $params->{service}) {
         $self->{user} = $params->{service}->user;
         my @group = $params->{service}->group;
-        $self->{group} = [ @group ] if @group;
+        $self->{group} = $group[0] if @group;
     }
     else {
         $self->{real_user_id} = $<;
         $self->{effective_user_id} = $>;
-        $self->{real_group_id} = [ split / /, $( ];
-        $self->{effective_group_id} = [ split / /, $) ];
+        ($self->{real_group_id}) = $( =~ /^(\d+)/;
+        ($self->{effective_group_id}) = $) =~ /^(\d+)/;
         # TODO - derive user from real_user_id when user is not specified (or from effective_user_id?!)
     }
 
@@ -54,19 +57,20 @@ sub new {
 
 Get user name.
 
-This method will return C<undef> if credentials object was constructed via C<<new()>> without parameters (i.e. it's a current credentials object). Feel free to fix this, it is an obvious bug (but it doesn't affect anything, AFAIK).
-
 =cut
 sub user {
     my $self = shift;
+    unless (defined $self->{user}) {
+        $self->{user} = getpwuid($>);
+    }
     return $self->{user};
 }
 
 =item B<< group() >>
 
-Get list of group names.
+Get group name.
 
-This method will return an empty list if credentials object was constructed via C<<new()>> without parameters (i.e. it's a current credentials object). Feel free to fix this, it is an obvious bug (but it doesn't affect anything, AFAIK).
+Complementary group ids are not supported for Mac OS X yet (can't figure out how to get list of them for current user, i.e. imitate C<id(1)> behaviour from perl).
 
 =cut
 sub group {
@@ -74,10 +78,7 @@ sub group {
     unless (defined $self->{group}) {
         $self->_user2group;
     }
-    unless (ref $self->{group}) {
-        $self->{group} = [ $self->{group} ];
-    }
-    return @{ $self->{group} };
+    return $self->{group};
 }
 
 sub _user2uid {
@@ -114,17 +115,12 @@ sub effective_user_id {
 
 sub _group2gid {
     my $self = shift;
-    my @group = $self->group;
-    my @gid;
-    for my $group (@group) {
-        my $gid = getgrnam($group);
-        unless (defined $gid) {
-            croak "group $group not found";
-        }
-        push @gid, $gid;
+    my $group = $self->group;
+    my $gid = getgrnam($group);
+    unless (defined $gid) {
+        croak "group $group not found";
     }
-    @gid = (@gid, @gid) if @gid == 1; # otherwise $) = "1 0"; $) = "1" leaves 0 in group list
-    return @gid;
+    return $gid;
 }
 
 =item B<< real_group_id() >>
@@ -134,7 +130,7 @@ Get numeric real group id.
 =cut
 sub real_group_id {
     my $self = shift;
-    return @{ $self->{real_group_id} } if defined $self->{real_group_id};
+    return $self->{real_group_id} if defined $self->{real_group_id};
     return $self->_group2gid;
 }
 
@@ -145,7 +141,7 @@ Get numeric effective group id.
 =cut
 sub effective_group_id {
     my $self = shift;
-    return @{ $self->{effective_group_id} } if defined $self->{effective_group_id};
+    return $self->{effective_group_id} if defined $self->{effective_group_id};
     return $self->_group2gid;
 }
 
@@ -155,14 +151,7 @@ sub _user2group {
     confess "user not defined" unless defined $user;
 
     my $main_group = getgrgid((getpwnam $user)[3]);
-    setgrent();
-    my @groups;
-    while (my @grent = getgrent()) {
-        my @users = split / /, $grent[3];
-        push @groups, $grent[0] if grep { $_ eq $user } @users;
-    }
-    endgrent();
-    $self->{group} = [ $main_group, @groups ];
+    $self->{group} = $main_group;
 }
 
 sub set_effective {
@@ -212,9 +201,9 @@ sub set_effective {
 
 sub _groups_equal {
     my ($self, $g1, $g2) = @_;
-    my ($main1, @other1) = split / /, $g1;
-    my ($main2, @other2) = split / /, $g2;
-    return ($main1 == $main2 and join(' ', sort { $a <=> $b } uniq($main1, @other1)) eq join(' ', sort { $a <=> $b } uniq($main2, @other2)));
+    my ($main1) = split / /, $g1;
+    my ($main2) = split / /, $g2;
+    return ($main1 == $main2);
 }
 
 
@@ -252,15 +241,15 @@ sub eq {
 
 sub set {
     my ($self) = @_;
-    my @effective_gid = $self->effective_group_id;
-    $) = "@effective_gid";
-    unless ($self->_groups_equal($), "@effective_gid")) {
-        die "Failed to set effective gid to @effective_gid: $!";
+    my $effective_gid = $self->effective_group_id;
+    $) = $effective_gid;
+    unless ($self->_groups_equal($), $effective_gid)) {
+        die "Failed to set effective gid to $effective_gid: $!";
     }
-    my @real_gid = $self->real_group_id;
-    $( = $real_gid[0];
-    unless ($self->_groups_equal($(, "@real_gid")) {
-        die "Failed to set real gid to @real_gid: $!";
+    my $real_gid = $self->real_group_id;
+    $( = $real_gid;
+    unless ($self->_groups_equal($(, $real_gid)) {
+        die "Failed to set real gid to $real_gid: $!";
     }
     my $new_euid = $self->effective_user_id;
     $> = $new_euid;
@@ -278,9 +267,9 @@ sub set {
 
 =head1 BUGS AND CAVEATS
 
-I'm not quite sure this module is POSIX-compatible. It makes use of complementary groups which are probably not implemented on some POSIX-based systems.
+Complementary groups are not supported for Mac OS X. Only first group in service's group list is used.
 
-It needs to be refactored into separate C<Ubic::Crendentials::OS::POSIX> and C<Ubic::Crendentials::OS::Linux> modules.
+If somebody'll figure out how to imitate C<id(1)> in perl, i.e. to get list of all complementary groups of given user, this module can be removed and replaced by C<Ubic::Credentials::OS::POSIX>.
 
 =cut
 
