@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.25    2011-03-31
         * MacOSX support (and probably other POSIX systems too, including FreeBSD)
         * lots of refactoring:
          - Ubic::Daemon::OS modules family for OS-specific daemonization tasks
