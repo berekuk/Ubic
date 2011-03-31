@@ -6,6 +6,10 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
+if ($^O =~ /MSWin/i) {
+    BAIL_OUT("OS unsupported");
+}
+
 use lib 'lib';
 use File::Find;
 
