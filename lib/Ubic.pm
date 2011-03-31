@@ -77,17 +77,13 @@ Constructor options (all of them are optional):
 
 =over
 
-=item I<status_dir>
-
-Dir with persistent services' statuses.
-
 =item I<service_dir>
 
-Name of dir with service descriptions (which will be used to construct root Ubic::Multiservice::Dir object)
+Name of dir with service descriptions (which will be used to construct root C<Ubic::Multiservice::Dir> object)
 
-=item I<lock_dir>
+=item I<data_dir>
 
-Dir with services' locks.
+Dir into which ubic stores all of its data (locks, status files, tmp files).
 
 =back
 
@@ -97,42 +93,11 @@ sub new {
     my $self = validate(@_, {
         service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
         data_dir => { type => SCALAR, default => $ENV{UBIC_DIR} || '/var/lib/ubic' },
-        status_dir =>  { type => SCALAR, optional => 1 },
-        lock_dir =>  { type => SCALAR, optional => 1 },
-        tmp_dir =>  { type => SCALAR, optional => 1 },
     });
-    if ($self->{status_dir}) {
-        warn "'status_dir' option is deprecated; use 'data_dir' instead";
-    }
-    elsif ($ENV{UBIC_WATCHDOG_DIR}) {
-        warn "'UBIC_WATCHDOG_DIR' env variable is deprecated; use 'UBIC_DIR' instead";
-        $self->{status_dir} = $ENV{UBIC_WATCHDOG_DIR};
-    }
-    else {
-        $self->{status_dir} = "$self->{data_dir}/status";
-    }
 
-    if ($self->{lock_dir}) {
-        warn "'lock_dir' option is deprecated; use 'data_dir' instead";
-    }
-    elsif ($ENV{UBIC_LOCK_DIR}) {
-        warn "'UBIC_LOCK_DIR' env variable is deprecated; use 'UBIC_DIR' instead";
-        $self->{lock_dir} = $ENV{UBIC_LOCK_DIR};
-    }
-    else {
-        $self->{lock_dir} = "$self->{data_dir}/lock";
-    }
-
-    if ($self->{tmp_dir}) {
-        warn "'tmp_dir' option is deprecated; use 'data_dir' instead";
-    }
-    elsif ($ENV{UBIC_TMP_DIR}) {
-        warn "'UBIC_TMP_DIR' env variable is deprecated; use 'UBIC_DIR' instead";
-        $self->{tmp_dir} = $ENV{UBIC_TMP_DIR};
-    }
-    else {
-        $self->{tmp_dir} = "$self->{data_dir}/tmp";
-    }
+    $self->{status_dir} = "$self->{data_dir}/status";
+    $self->{lock_dir} = "$self->{data_dir}/lock";
+    $self->{tmp_dir} = "$self->{data_dir}/tmp";
 
     $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
     $self->{service_cache} = {};
