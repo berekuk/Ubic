@@ -44,7 +44,6 @@ use Try::Tiny;
 use Ubic::Persistent;
 use Ubic::SingletonLock;
 use Scalar::Util qw(blessed);
-use Ubic::UserGroupInspection qw( effective_group_id real_group_id effective_user_id real_user_id );
 
 our $SINGLETON;
 
@@ -677,14 +676,9 @@ sub do_cmd($$$) {
     $self->do_sub(sub {
         my $service = $self->service($name);
 
-        my $user = $service->user;
-        my @service_groups = $service->group;
-        my $creds = Ubic::Credentials->new(
-            user => $service->user,
-            (scalar(@service_groups) ? (group => [@service_groups]) : ()),
-        );
+        my $creds = Ubic::Credentials->new( service => $service );
 
-        if ($creds->eq(Ubic::Credentials->new())) {
+        if ($creds->eq(Ubic::Credentials->new)) {
             # current credentials fit service expectations
             return $service->$cmd();
         }

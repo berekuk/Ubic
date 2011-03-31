@@ -61,10 +61,6 @@ sub new {
         }
     }
 
-    my $user = $service->user;
-    my ($group) = $service->group;
-
-    my @service_groups = $service->group;
     my $creds = Ubic::Credentials->new(service => $service);
 
     my $self = bless {
