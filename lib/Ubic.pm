@@ -782,7 +782,7 @@ sub forked_call {
     }
     open my $fh, '<', $tmp_file or die "Can't read $tmp_file: $!";
     my $content = do { local $/; <$fh>; };
-    close $fh;
+    close $fh or die "Can't close $tmp_file: $!";
     unlink $tmp_file;
     my $result = thaw($content);
     if ($result->{error}) {
