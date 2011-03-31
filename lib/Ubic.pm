@@ -32,18 +32,19 @@ if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Se
 =cut
 
 use POSIX qw();
-use Ubic::Result qw(result);
-use Ubic::Multiservice::Dir;
-use Ubic::AccessGuard;
-use Ubic::Credentials;
-use Params::Validate qw(:all);
 use Carp;
 use IO::Handle;
 use Storable qw(freeze thaw);
 use Try::Tiny;
+use Scalar::Util qw(blessed);
+use Params::Validate qw(:all);
+
+use Ubic::Result qw(result);
+use Ubic::Multiservice::Dir;
+use Ubic::AccessGuard;
+use Ubic::Credentials;
 use Ubic::Persistent;
 use Ubic::SingletonLock;
-use Scalar::Util qw(blessed);
 
 our $SINGLETON;
 
