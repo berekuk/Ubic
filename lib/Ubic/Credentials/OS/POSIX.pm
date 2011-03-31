@@ -54,19 +54,18 @@ sub new {
 
 Get user name.
 
-This method will return C<undef> if credentials object was constructed via C<<new()>> without parameters (i.e. it's a current credentials object). Feel free to fix this, it is an obvious bug (but it doesn't affect anything, AFAIK).
-
 =cut
 sub user {
     my $self = shift;
+    unless (defined $self->{user}) {
+        $self->{user} = getpwuid($>);
+    }
     return $self->{user};
 }
 
 =item B<< group() >>
 
 Get list of group names.
-
-This method will return an empty list if credentials object was constructed via C<<new()>> without parameters (i.e. it's a current credentials object). Feel free to fix this, it is an obvious bug (but it doesn't affect anything, AFAIK).
 
 =cut
 sub group {
