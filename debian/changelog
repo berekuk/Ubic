@@ -1,3 +1,12 @@
+ubic (1.25) unstable; urgency=low
+
+  * MacOSX support (hmm, this change doesn't make sense in Debian changelog...)
+  * lots of refactoring:
+   - Ubic::Daemon::OS modules family for OS-specific daemonization tasks
+   - Ubic::Credentials::OS modules family for OS-specific user/group tasks
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 31 Mar 2011 22:56:03 +0400
+
 ubic (1.24) unstable; urgency=low
 
   * ubic-watchdog: change process name while checking specific service
