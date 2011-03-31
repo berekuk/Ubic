@@ -46,14 +46,6 @@ use Ubic::SingletonLock;
 use Scalar::Util qw(blessed);
 use Ubic::UserGroupInspection qw( effective_group_id real_group_id effective_user_id real_user_id );
 
-BEGIN {
-    return if $^O ne 'MSWin32';
-
-    require Win32::pwent;
-    push @Win32::pwent::EXPORT_OK, 'endgrent';
-    Win32::pwent->import( qw( getpwent endpwent setpwent getpwnam getpwuid getgrent endgrent setgrent getgrnam getgrgid ) );
-}
-
 our $SINGLETON;
 
 my $service_name_re = qr{^[\w-]+(?:\.[\w-]+)*$};
@@ -686,11 +678,6 @@ sub do_cmd($$$) {
         my $service = $self->service($name);
 
         my $user = $service->user;
-        my $service_uid = getpwnam($user);
-        unless (defined $service_uid) {
-            die "user $user not found";
-        }
-
         my @service_groups = $service->group;
         my $creds = Ubic::Credentials->new(
             user => $service->user,
@@ -704,8 +691,8 @@ sub do_cmd($$$) {
 
         # setting just effective uid is not enough, because:
         # - we can accidentally enter tainted mode, and service authors don't expect this
-        # - local administrator may want to allow everyone to write service, and leaving root as real uid is an obvious security breach
-        # (ubic will have to learn to compare service user with service file's owner for such policy to be save, though - this is not implemented yet)
+        # - local administrator may want to allow everyone to write their own services, and leaving root as real uid is an obvious security breach
+        # (ubic will have to learn to compare service user with service file's owner for such policy to be safe, though - this is not implemented yet)
         $self->forked_call(sub {
             $creds->set();
             return $service->$cmd();
