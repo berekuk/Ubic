@@ -45,6 +45,7 @@ use Ubic::AccessGuard;
 use Ubic::Credentials;
 use Ubic::Persistent;
 use Ubic::SingletonLock;
+use Ubic::Settings;
 
 our $SINGLETON;
 
@@ -90,10 +91,16 @@ Dir into which ubic stores all of its data (locks, status files, tmp files).
 =cut
 sub new {
     my $class = shift;
-    my $self = validate(@_, {
-        service_dir =>  { type => SCALAR, default => $ENV{UBIC_SERVICE_DIR} || "/etc/ubic/service" },
-        data_dir => { type => SCALAR, default => $ENV{UBIC_DIR} || '/var/lib/ubic' },
+    my $options = validate(@_, {
+        service_dir =>  { type => SCALAR, optional => 1 },
+        data_dir => { type => SCALAR, optional => 1 },
     });
+
+    my $settings = Ubic::Settings->load($options);
+
+    my $self = {};
+    $self->{data_dir} = $settings->data_dir;
+    $self->{service_dir} = $settings->service_dir;
 
     $self->{status_dir} = "$self->{data_dir}/status";
     $self->{lock_dir} = "$self->{data_dir}/lock";
