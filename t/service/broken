@@ -11,5 +11,4 @@ Ubic::Service::Common->new({
     status => sub {
         return 'broken';
     },
-    user => $ENV{LOGNAME} || $ENV{USERNAME},
 });

@@ -23,10 +23,19 @@ Code outside of C<Ubic>'s core distribution shouldn't use this module. They prob
 
 This is considered to be a non-public class. Its interface is subject to change without notice.
 
+=head1 METHODS
+
+=over
+
 =cut
 
 use Params::Validate qw(:all);
 
+=item B<< read($file) >>
+
+Load configuration from file.
+
+=cut
 sub read {
     my ($class, $file) = validate_pos(@_, 1, { type => SCALAR });
     unless (-e $file) {
@@ -47,6 +56,11 @@ sub read {
     return $config;
 }
 
+=item B<< write($file, $config_hashref) >>
+
+Write configuration to file.
+
+=cut
 sub write {
     my ($class, $file, $config) = validate_pos(@_, 1, { type => SCALAR }, { type => HASHREF });
 
@@ -68,5 +82,9 @@ sub write {
 
     return;
 }
+
+=back
+
+=cut
 
 1;

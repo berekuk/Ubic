@@ -17,8 +17,8 @@ use Try::Tiny;
 use t::Utils;
 rebuild_tfiles();
 
-Ubic->set_data_dir('tfiles/ubic');
-Ubic->set_service_dir('t/service');
+local_ubic;
+
 my $ignore_warn = ignore_warn(qr/Can't construct 'broken': failed/);
 
 END {
@@ -26,8 +26,6 @@ END {
 }
 
 
-$ENV{UBIC_SERVICE_PING_USER} = $ENV{LOGNAME};
-$ENV{UBIC_SERVICE_PING_PID} = 'tfiles/ubic-ping.pid';
 my $port = empty_port();
 $ENV{UBIC_SERVICE_PING_PORT} = $port;
 $ENV{UBIC_SERVICE_PING_LOG} = 'tfiles/ubic-ping.log';
@@ -36,6 +34,7 @@ try {
     Ubic->start('ubic-ping');
 }
 catch {
+    diag("Error: $_");
     open my $log_fh, '<', 'tfiles/ubic-ping.log' or die "Can't open log: $!";
     my $log = do { local $/ = undef; <$log_fh> };
     $log =~ s/\n/\\n/g;

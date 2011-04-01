@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use parent qw(Exporter);
-our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork slurp );
+our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork slurp local_ubic );
 
 use Carp;
 use Cwd;
@@ -20,6 +20,8 @@ if ($ENV{IGNORE_WARN}) {
     # parent process has set warn regex
     ignore_warn($ENV{IGNORE_WARN});
 }
+
+delete $ENV{$_} for grep { /^UBIC/ } %ENV; # in case user uses env to configure local ubic instance
 
 sub rebuild_tfiles {
     system('rm -rf tfiles') and die "Can't remove tfiles";
@@ -57,6 +59,13 @@ sub slurp {
     my $file = shift;
     open my $fh, '<', $file or die "Can't open $file: $!";
     return do { local $/; <$fh> };
+}
+
+sub local_ubic {
+    require Ubic;
+    Ubic->set_data_dir('tfiles/ubic');
+    Ubic->set_service_dir('t/service');
+    Ubic->set_default_user($ENV{LOGNAME} || $ENV{USERNAME});
 }
 
 package t::Utils::WarnIgnore;

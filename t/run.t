@@ -14,15 +14,15 @@ use t::Utils;
 rebuild_tfiles();
 
 use Ubic;
-Ubic->set_data_dir('tfiles/ubic');
-Ubic->set_service_dir('t/service');
+
+local_ubic;
 
 # single (5*3 = 15)
 {
     my $result;
 
     for (qw(/etc/init.d/sleeping-daemon /etc/rc.d/init.d/sleeping-daemon /etc/rc3.d/S98sleeping-daemon)) {
-        $ENV{INIT_SCRIPT_NAME} = '/etc/init.d/sleeping-daemon';
+        $ENV{INIT_SCRIPT_NAME} = $_;
 
         $result = qx($perl t/bin/any-init start);
         like($result, qr/^\QStarting sleeping-daemon... started (pid \E\d+\)$/);

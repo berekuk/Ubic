@@ -36,25 +36,31 @@ else {
     pod2usage(2);
 }
 
+sub print_tty {
+    print @_ unless $batch_mode;
+}
+
 # stolen from ExtUtils::MakeMaker
 sub prompt ($;$) {
     my($mess, $def) = @_;
     Carp::confess("prompt function called without an argument")
         unless defined $mess;
 
+    return $def if $batch_mode;
+
     my $isa_tty = -t STDIN && (-t STDOUT || !(-f STDOUT || -c STDOUT));
-    Carp::confess("tty not found") if not $isa_tty and not $batch_mode;
+    Carp::confess("tty not found") if not $isa_tty;
 
     my $dispdef = defined $def ? "[$def] " : " ";
     $def = defined $def ? $def : "";
 
     local $| = 1;
     local $\ = undef;
-    print "$mess ";
+    print_tty "$mess ";
 
     my $ans;
-    if ($ENV{PERL_MM_USE_DEFAULT} || (!$isa_tty && eof STDIN)) {
-        print "$def\n";
+    if (not $isa_tty and eof STDIN) {
+        print_tty "$def\n";
     }
     else {
         $ans = <STDIN>;
@@ -62,7 +68,7 @@ sub prompt ($;$) {
             chomp $ans;
         }
         else { # user hit ctrl-D
-            print "\n";
+            print_tty "\n";
         }
     }
 
@@ -86,16 +92,15 @@ sub xsystem {
 }
 
 sub setup {
-    my $settings = Ubic::Settings->load;
-    if (-d $settings->service_dir and -d $settings->data_dir) {
+    if (-d Ubic::Settings->service_dir and -d Ubic::Settings->data_dir) {
         my $go = prompt("Looks like ubic is already configured, do you want to reconfigure? [y/N]", 'n');
         if ($go ne 'y') {
             return;
         }
     }
 
-    print "\nUbic can be installed either in your home dir or into standard system paths (/etc, /var).\n";
-    print "You need to be root to install it into system.\n";
+    print_tty "\nUbic can be installed either in your home dir or into standard system paths (/etc, /var).\n";
+    print_tty "You need to be root to install it into system.\n";
 
     my $is_root = ( $> ? 0 : 1 );
     if ($is_root) {
@@ -111,19 +116,22 @@ sub setup {
         }
     }
 
-    my $home = $ENV{HOME};
-    unless (defined $home) {
-        die "Can't find your home!";
-    }
-    unless (-d $home) {
-        die "Can't find your home dir '$home'!";
+    my $home;
+    unless ($is_root) {
+        $home = $ENV{HOME};
+        unless (defined $home) {
+            die "Can't find your home!";
+        }
+        unless (-d $home) {
+            die "Can't find your home dir '$home'!";
+        }
     }
 
-    print "\nService dir is a directory with descriptions of your services.\n";
+    print_tty "\nService dir is a directory with descriptions of your services.\n";
     my $default_service_dir = ($is_root ? '/etc/ubic/service' : "$home/ubic/service");
     my $service_dir = prompt("Service dir? [$default_service_dir]", $default_service_dir);
 
-    print "\nData dir is a directory into which ubic stores all of its data: locks, status files, tmp files.\n";
+    print_tty "\nData dir is a directory into which ubic stores all of its data: locks, status files, tmp files.\n";
     my $default_data_dir = ($is_root ? '/var/lib/ubic' : "$home/ubic/data");
     my $data_dir = prompt("Data dir? [$default_data_dir]", $default_data_dir);
 
@@ -131,56 +139,60 @@ sub setup {
 
     my $default_user;
     if ($is_root) {
-        print "\nUbic services can be started from any user.\n";
-        print "Some services don't specify the user from which they must be started.\n";
-        print "Default user will be used in this case.\n";
+        print_tty "\nUbic services can be started from any user.\n";
+        print_tty "Some services don't specify the user from which they must be started.\n";
+        print_tty "Default user will be used in this case.\n";
         $default_user = prompt("Default user? [root]", 'root');
     }
     else {
-        print "\n";
+        print_tty "\n";
         $default_user = getpwuid($>);
         unless (defined $default_user) {
             die "Can't get login (uid '$>')";
         }
-        print "You're using local installation, so default service user will be set to '$default_user'.\n";
+        print_tty "You're using local installation, so default service user will be set to '$default_user'.\n";
     }
 
     my $enable_1777;
     if ($is_root) {
-        print "\nSystem-wide installations need to store service-related data\n";
-        print "into data dir for different users. For non-root services to work,\n";
-        print "1777 grants for some data dir subdirectories is required.\n";
-        print "(1777 grants means that everyone will be able to write to dir,\n";
-        print "but only file owners will be able to modify and remove their files.)\n";
-        print "There are no known security issues with this approach, but you have\n";
-        print "to decide for yourself if that's ok for you.\n";
+        print_tty "\nSystem-wide installations need to store service-related data\n";
+        print_tty "into data dir for different users. For non-root services to work,\n";
+        print_tty "1777 grants for some data dir subdirectories is required.\n";
+        print_tty "(1777 grants means that everyone will be able to write to dir,\n";
+        print_tty "but only file owners will be able to modify and remove their files.)\n";
+        print_tty "There are no known security issues with this approach, but you have\n";
+        print_tty "to decide for yourself if that's ok for you.\n";
 
         $enable_1777 = prompt("Enable 1777 grants for data dir? [Y/n]", 'y');
     }
 
     my $enable_ubic_ping;
     if ($is_root) {
-        print "\n'ubic-ping' is a service provided by ubic out-of-the-box.\n";
-        print "It is a HTTP daemon which can report service statuses via simple REST API.\n";
-        print "Do you want to install 'ubic-ping' service into service tree?\n";
-        print "(You'll always be able to stop it or remove it.)\n";
+        print_tty "\n'ubic-ping' is a service provided by ubic out-of-the-box.\n";
+        print_tty "It is a HTTP daemon which can report service statuses via simple REST API.\n";
+        print_tty "Do you want to install 'ubic-ping' service into service tree?\n";
+        print_tty "(You'll always be able to stop it or remove it.)\n";
         my $enable_ubic_ping = prompt("Enable ubic-ping? [Y/n]", 'y');
 
         if ($enable_ubic_ping) {
-            print "NOTE: ubic-ping will be started on port 12345; don't forget to protect it with firewall.\n";
+            print_tty "NOTE: ubic-ping will be started on port 12345; don't forget to protect it with firewall.\n";
         }
     }
     # TODO - do local users need ubic-ping? we need to allow them to configure its port, then
 
     my $config_file = ($is_root ? '/etc/ubic/ubic.cfg' : "$home/.ubic.cfg");
 
-    print "\nThat's all I needed to know.\n";
-    print "If you'll proceed, all necessary directories will be created,\n";
-    print "and configuration file will be stored into $config_file.\n";
-    my $run = prompt("Complete setup? [Y/n]", 'y');
-    unless ($run) {
-        return;
+    {
+        print_tty "\nThat's all I needed to know.\n";
+        print_tty "If you'll proceed, all necessary directories will be created,\n";
+        print_tty "and configuration file will be stored into $config_file.\n";
+        my $run = prompt("Complete setup? [Y/n]", 'y');
+        unless ($run) {
+            return;
+        }
     }
+
+    print "Installing dirs...";
 
     xsystem('mkdir', '-p', '--', $service_dir);
     xsystem('mkdir', '-p', '--', $data_dir);
@@ -193,17 +205,21 @@ sub setup {
     }
 
     if ($enable_ubic_ping) {
+        print "\nInstalling ubic-ping service...";
+
         my $file = "$service_dir/ubic-ping";
         open my $fh, '>', $file or die "Can't write to '$file': $!";
         print {$fh} "use Ubic::Ping::Service;\nUbic::Ping::Service->new;\n" or die "Can't write to '$file': $!";
         close $fh or die "Can't close '$file': $!";
     }
 
+    print "\nInstalling $config_file...";
     Ubic::Settings::ConfigFile->write($config_file, {
         service_dir => $service_dir,
         data_dir => $data_dir,
         default_user => $default_user,
     });
+    print"\n";
 
     xsystem('ubic', 'start', 'ubic-ping') if $enable_ubic_ping;
 }

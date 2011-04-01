@@ -18,15 +18,15 @@ use warnings;
 
 =cut
 
+use Try::Tiny;
+use Params::Validate qw(:all);
+
 use Ubic::Logger;
 use Ubic::Persistent;
 use Ubic;
-use Try::Tiny;
-
-use Params::Validate qw(:all);
 
 sub _portmap_file {
-    my $ubic_dir = $ENV{UBIC_DIR} || '/var/lib/ubic';
+    my $ubic_dir = Ubic->get_data_dir;
     my $PORTMAP_FILE = $ubic_dir.'/portmap';
     return $PORTMAP_FILE;
 }

@@ -3,4 +3,5 @@ use Ubic::Service::SimpleDaemon;
 
 Ubic::Service::SimpleDaemon->new({
     bin => 'sleep 1000',
+    user => 'root',
 });

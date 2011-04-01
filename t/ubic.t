@@ -13,8 +13,8 @@ use t::Utils;
 rebuild_tfiles();
 
 use Ubic;
-Ubic->set_data_dir('tfiles/ubic');
-Ubic->set_service_dir('t/service');
+
+local_ubic;
 
 sub services :Test(2) {
     my @services = Ubic->services;

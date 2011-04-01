@@ -8,6 +8,8 @@ if [ "$1" = "configure" ]; then
                 chmod 777 /var/lib/ubic/$dir
                 chmod +t /var/lib/ubic/$dir
             done
+        elif dpkg --compare-versions "$2" lt 1.26; then
+            ubic-admin setup --batch-mode
         fi
     else
         # first installation

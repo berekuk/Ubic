@@ -1,5 +1,7 @@
 package Ubic::Ping::Service;
 
+# ABSTRACT: ubic-ping service
+
 use strict;
 use warnings;
 
@@ -10,17 +12,31 @@ use LWP::Simple;
 use POSIX;
 use Time::HiRes qw(sleep);
 
+use Ubic::Settings;
+
 use Config;
 
-# ugly; waiting for druxa's Mopheus to save us all...
-my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
-my $pidfile = $ENV{UBIC_SERVICE_PING_PID} || "/var/lib/ubic/ubic-ping.pid";
-my $user = $ENV{UBIC_SERVICE_PING_USER} || 'root';
-my $log = $ENV{UBIC_SERVICE_PING_LOG} || '/dev/null';
+=head1 INTERFACE SUPPORT
 
-my $perl = $Config{perlpath};
+This is considered to be a non-public class. Its interface is subject to change without notice.
 
+=head1 METHODS
+
+=over
+
+=item B<< new() >>
+
+Constructor.
+
+=cut
 sub new {
+    # ugly; waiting for druxa's Mopheus to save us all...
+    my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
+    my $pidfile = Ubic::Settings->data_dir."/ubic-ping.pid";
+    my $log = $ENV{UBIC_SERVICE_PING_LOG} || '/dev/null';
+
+    my $perl = $Config{perlpath};
+
     Ubic::Service::Common->new({
         start => sub {
             my $pid;
@@ -47,9 +63,12 @@ sub new {
             ) ? result('running', "pid ".$daemon->pid) : result('broken'));
         },
         port => $port,
-        user => $user,
         timeout_options => { start => { step => 0.1, trials => 3 }},
     });
 }
+
+=back
+
+=cut
 
 1;

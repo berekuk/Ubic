@@ -3,6 +3,8 @@ package Ubic::Service;
 use strict;
 use warnings;
 
+use Ubic::Settings;
+
 # ABSTRACT: interface and base class for any ubic service
 
 =head1 SYNOPSIS
@@ -109,12 +111,12 @@ sub port {
 
 Should return user from which the service can be controlled and will be running.
 
-Default is C<root>.
+Defaults to C<default_user> from L<Ubic::Settings> (i.e., C<root> for system-wide installations, or to the installation owner for local installations).
 
 =cut
 sub user {
     my $self = shift;
-    return 'root';
+    return Ubic::Settings->default_user;
 }
 
 =item B<group()>

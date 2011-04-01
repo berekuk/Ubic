@@ -12,15 +12,14 @@ use Time::HiRes qw(sleep);
 use t::Utils;
 rebuild_tfiles();
 
-BEGIN {
-    $ENV{UBIC_DAEMON_PID_DIR} = 'tfiles';
-}
+use Ubic;
 use Ubic::Service::SimpleDaemon;
+
+local_ubic;
 
 my $service = Ubic::Service::SimpleDaemon->new({
     name => 'simple1',
     bin => ['perl', '-e', 'use IO::Handle; $SIG{TERM} = sub { exit 0 }; print "stdout\n"; print STDERR "stderr\n"; STDOUT->flush; STDERR->flush; sleep 1000'],
-    user => $ENV{LOGNAME} || $ENV{USERNAME},
     stdout => 'tfiles/stdout',
     stderr => 'tfiles/stderr',
 });
