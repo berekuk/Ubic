@@ -76,7 +76,7 @@ sub match($$) {
 }
 
 sub load_services {
-    my ($parent) = @_; # $parent can be a multiservice, or it can be "Ubic" class itself
+    my ($parent) = @_;
     alarm($COMPILE_TIMEOUT);
     $SIG{ALRM} = sub {
         die "Couldn't compile $parent services in $COMPILE_TIMEOUT seconds";
@@ -173,5 +173,5 @@ sub check($) {
     INFO("$name checked") if $verbose;
 }
 
-my @services = load_services('Ubic');
+my @services = load_services(Ubic->root_service);
 check_all(@services);

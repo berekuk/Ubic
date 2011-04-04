@@ -9,19 +9,24 @@ our @EXPORT = qw( ignore_warn rebuild_tfiles xsystem xfork slurp local_ubic );
 use Carp;
 use Cwd;
 
-if ($ENV{PERL5LIB}) {
-    $ENV{PERL5LIB} = $ENV{PERL5LIB}.":".getcwd()."/lib";
-}
-else {
-    $ENV{PERL5LIB} = getcwd()."/lib";
-}
+sub import {
+    my $class = shift;
+    if ($ENV{PERL5LIB}) {
+        $ENV{PERL5LIB} = $ENV{PERL5LIB}.":".getcwd()."/lib";
+    }
+    else {
+        $ENV{PERL5LIB} = getcwd()."/lib";
+    }
 
-if ($ENV{IGNORE_WARN}) {
-    # parent process has set warn regex
-    ignore_warn($ENV{IGNORE_WARN});
-}
+    if ($ENV{IGNORE_WARN}) {
+        # parent process has set warn regex
+        ignore_warn($ENV{IGNORE_WARN});
+    }
 
-delete $ENV{$_} for grep { /^UBIC/ } %ENV; # in case user uses env to configure local ubic instance
+    delete $ENV{$_} for grep { /^UBIC/ } %ENV; # in case user uses env to configure local ubic instance
+
+    __PACKAGE__->export_to_level(1, @_);
+}
 
 sub rebuild_tfiles {
     system('rm -rf tfiles') and die "Can't remove tfiles";
