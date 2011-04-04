@@ -39,139 +39,20 @@ This script should be invoked every minute (or as often as you like), usually as
 use Getopt::Long 2.33;
 use Pod::Usage;
 
-use Ubic::Logger;
-use Ubic;
-use Try::Tiny;
-use List::MoreUtils qw(any);
-use POSIX;
+use Ubic::Watchdog;
 
 return 1 if caller();
 
-my $COMPILE_TIMEOUT = 10;
-
+my $compile_timeout = 10;
 my $verbose;
+
 GetOptions(
     'v|verbose' => \$verbose,
-    'compile-timeout=i' => \$COMPILE_TIMEOUT,
+    'compile-timeout=i' => \$compile_timeout,
 ) or pod2usage(2);
 
-my @filter;
-{
-    for my $arg (@ARGV) {
-        $arg =~ /^[*\w.-]+$/ or die "Invalid argument '$arg', expected service name or shell-style glob";
-        $arg =~ s/\./\\./g;
-        $arg =~ s/\*/.*/g;
-        push @filter, qr/^$arg$/;
-    }
-}
-
-sub check($);
-
-sub match($$) {
-    my ($name, $filter) = @_;
-    do {
-        return 1 if $name =~ $filter;
-    } while ($name =~ s/\.[^.]+$//);
-    return;
-}
-
-sub load_services {
-    my ($parent) = @_;
-    alarm($COMPILE_TIMEOUT);
-    $SIG{ALRM} = sub {
-        die "Couldn't compile $parent services in $COMPILE_TIMEOUT seconds";
-    };
-    my @services = $parent->services;
-    alarm(0);
-    return @services;
-}
-
-sub check_all {
-    my @services = @_;
-    for my $service (@services) {
-        my $name = $service->full_name;
-        if ($service->isa('Ubic::Multiservice')) {
-            INFO("$name is multiservice, checking subservices") if $verbose;
-            check_all(load_services($service));
-            next;
-        }
-        if (@filter) {
-            next unless any { match($name, $_) } @filter;
-        }
-
-        # trying to get logs a little bit more ordered
-        STDOUT->flush;
-        STDERR->flush;
-
-        my $child = fork;
-        unless (defined $child) {
-            die "fork failed";
-        }
-        unless ($child) {
-            POSIX::setsid; # so we could kill this watchdog and its children safely later
-            check($service);
-            exit;
-        }
-    }
-    1 while wait() > 0;
-    return;
-}
-
-sub check($) {
-    my $service = shift;
-    my $name = $service->full_name;
-    if ($verbose) {
-        INFO("Checking $name");
-    }
-    $0 = "ubic-watchdog $name";
-
-    try {
-        alarm($service->check_timeout);
-        $SIG{ALRM} = sub {
-            ERROR("$name check_timeout exceeded");
-            STDOUT->flush;
-            STDERR->flush;
-            kill -9 => $$; # suicide
-            ERROR "kill sent, still alive"; # should never happen, we called setsid earlier
-        };
-
-        my $watchdog_lock = do {
-            my $guard = Ubic->access_guard($name);
-            Ubic::SingletonLock->new(Ubic->get_data_dir()."/watchdog/lock/".$name, { blocking => 0 });
-        };
-        unless ($watchdog_lock) {
-            if ($verbose) {
-                INFO "$name is locked by another watchdog process";
-            }
-            return;
-        }
-
-        my $lock = Ubic->lock($name);
-        unless (Ubic->is_enabled($name)) {
-            INFO("$name disabled") if $verbose;
-            return;
-        }
-
-        my $status = Ubic->status($name);
-        unless ($status->status eq 'running') {
-            Ubic->set_cached_status($name, $status->status); # following start can throw exception
-            ERROR("$name is broken, restarting");
-            Ubic->start($name);
-        }
-        $status = Ubic->status($name);
-        alarm(0);
-
-        if ($status->status ne 'running') {
-            INFO("$name started, but status is still '$status'");
-        }
-        Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
-    }
-    catch {
-        ERROR("Failed to check $name: $_");
-    };
-
-    INFO("$name checked") if $verbose;
-}
-
-my @services = load_services(Ubic->root_service);
-check_all(@services);
+Ubic::Watchdog->run(
+    glob_filter => \@ARGV,
+    verbose => $verbose,
+    compile_timeout => $compile_timeout,
+);

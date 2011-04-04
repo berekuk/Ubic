@@ -10,8 +10,10 @@ use lib 'lib';
 
 use Config;
 my $perl = $Config{perlpath};
+$perl = "$perl -Mt::Utils::IgnoreWarn";
 
 use Ubic;
+use Ubic::Watchdog;
 use t::Utils;
 
 my $ignore_warn = ignore_warn(qr/Can't construct 'broken': failed/);
