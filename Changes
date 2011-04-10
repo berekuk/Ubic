@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.26    2011-04-10
         Hotfix release (https://github.com/berekuk/Ubic/issues/12):
         * don't depend on Win32 modules
         * stale Win32 code removed
