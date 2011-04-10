@@ -1,6 +1,10 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        Hotfix release (https://github.com/berekuk/Ubic/issues/12):
+        * don't depend on Win32 modules
+        * stale Win32 code removed
+        (it didn't work anyway, so there is no point in packaging it in CPAN releases).
 
 1.25    2011-03-31
         * MacOSX support (and probably other POSIX systems too, including FreeBSD)
