@@ -3,6 +3,8 @@ package Ubic::Credentials;
 use strict;
 use warnings;
 
+# ABSTRACT: base class for OS-specific credential methods
+
 =head1 SYNOPSIS
 
     $creds = Ubic::Credentials->new(user => "mmcleric", group => ["ppb"]);

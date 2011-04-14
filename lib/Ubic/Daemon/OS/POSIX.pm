@@ -3,6 +3,8 @@ package Ubic::Daemon::OS::POSIX;
 use strict;
 use warnings;
 
+# ABSTRACT: POSIX-compatible daemonize helpers
+
 use Params::Validate qw(:all);
 use POSIX qw(:unistd_h);
 
