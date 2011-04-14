@@ -6,7 +6,7 @@ ifndef PERL
 PERL = /usr/bin/perl
 endif
 
-TMP     =$(CURDIR)/debian/tmp
+DESTDIR     =$(CURDIR)/debian/ubic
 
 build: debian/build-stamp
 debian/build-stamp:
@@ -29,10 +29,10 @@ debian/install-stamp: debian/build-stamp
 	dh_testdir
 	dh_testroot
 	dh_clean -k
-	$(MAKE) install DESTDIR=$(TMP) PREFIX=/usr
-	rm -rf $(TMP)/usr/lib/perl/5.8/
-	cp -r etc $(TMP)/
-	install -D -m644 debian/ubic.lintian-overrides $(TMP)/usr/share/lintian/overrides/ubic
+	$(MAKE) install DESTDIR=$(DESTDIR) PREFIX=/usr
+	rm -rf $(DESTDIR)/usr/lib/perl/5.8/
+	cp -r etc $(DESTDIR)/
+	install -D -m644 debian/lintian-overrides $(DESTDIR)/usr/share/lintian/overrides/ubic
 	touch $@
 
 binary-arch:
@@ -47,7 +47,6 @@ binary-indep: build install
 	dh_installdirs
 	dh_installcron
 	dh_installlogrotate
-	dh_install --sourcedir=debian/tmp
 	dh_perl
 	dh_compress
 	dh_fixperms
