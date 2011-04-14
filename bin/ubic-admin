@@ -183,8 +183,8 @@ sub setup {
     my $config_file = ($is_root ? '/etc/ubic/ubic.cfg' : "$home/.ubic.cfg");
 
     {
-        print_tty "\nThat's all I needed to know.\n";
-        print_tty "If you'll proceed, all necessary directories will be created,\n";
+        print_tty "\nThat's all I need to know.\n";
+        print_tty "If you proceed, all necessary directories will be created,\n";
         print_tty "and configuration file will be stored into $config_file.\n";
         my $run = prompt("Complete setup? [Y/n]", 'y');
         unless ($run) {
