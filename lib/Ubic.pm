@@ -78,9 +78,9 @@ sub _obj {
 
 =item B<< Ubic->new({ ... }) >>
 
-All methods in this package can be invoked as class methods, but sometimes you may need to override some status dirs. In this case you should construct your own instance.
+All methods in this package can be invoked as class methods, but sometimes you may need to override some status dirs. In this case you should construct your own C<Ubic> instance.
 
-Note that you currently can't create several instances in one process and have them work independently. So, this constructor is actually just a weird way to override service_dir and data_dir.
+Note that you can't create several instances in one process and have them work independently. So, this constructor is actually just a weird way to override service_dir and data_dir.
 
 Constructor options (all of them are optional):
 
