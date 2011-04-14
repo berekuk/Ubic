@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use t::Utils::IgnoreWarn;
+use Params::Validate qw(:all);
 
 use parent qw(Exporter);
 our @EXPORT = qw(
@@ -60,10 +61,21 @@ sub slurp {
     return do { local $/; <$fh> };
 }
 
+our $local_ubic;
 sub local_ubic {
+    my $params = validate(@_, {
+        service_dirs => { type => ARRAYREF, default => ['t/service/common', 'etc/ubic/service'] }
+    });
+
+    xsystem('mkdir tfiles/service');
+    for my $dir (@{ $params->{service_dirs} }) {
+        xsystem('cp', '-r', '--', glob("$dir/*"), 'tfiles/service/');
+    }
+
     require Ubic;
     Ubic->set_data_dir('tfiles/ubic');
-    Ubic->set_service_dir('t/service');
+    Ubic->set_service_dir('tfiles/service');
     Ubic->set_default_user($ENV{LOGNAME} || $ENV{USERNAME});
 }
 
+1;

@@ -57,7 +57,7 @@ sub _services_from_log {
 
 sub verbose :Test {
     xsystem("$perl bin/ubic-watchdog -v >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is(scalar( @{ _services_from_log() }), 12, 'watchdog checks all services by default');
+    is(scalar( @{ _services_from_log() }), 11, 'watchdog checks all services by default');
 }
 
 sub filter_exact :Test {
@@ -102,7 +102,9 @@ sub check_timeout :Test {
 }
 
 sub compile_timeout :Test(3) {
-    Ubic->set_service_dir('t/service-slow-compile');
+    rebuild_tfiles;
+    local_ubic( service_dirs => [qw( t/service/slow-compile )] );
+
     my $time = time;
     system("$perl bin/ubic-watchdog --compile-timeout=2 >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
     ok(time - $time < 4, 'ubic-watchdog compile-timeout happened');

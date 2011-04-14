@@ -14,7 +14,7 @@ rebuild_tfiles();
 
 use Ubic;
 
-local_ubic;
+local_ubic( service_dirs => [qw( t/service/common t/service/root etc/ubic/service )] );
 
 sub services :Test(2) {
     my @services = Ubic->services;

@@ -1,0 +1,2 @@
+Different collections of test services live here.
+t::Utils::local_ubic() method can copy all or some of them to tfiles/service/.

@@ -16,8 +16,8 @@ use t::Utils;
 rebuild_tfiles();
 
 use Ubic;
-Ubic->set_data_dir('tfiles/ubic');
-Ubic->set_service_dir('t/service');
+
+local_ubic;
 
 # These tests check that ubic-ping don't waste memory in long runs.
 # Ubic compiles service descriptions on-the-fly, every time with new package name, so memory leaks are possible.
