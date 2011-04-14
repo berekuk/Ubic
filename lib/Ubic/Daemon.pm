@@ -446,6 +446,7 @@ sub check_daemon {
         return undef;
     }
 
+    # TODO - wrap in eval and return undef if pid2cmd fails?
     my $daemon_cmd = $OS->pid2cmd($piddata->{daemon});
 
     my $guid = $OS->pid2guid($piddata->{daemon});

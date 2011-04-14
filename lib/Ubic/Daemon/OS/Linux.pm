@@ -33,9 +33,15 @@ sub pid2cmd {
 
     open my $daemon_cmd_fh, '<', "/proc/$pid/cmdline" or die "Can't open daemon's cmdline: $!";
     my $daemon_cmd = <$daemon_cmd_fh>;
+    unless ($daemon_cmd) {
+        # strange, open succeeded but file is empty
+        die "Can't read daemon cmdline";
+    }
     $daemon_cmd =~ s/\x{00}$//;
     $daemon_cmd =~ s/\x{00}/ /g;
     close $daemon_cmd_fh;
+
+    return $daemon_cmd;
 }
 
 sub close_all_fh {
