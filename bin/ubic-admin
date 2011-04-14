@@ -8,7 +8,7 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    ubic-admin setup [--batch-mode]
+    ubic-admin setup [--batch-mode] [--quiet] [other options]
 
 =cut
 
@@ -22,8 +22,26 @@ use Ubic::Settings::ConfigFile;
 return 1 if caller();
 
 my $batch_mode;
+my $quiet;
+
+my $opt_reconfigure;
+my $opt_service_dir;
+my $opt_data_dir;
+my $opt_default_user = 'root';
+my $opt_sticky_777 = 1;
+my $opt_ubic_ping = 1;
+my $opt_crontab = 1;
+
 GetOptions(
     'batch-mode' => \$batch_mode,
+    'quiet' => \$quiet,
+    'reconfigure!' => \$opt_reconfigure,
+    'service-dir=s' => \$opt_service_dir,
+    'data-dir=s' => \$opt_data_dir,
+    'default-user=s' => \$opt_default_user,
+    'sticky-777!' => \$opt_sticky_777,
+    'ubic-ping!' => \$opt_ubic_ping,
+    'crontab!' => \$opt_crontab,
 ) or pod2usage(2);
 
 pod2usage(2) unless @ARGV == 1;
@@ -37,7 +55,7 @@ else {
 }
 
 sub print_tty {
-    print @_ unless $batch_mode;
+    print @_ unless $quiet or $batch_mode;
 }
 
 # stolen from ExtUtils::MakeMaker
@@ -56,11 +74,11 @@ sub prompt ($;$) {
 
     local $| = 1;
     local $\ = undef;
-    print_tty "$mess ";
+    print "$mess ";
 
     my $ans;
     if (not $isa_tty and eof STDIN) {
-        print_tty "$def\n";
+        print "$def\n";
     }
     else {
         $ans = <STDIN>;
@@ -68,11 +86,27 @@ sub prompt ($;$) {
             chomp $ans;
         }
         else { # user hit ctrl-D
-            print_tty "\n";
+            print "\n";
         }
     }
 
     return (!defined $ans || $ans eq '') ? $def : $ans;
+}
+
+sub prompt_str {
+    my ($description, $default) = @_;
+    return prompt("$description [$default]", $default);
+}
+
+sub prompt_bool {
+    my ($description, $default) = @_;
+    my $yn = ($default ? 'y' : 'n');
+    my $yn_hint = ($default ? 'Y/n' : 'y/N');
+    my $result = prompt("$description [$yn_hint]", $yn);
+    if ($result =~ /^y/i) {
+        return 1;
+    }
+    return;
 }
 
 sub xsystem {
@@ -93,10 +127,8 @@ sub xsystem {
 
 sub setup {
     if (-d Ubic::Settings->service_dir and -d Ubic::Settings->data_dir) {
-        my $go = prompt("Looks like ubic is already configured, do you want to reconfigure? [y/N]", 'n');
-        if ($go ne 'y') {
-            return;
-        }
+        my $go = prompt_bool("Looks like ubic is already configured, do you want to reconfigure?", $opt_reconfigure);
+        return unless $go;
     }
 
     print_tty "\nUbic can be installed either in your home dir or into standard system paths (/etc, /var).\n";
@@ -104,16 +136,12 @@ sub setup {
 
     my $is_root = ( $> ? 0 : 1 );
     if ($is_root) {
-        my $ok = prompt("You are root, install into system? [Y/n]", 'y');
-        unless ($ok eq 'y') {
-            return;
-        }
+        my $ok = prompt_bool("You are root, install into system?", 1);
+        return unless $ok;
     }
     else {
-        my $ok = prompt("You are not root, install locally? [Y/n]", 'y');
-        unless ($ok eq 'y') {
-            return;
-        }
+        my $ok = prompt_bool("You are not root, install locally?", 1);
+        return unless $ok;
     }
 
     my $home;
@@ -129,11 +157,14 @@ sub setup {
 
     print_tty "\nService dir is a directory with descriptions of your services.\n";
     my $default_service_dir = ($is_root ? '/etc/ubic/service' : "$home/ubic/service");
-    my $service_dir = prompt("Service dir? [$default_service_dir]", $default_service_dir);
+    $default_service_dir = $opt_service_dir if defined $opt_service_dir;
+    my $service_dir = prompt_str("Service dir?", $default_service_dir);
 
-    print_tty "\nData dir is a directory into which ubic stores all of its data: locks, status files, tmp files.\n";
+    print_tty "\nData dir is a directory into which ubic stores all of its data: locks,\n";
+    print_tty "status files, tmp files.\n";
     my $default_data_dir = ($is_root ? '/var/lib/ubic' : "$home/ubic/data");
-    my $data_dir = prompt("Data dir? [$default_data_dir]", $default_data_dir);
+    $default_data_dir = $opt_data_dir if defined $opt_data_dir;
+    my $data_dir = prompt_str("Data dir?", $default_data_dir);
 
     # TODO - sanity checks?
 
@@ -142,7 +173,7 @@ sub setup {
         print_tty "\nUbic services can be started from any user.\n";
         print_tty "Some services don't specify the user from which they must be started.\n";
         print_tty "Default user will be used in this case.\n";
-        $default_user = prompt("Default user? [root]", 'root');
+        $default_user = prompt_str("Default user?", $opt_default_user);
     }
     else {
         print_tty "\n";
@@ -163,7 +194,7 @@ sub setup {
         print_tty "There are no known security issues with this approach, but you have\n";
         print_tty "to decide for yourself if that's ok for you.\n";
 
-        $enable_1777 = prompt("Enable 1777 grants for data dir? [Y/n]", 'y');
+        $enable_1777 = prompt_bool("Enable 1777 grants for data dir?", $opt_sticky_777);
     }
 
     my $enable_ubic_ping;
@@ -172,7 +203,7 @@ sub setup {
         print_tty "It is a HTTP daemon which can report service statuses via simple REST API.\n";
         print_tty "Do you want to install 'ubic-ping' service into service tree?\n";
         print_tty "(You'll always be able to stop it or remove it.)\n";
-        my $enable_ubic_ping = prompt("Enable ubic-ping? [Y/n]", 'y');
+        my $enable_ubic_ping = prompt_bool("Enable ubic-ping?", $opt_ubic_ping);
 
         if ($enable_ubic_ping) {
             print_tty "NOTE: ubic-ping will be started on the port 12345; don't forget to protect it with the firewall.\n";
@@ -180,19 +211,33 @@ sub setup {
     }
     # TODO - do local users need ubic-ping? we need to allow them to configure its port, then
 
+    my $enable_crontab;
+    {
+        print_tty "\n'ubic-watchdog' is a script which checks all services and restarts them if\n";
+        print_tty "there are any problems with their statuses.\n";
+        print_tty "It is recommended to install it as a cron job.\n";
+        print_tty "Even if you won't install it as a cron job, you'll always be able to run it\n";
+        print_tty "manually.\n";
+        $enable_crontab = prompt_bool("Install watchdog as a cron job?", $opt_crontab);
+
+        if ($enable_crontab) {
+            print_tty "NOTE: ubic-watchdog logs will be redirected to /dev/null, since it's too hard to install\n";
+            print_tty "logrotate configs on every platform.\n";
+            print_tty "You can fix this yourself by manually editing crontab later.\n";
+        }
+    }
+
     my $config_file = ($is_root ? '/etc/ubic/ubic.cfg' : "$home/.ubic.cfg");
 
     {
         print_tty "\nThat's all I need to know.\n";
         print_tty "If you proceed, all necessary directories will be created,\n";
         print_tty "and configuration file will be stored into $config_file.\n";
-        my $run = prompt("Complete setup? [Y/n]", 'y');
-        unless ($run) {
-            return;
-        }
+        my $run = prompt_bool("Complete setup?", 1);
+        return unless $run;
     }
 
-    print "Installing dirs...";
+    print "Installing dirs...\n";
 
     xsystem('mkdir', '-p', '--', $service_dir);
     xsystem('mkdir', '-p', '--', $data_dir);
@@ -205,7 +250,7 @@ sub setup {
     }
 
     if ($enable_ubic_ping) {
-        print "\nInstalling ubic-ping service...";
+        print "Installing ubic-ping service...\n";
 
         my $file = "$service_dir/ubic-ping";
         open my $fh, '>', $file or die "Can't write to '$file': $!";
@@ -213,13 +258,33 @@ sub setup {
         close $fh or die "Can't close '$file': $!";
     }
 
-    print "\nInstalling $config_file...";
+    if ($enable_crontab) {
+        print "Installing cron jobs...\n";
+        my $old_crontab = qx(crontab -l);
+        if ($?) {
+            die "crontab -l failed";
+        }
+        if ($old_crontab =~ /\subic-watchdog\b/) {
+            print "Looks like you already have ubic commands in your crontab.\n";
+        }
+        else {
+            open my $fh, '|-', 'crontab -' or die "Can't run 'crontab -': $!";
+            my $printc = sub {
+                print {$fh} @_ or die "Can't write to pipe: $!";
+            };
+            $printc->($old_crontab."\n");
+            $printc->("* * * * * ubic-watchdog    >>/dev/null 2>>/dev/null\n");
+            $printc->("* * * * * ubic-update    >>/dev/null 2>>/dev/null\n");
+            close $fh or die "Can't close pipe: $!";
+        }
+    }
+
+    print "Installing $config_file...\n";
     Ubic::Settings::ConfigFile->write($config_file, {
         service_dir => $service_dir,
         data_dir => $data_dir,
         default_user => $default_user,
     });
-    print"\n";
 
     xsystem('ubic', 'start', 'ubic-ping') if $enable_ubic_ping;
 }

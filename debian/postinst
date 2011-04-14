@@ -9,11 +9,11 @@ if [ "$1" = "configure" ]; then
                 chmod +t /var/lib/ubic/$dir
             done
         elif dpkg --compare-versions "$2" lt 1.26; then
-            ubic-admin setup --batch-mode
+            ubic-admin setup --batch-mode --no-crontab
         fi
     else
         # first installation
-        ubic-admin setup --batch-mode
+        ubic-admin setup --batch-mode --no-crontab # no-crontab is because we already have packaged crontab in deb package
         update-rc.d ubic-ping defaults >/dev/null
     fi
     ubic start ubic-ping
