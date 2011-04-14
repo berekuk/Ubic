@@ -1,6 +1,11 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * ubic-admin script:
+         - system-wide setup with one command 'ubic-admin setup'
+         - home directory setup with the same 'ubic-admin setup' command
+         - batch-mode with flag "--batch-mode"
+        * configurable default_user (very helpful for home directory setup)
 
 1.26    2011-04-10
         Hotfix release (https://github.com/berekuk/Ubic/issues/12):
