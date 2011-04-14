@@ -514,8 +514,6 @@ sub set_data_dir($$) {
         mkdir $new_dir or die "mkdir $new_dir failed: $!" unless -d $new_dir;
     };
 
-    # TODO - chmod 777, chmod +t?
-    # TODO - call set_data_dir method from postinst too?
     $md->($dir);
     # FIXME - directory list is copy-pasted from ubic-admin script
     for my $subdir (qw[
