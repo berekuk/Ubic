@@ -3,6 +3,17 @@ package Ubic::Daemon::OS::Linux;
 use strict;
 use warnings;
 
+# ABSTRACT: linux-specific daemonize helpers
+
+=head1 DESCRIPTION
+
+These functions use C<< /proc >> virtual filesystem for some operations.
+
+There is another C<< Ubic::Daemon::OS::POSIX >> module, which is more generic and should work on all POSIX-compatible systems.
+But this module is older and supposedly more stable. (Also, sometimes it's more optimal, compare implementation of C<close_all_fh()>, for example).
+
+=cut
+
 use POSIX;
 
 use parent qw(Ubic::Daemon::OS);
