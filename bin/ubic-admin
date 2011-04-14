@@ -69,7 +69,6 @@ sub prompt ($;$) {
     my $isa_tty = -t STDIN && (-t STDOUT || !(-f STDOUT || -c STDOUT));
     Carp::confess("tty not found") if not $isa_tty;
 
-    my $dispdef = defined $def ? "[$def] " : " ";
     $def = defined $def ? $def : "";
 
     local $| = 1;
