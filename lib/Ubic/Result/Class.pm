@@ -90,6 +90,7 @@ sub new {
     my $self = validate(@_, {
         type => { type => SCALAR, optional => 1 },
         msg => { optional => 1 },
+        cached => { optional => 1 },
     });
     $self->{type} ||= 'unknown';
     return bless $self => $class;
@@ -138,16 +139,17 @@ Get string representation.
 =cut
 sub as_string {
     my $self = shift;
+    my $cached_str = ($self->{cached} ? ' [cached]' : '');
     if (defined $self->{msg}) {
         if ($self->{type} eq 'unknown') {
             return "$self->{msg}\n";
         }
         else {
-            return "$self->{type} ($self->{msg})";
+            return "$self->{type} ($self->{msg})".$cached_str;
         }
     }
     else {
-        return $self->type;
+        return $self->type.$cached_str;
     }
 }
 

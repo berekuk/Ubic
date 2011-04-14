@@ -335,10 +335,14 @@ sub cached_status($$) {
     my ($self) = _obj(shift);
     my ($name) = validate_pos(@_, $validate_service);
 
+    my $type;
     unless ($self->is_enabled($name)) {
-        return result('disabled');
+        $type = 'disabled';
     }
-    return result($self->status_obj_ro($name)->{status});
+    else {
+        $type = $self->status_obj_ro($name)->{status};
+    }
+    return Ubic::Result::Class->new({ type => $type, cached => 1 });
 }
 
 =item B<do_custom_command($name, $command)>

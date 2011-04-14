@@ -26,7 +26,7 @@ sub _print_status($;$) {
         print "disabled\n";
         return;
     }
-    my $status = Ubic->cached_status($name); # should read status from static file on disk
+    my $status = Ubic->cached_status($name)->status; # should read status from static file on disk
     if ($status eq 'running') {
         print "HTTP/1.0 200 OK\r\n\r\n";
         print "ok\n";

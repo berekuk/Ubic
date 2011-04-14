@@ -6,6 +6,11 @@ Revision history for Ubic
          - home directory setup with the same 'ubic-admin setup' command
          - batch-mode with flag "--batch-mode"
         * configurable default_user (very helpful for home directory setup)
+        * 'ubic status' changes:
+         - real status will be checked and printed if current user is equal
+           to service user
+         - "Not a root, printing cached statuses" message removed;
+           instead, 'ubic status' will print "[cached]" note for every cached status
 
 1.26    2011-04-10
         Hotfix release (https://github.com/berekuk/Ubic/issues/12):

@@ -280,18 +280,25 @@ sub traverse($$$) {
     }
 }
 
-=item B<< print_status($name, $cached_flag) >>
+=item B<< print_status($name, $force_cached) >>
 
-=item B<< print_status($service, $cached_flag) >>
+=item B<< print_status($name, $force_cached, $results) >>
 
-Print status of given service identified by name or by object. If C<$cached_flag> is true, prints status cached in watchdog file.
+Print status of given service identified by name or by object.
+
+If C<$force_cached> is true, prints status cached in watchdog file. Otherwise, check for real status if current user is B<root> or if current user is equal to service user.
 
 =cut
 sub print_status($$;$$) {
     my $self = _obj(shift);
     my $service = shift;
-    my $cached = shift;
+    my $force_cached = shift;
     my $results = shift || Ubic::Cmd::Results->new;
+
+    my $user = getpwuid($>);
+    unless (defined $user) {
+        die "Can't detect user by uid $>";
+    }
 
     $self->traverse($service, sub {
         my $service = shift;
@@ -305,8 +312,10 @@ sub print_status($$;$$) {
         }
 
         my $status;
-        if ($cached) {
+        my $cached;
+        if ($force_cached or $user ne Ubic->service($name)->user) {
             $status = Ubic->cached_status($name);
+            $cached = 1;
         }
         else {
             $status = eval { Ubic->status($name) };
@@ -368,9 +377,6 @@ sub run {
     }
 
     my $command = $params->{command};
-    if ($command eq 'status' and $>) {
-        print "Not a root, printing cached statuses\n";
-    }
 
     my $results = Ubic::Cmd::Results->new;
     for my $name (@names) {
@@ -393,15 +399,12 @@ sub _run_impl {
     my $results = $params->{results};
 
     if ($command eq 'status' or $command eq 'cached-status') {
-        my $cached;
-        if ($command eq 'status' and $>) {
-            $cached = 1;
-        }
+        my $force_cached;
         if ($command eq 'cached-status') {
-            $cached = 1;
+            $force_cached = 1;
         }
         try {
-            $self->print_status($name, $cached, $results);
+            $self->print_status($name, $force_cached, $results);
         }
         catch {
             print STDERR $_;
