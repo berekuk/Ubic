@@ -5,20 +5,12 @@ Ubic is a flexible perl-based service manager.
 
 INSTALLATION
 
-Full ubic installation requires crontab, configs and running watchdog,
-so installing through 'cpan -i' is currently incomplete.
+Run 'cpan -i Ubic && ubic-admin setup' to install Ubic.
 
-For full install on Debian/Ubuntu, last .deb package can be downloaded from ppa:berekuk/ubic (see <https://launchpad.net/~berekuk/+archive/ubic> for details).
+We also provide .deb packages for Debian/Ubuntu. Latest .deb package can be downloaded from ppa:berekuk/ubic (see <https://launchpad.net/~berekuk/+archive/ubic> for details).
 
 Debian package build can be reproduced with this command:
-    dzil build && cp -r debian Ubic*/ && cd Ubic* && debuild
-
-For non-Debian systems, you'll need to:
-
-- copy all files from etc/ into /etc
-- copy debian/ubic.logrotate into /etc/logrotate.d/ubic and debian/ubic.cron.d into /etc/cron.d/ubic
-- create all dirs from debian/ubic.dirs
-- run commands from debian/ubic.postinst
+    dzil build && cd Ubic* && debuild
 
 If you'll write ebuilds for Gentoo or specs for RPM-based systems, please contribute them back :)
 
