@@ -201,7 +201,7 @@ This may be fixed in future: either C<Ubic::Multiservice> will no longer inherit
 
 C<user>, C<group> and other metadata methods are not used for multiservices too.
 
-Subservices are cached forever; this can cause troubles, but it is necessary to avoid memory leaks in C<ubic-ping>.
+Subservices are cached forever; this can cause troubles, but it is necessary to avoid memory leaks in C<Ubic::Ping>.
 
 =head1 SEE ALSO
 

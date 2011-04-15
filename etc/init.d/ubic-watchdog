@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+### BEGIN INIT INFO
+# Provides:          ubic-watchdog
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: ubic watchdog service
+# Description:       ubic.watchdog brings other ubic services to their expected state
+### END INIT INFO
+
+use Ubic::Run;

@@ -57,7 +57,7 @@ sub _services_from_log {
 
 sub verbose :Test {
     xsystem("$perl bin/ubic-watchdog -v >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is(scalar( @{ _services_from_log() }), 11, 'watchdog checks all services by default');
+    is(scalar( @{ _services_from_log() }), 13, 'watchdog checks all services by default');
 }
 
 sub filter_exact :Test {

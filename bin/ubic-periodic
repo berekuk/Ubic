@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+package ubic_periodic;
+
+# ABSTRACT: run given command every N seconds
+
+use strict;
+use warnings;
+
+=head1 SYNOPSIS
+
+    ubic-periodic --period=60 --stdout=/var/log/ubic/watchdog.log --stderr=/var/log/ubic/watchdog.err.log ubic-watchdog
+
+=cut
+
+use Getopt::Long 2.33;
+use Pod::Usage;
+
+return 1 if caller;
+
+my $period = 60;
+my $stdout;
+my $stderr;
+
+GetOptions(
+    'period=i' => \$period,
+    'stdout=s'  => \$stdout,
+    'stderr=s'  => \$stderr,
+) or pod2usage(2);
+pod2usage(2) unless @ARGV == 1;
+
+my $command = shift @ARGV;
+
+while (1) {
+    my $start_time = time;
+
+    # we reopen logs on every loop, so we don't have to restart periodic service on logrotate
+    if ($stdout) {
+        open STDOUT, '>>', $stdout or die "Can't open stdout: $!";
+    }
+    if ($stderr) {
+        open STDERR, '>>', $stderr or die "Can't open stderr: $!";
+    }
+    system($command); # no, we don't check for failures
+
+    my $time = time;
+    if ($time - $start_time < $period) {
+        sleep $start_time + $period - $time;
+    }
+}

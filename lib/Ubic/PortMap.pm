@@ -10,7 +10,7 @@ use warnings;
     use Ubic::PortMap;
 
     Ubic::PortMap::update();
-    print Ubic::PortMap::port2name(12345); # ubic-ping
+    print Ubic::PortMap::port2name(12345); # ubic.ping
 
 =head1 METHODS
 

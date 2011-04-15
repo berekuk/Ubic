@@ -1,6 +1,6 @@
 package Ubic::Ping::Service;
 
-# ABSTRACT: ubic-ping service
+# ABSTRACT: ubic.ping service
 
 use strict;
 use warnings;
@@ -42,7 +42,7 @@ sub new {
             my $pid;
             start_daemon({
                 bin => qq{$perl -MUbic::Ping -e 'Ubic::Ping->new($port)->run;'},
-                name => 'ubic-ping',
+                name => 'ubic.ping',
                 pidfile => $pidfile,
                 stdout => $log,
                 stderr => $log,

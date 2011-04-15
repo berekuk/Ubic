@@ -1,0 +1,7 @@
+# vim: ft=perl
+
+use Ubic::Service::SimpleDaemon;
+
+Ubic::Service::SimpleDaemon->new(
+    bin => 'ubic-periodic --period=60 --stdout=/var/log/ubic/watchdog.log --stderr=/var/log/ubic/watchdog.err.log ubic-watchdog',
+);

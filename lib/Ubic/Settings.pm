@@ -92,7 +92,7 @@ sub _load {
     };
 
     unless (keys %$settings) {
-        die "ubic is not configured, run 'ubic setup' first\n";
+        die "ubic is not configured, run 'ubic-admin setup' first\n";
     }
     for (qw/ service_dir data_dir default_user /) {
         unless (defined $settings->{$_}) {

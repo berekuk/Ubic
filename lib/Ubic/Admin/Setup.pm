@@ -136,7 +136,7 @@ sub setup {
     my $opt_data_dir;
     my $opt_default_user = 'root';
     my $opt_sticky_777 = 1;
-    my $opt_ubic_ping = 1;
+    my $opt_install_services = 1;
     my $opt_crontab = 1;
 
     GetOptions(
@@ -147,7 +147,7 @@ sub setup {
         'data-dir=s' => \$opt_data_dir,
         'default-user=s' => \$opt_default_user,
         'sticky-777!' => \$opt_sticky_777,
-        'ubic-ping!' => \$opt_ubic_ping,
+        'install-services!' => \$opt_install_services,
         'crontab!' => \$opt_crontab,
     ) or die "Getopt failed";
 
@@ -226,34 +226,27 @@ sub setup {
         $enable_1777 = prompt_bool("Enable 1777 grants for data dir?", $opt_sticky_777);
     }
 
-    my $enable_ubic_ping;
-    if ($is_root) {
-        print_tty "\n'ubic-ping' is a service provided by ubic out-of-the-box.\n";
-        print_tty "It is a HTTP daemon which can report service statuses via simple REST API.\n";
-        print_tty "Do you want to install 'ubic-ping' service into service tree?\n";
-        print_tty "(You'll always be able to stop it or remove it.)\n";
-        my $enable_ubic_ping = prompt_bool("Enable ubic-ping?", $opt_ubic_ping);
+    my $install_services;
+    {
+        print_tty "There are three standard services in ubic service tree:\n";
+        print_tty " - ubic.watchdog (universal watchdog)\n";
+        print_tty " - ubic.ping (http service status reporter)\n",
+        print_tty " - ubic.update (helper process which updates service portmap, used by ubic.ping service)\n";
+        print_tty "If you'll choose to install them, ubic.watchdog will be started automatically\n";
+        print_tty "and two other services will be disabled.\n";
+        $install_services = prompt_bool("Do you want to install standard services?", $opt_install_services);
 
-        if ($enable_ubic_ping) {
-            print_tty "NOTE: ubic-ping will be started on the port 12345; don't forget to protect it with the firewall.\n";
-        }
     }
-    # TODO - do local users need ubic-ping? we need to allow them to configure its port, then
 
     my $enable_crontab;
     {
-        print_tty "\n'ubic-watchdog' is a script which checks all services and restarts them if\n";
+        print_tty "\n'ubic.watchdog' is a service which checks all services and restarts them if\n";
         print_tty "there are any problems with their statuses.\n";
-        print_tty "It is recommended to install it as a cron job.\n";
+        print_tty "It is very small, but since it's so important that watchdog never goes down,\n",
+        print_tty "it is recommended to install the cron job which checks watchdog itself.\n";
         print_tty "Even if you won't install it as a cron job, you'll always be able to run it\n";
         print_tty "manually.\n";
-        $enable_crontab = prompt_bool("Install watchdog as a cron job?", $opt_crontab);
-
-        if ($enable_crontab) {
-            print_tty "NOTE: ubic-watchdog logs will be redirected to /dev/null, since it's too hard to install\n";
-            print_tty "logrotate configs on every platform.\n";
-            print_tty "You can fix this yourself by manually editing crontab later.\n";
-        }
+        $enable_crontab = prompt_bool("Install watchdog's watchdog as a cron job?", $opt_crontab);
     }
 
     my $config_file = ($is_root ? '/etc/ubic/ubic.cfg' : "$home/.ubic.cfg");
@@ -278,13 +271,40 @@ sub setup {
         xsystem('chmod', '1777', '--', "$data_dir/$subdir") if $enable_1777;
     }
 
-    if ($enable_ubic_ping) {
-        print "Installing ubic-ping service...\n";
+    xsystem('mkdir', '-p', '--', "$service_dir/ubic");
 
-        my $file = "$service_dir/ubic-ping";
-        open my $fh, '>', $file or die "Can't write to '$file': $!";
-        print {$fh} "use Ubic::Ping::Service;\nUbic::Ping::Service->new;\n" or die "Can't write to '$file': $!";
-        close $fh or die "Can't close '$file': $!";
+    if ($install_services) {
+        my $add_service = sub {
+            my ($name, $content) = @_;
+            print "Installing ubic.$name service...\n";
+
+            my $file = "$service_dir/ubic/$name";
+            open my $fh, '>', $file or die "Can't write to '$file': $!";
+            print {$fh} $content or die "Can't write to '$file': $!";
+            close $fh or die "Can't close '$file': $!";
+        };
+
+        $add_service->(
+            'ping',
+            "use Ubic::Ping::Service;\n"
+            ."Ubic::Ping::Service->new;\n"
+        );
+
+        $add_service->(
+            'watchdog',
+            "use Ubic::Service::SimpleDaemon;\n"
+            ."Ubic::Service::SimpleDaemon->new(\n"
+            ."bin => 'ubic-periodic --period=60 --stdout=/var/log/ubic/watchdog.log --stderr=/var/log/ubic/watchdog.err.log ubic-watchdog',\n"
+            .");\n"
+        );
+
+        $add_service->(
+            'update',
+            "use Ubic::Service::SimpleDaemon;\n"
+            ."Ubic::Service::SimpleDaemon->new(\n"
+            ."bin => 'ubic-periodic --period=60 --stdout=/var/log/ubic/update.log --stderr=/var/log/ubic/update.err.log ubic-update',\n"
+            .");\n"
+        );
     }
 
     if ($enable_crontab) {
@@ -302,8 +322,7 @@ sub setup {
                 print {$fh} @_ or die "Can't write to pipe: $!";
             };
             $printc->($old_crontab."\n");
-            $printc->("* * * * * ubic-watchdog    >>/dev/null 2>>/dev/null\n");
-            $printc->("* * * * * ubic-update    >>/dev/null 2>>/dev/null\n");
+            $printc->("* * * * * ubic-watchdog ubic.watchdog    >>/dev/null 2>>/dev/null\n");
             close $fh or die "Can't close pipe: $!";
         }
     }
@@ -315,7 +334,14 @@ sub setup {
         default_user => $default_user,
     });
 
-    xsystem('ubic', 'start', 'ubic-ping') if $enable_ubic_ping;
+    print "Starting ubic.watchdog...\n";
+    xsystem('ubic start ubic.watchdog');
+
+    print "Installation complete.\n";
+    print_tty "NOTE: There are three default services in ubic service tree:\n";
+    print_tty " - ubic.watchdog (universal watchdog)\n";
+    print_tty " - ubic.ping (http service status reporter)\n",
+    print_tty " - ubic.update (helper process which updates service portmap, used by ubic.ping service)\n";
 }
 
 =back

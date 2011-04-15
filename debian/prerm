@@ -3,4 +3,6 @@ set -e
 
 #DEBHELPER#
 
-ubic stop ubic-ping
+if [ "$1" = "remove" ]; then
+    ubic stop -f
+fi

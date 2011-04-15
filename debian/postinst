@@ -4,19 +4,20 @@ set -e
 if [ "$1" = "configure" ]; then
     if [ -n "$2" ]; then
         if dpkg --compare-versions "$2" lt 1.21; then
-            for dir in watchdog/lock watchdog/status; do
-                chmod 777 /var/lib/ubic/$dir
-                chmod +t /var/lib/ubic/$dir
-            done
-        elif dpkg --compare-versions "$2" lt 1.26; then
-            ubic-admin setup --batch-mode --no-crontab
+            ubic-admin setup --reconfigure --batch-mode --no-crontab --no-install-services
+        elif dpkg --compare-versions "$2" lt 1.27; then
+            ubic-admin setup --batch-mode --no-crontab --no-install-services
+            update-rc.d ubic-ping remove
+            update-rc.d ubic-watchdog defaults
         fi
+        ubic try-restart -f ubic
     else
         # first installation
-        ubic-admin setup --batch-mode --no-crontab # no-crontab is because we already have packaged crontab in deb package
-        update-rc.d ubic-ping defaults >/dev/null
+        # no-crontab is because we already have packaged crontab in deb package
+        ubic-admin setup --batch-mode --no-crontab --no-install-services
+        update-rc.d ubic-watchdog defaults
+        ubic start -f ubic
     fi
-    ubic start ubic-ping
 fi
 
 #DEBHELPER#
