@@ -3,10 +3,7 @@ set -e
 
 if [ "$1" = "configure" ]; then
     if [ -n "$2" ]; then
-        if dpkg --compare-versions "$2" lt 1.21; then
-            ubic-admin setup --reconfigure --batch-mode --no-crontab --no-install-services
-            ubic start -f ubic
-        elif dpkg --compare-versions "$2" lt 1.27; then
+        if dpkg --compare-versions "$2" lt 1.27; then
             ubic-admin setup --batch-mode --no-crontab --no-install-services
             ubic stop ubic-ping
             rm /etc/ubic/service/ubic-ping
