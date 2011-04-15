@@ -104,11 +104,15 @@ sub new {
         data_dir => { type => SCALAR, optional => 1 },
     });
 
-    Ubic::Settings->check_settings;
+    if (caller ne 'Ubic') {
+        warn "Using Ubic->new constructor is discouraged. Just call methods as class methods.";
+    }
 
     for my $key (qw/ service_dir data_dir /) {
         Ubic::Settings->$key($options->{ $key }) if defined $options->{$key};
     }
+
+    Ubic::Settings->check_settings;
 
     my $self = {};
     $self->{data_dir} = Ubic::Settings->data_dir;
@@ -512,8 +516,7 @@ This setting will be propagated into subprocesses using environment, so followin
 
 =cut
 sub set_data_dir($$) {
-    my $self = _obj(shift);
-    my ($dir) = validate_pos(@_, 1);
+    my ($arg, $dir) = validate_pos(@_, 1, 1);
 
     my $md = sub {
         my $new_dir = shift;
@@ -528,11 +531,13 @@ sub set_data_dir($$) {
         $md->("$dir/$subdir");
     }
 
-    $self->{lock_dir} = "$dir/lock";
-    $self->{status_dir} = "$dir/status";
-    $self->{tmp_dir} = "$dir/tmp";
-    $self->{data_dir} = $dir;
     Ubic::Settings->data_dir($dir);
+    if ($SINGLETON) {
+        $SINGLETON->{lock_dir} = "$dir/lock";
+        $SINGLETON->{status_dir} = "$dir/status";
+        $SINGLETON->{tmp_dir} = "$dir/tmp";
+        $SINGLETON->{data_dir} = $dir;
+    }
 }
 
 =item B<< set_ubic_dir($dir) >>
@@ -551,8 +556,7 @@ This is a simple proxy for C<< Ubic::Settings->default_user($user) >>.
 
 =cut
 sub set_default_user($$) {
-    my $self = _obj(shift);
-    my ($user) = validate_pos(@_, 1);
+    my ($arg, $user) = validate_pos(@_, 1, 1);
 
     Ubic::Settings->default_user($user);
 }
@@ -564,7 +568,7 @@ Get ubic services dir.
 =cut
 sub get_service_dir($) {
     my $self = _obj(shift);
-    validate_pos(@_, 0);
+    validate_pos(@_);
     return $self->{service_dir};
 }
 
@@ -574,11 +578,12 @@ Set ubic services dir.
 
 =cut
 sub set_service_dir($$) {
-    my $self = _obj(shift);
-    my ($dir) = validate_pos(@_, 1);
-    $self->{service_dir} = $dir;
+    my ($arg, $dir) = validate_pos(@_, 1, 1);
     Ubic::Settings->service_dir($dir);
-    $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
+    if ($SINGLETON) {
+        $SINGLETON->{service_dir} = $dir;
+        $SINGLETON->{root} = Ubic::Multiservice::Dir->new($dir);
+    }
 }
 
 =back

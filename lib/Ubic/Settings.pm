@@ -124,9 +124,9 @@ Get or set directory with service descriptions.
 sub service_dir {
     my ($class, $value) = validate_pos(@_, 1, 0);
     if (defined $value) {
-        _load;
-        $settings->{service_dir} = $value;
         $ENV{UBIC_SERVICE_DIR} = $value;
+        undef $settings;
+        return;
     }
     return _load->{service_dir};
 }
@@ -140,9 +140,9 @@ Get or set directory into which ubic stores all of its data (locks, status files
 sub data_dir {
     my ($class, $value) = validate_pos(@_, 1, 0);
     if (defined $value) {
-        _load;
-        $settings->{data_dir} = $value;
         $ENV{UBIC_DIR} = $value;
+        undef $settings;
+        return;
     }
     return _load->{data_dir};
 }
@@ -156,9 +156,9 @@ Get or set user for services which don't specify user themselves.
 sub default_user {
     my ($class, $value) = validate_pos(@_, 1, 0);
     if (defined $value) {
-        _load;
-        $settings->{default_user} = $value;
         $ENV{UBIC_DEFAULT_USER} = $value;
+        undef $settings;
+        return;
     }
     return _load->{default_user};
 }
