@@ -334,14 +334,12 @@ sub setup {
         default_user => $default_user,
     });
 
-    print "Starting ubic.watchdog...\n";
-    xsystem('ubic start ubic.watchdog');
+    if ($install_services) {
+        print "Starting ubic.watchdog...\n";
+        xsystem('ubic start ubic.watchdog');
+    }
 
     print "Installation complete.\n";
-    print_tty "NOTE: There are three default services in ubic service tree:\n";
-    print_tty " - ubic.watchdog (universal watchdog)\n";
-    print_tty " - ubic.ping (http service status reporter)\n",
-    print_tty " - ubic.update (helper process which updates service portmap, used by ubic.ping service)\n";
 }
 
 =back
