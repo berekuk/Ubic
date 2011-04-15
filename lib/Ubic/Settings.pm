@@ -25,7 +25,7 @@ Settings are determined in the following order (from the most priority to the le
 
 =item *
 
-Overrides via C<set_data_dir()> or C<set_service_dir()> methods.
+Overrides via C<data_dir()>, C<service_dir()> and C<default_user()> methods.
 
 =item *
 
@@ -37,7 +37,7 @@ Config file at I<~/.ubic.cfg>, if it exists;
 
 =item *
 
-Config file at I</etc/ubic/ubic.cfg>, if it exists and config file in home directory doesn't exist;
+Config file at I</etc/ubic/ubic.cfg>, if it exists and config file in home directory doesn't exist.
 
 =back
 
@@ -47,9 +47,9 @@ This is considered to be a public class. Any changes to its interface will go th
 
 =head1 METHODS
 
-If any of these methods are called with new setting value, it will be applied for current process only.
+If any of setting methods is called with new value, this value will be applied for current process only.
 
-I<data_dir> and I<service_dir> settings will also be propagated into child processes via environment variables.
+They also will be propagated to future child processes via environment variables.
 
 =over
 
@@ -103,19 +103,8 @@ sub _load {
     return $settings;
 }
 
-=item B<check_settings()>
-
-Check if all settings are valid.
-
-Will throw an exception if any configuration options are not set.
-
-=cut
-sub check_settings {
-    _load;
-}
-
-
 =item B<service_dir()>
+
 =item B<service_dir($dir)>
 
 Get or set directory with service descriptions.
@@ -132,6 +121,7 @@ sub service_dir {
 }
 
 =item B<data_dir()>
+
 =item B<data_dir($dir)>
 
 Get or set directory into which ubic stores all of its data (locks, status files, tmp files).
@@ -148,6 +138,7 @@ sub data_dir {
 }
 
 =item B<default_user()>
+
 =item B<default_user($user)>
 
 Get or set user for services which don't specify user themselves.
@@ -161,6 +152,17 @@ sub default_user {
         return;
     }
     return _load->{default_user};
+}
+
+=item B<check_settings()>
+
+Check if all settings are valid.
+
+Will throw an exception if any configuration options are not set.
+
+=cut
+sub check_settings {
+    _load;
 }
 
 =back
