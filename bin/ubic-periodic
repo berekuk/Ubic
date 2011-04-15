@@ -20,18 +20,60 @@ return 1 if caller;
 my $period = 60;
 my $stdout;
 my $stderr;
+my $rotate_logs;
 
 GetOptions(
     'period=i' => \$period,
     'stdout=s'  => \$stdout,
     'stderr=s'  => \$stderr,
+    'rotate-logs!' => \$rotate_logs,
 ) or pod2usage(2);
 pod2usage(2) unless @ARGV == 1;
 
 my $command = shift @ARGV;
 
+sub xunlink {
+    my $file = shift;
+    unlink $file or die "Can't unlink '$file': $!";
+}
+
+sub xrename {
+    my ($from, $to) = @_;
+    rename $from => $to or die "Can't rename '$from' to '$to': $!";
+}
+
+sub touch {
+    my $file = shift;
+    open my $fh '>', $file or die "Can't touch '$file': $!";
+}
+
+sub rotate {
+    my $file = shift;
+    my $time = time;
+
+    return unless -e $file;
+
+    unless (-e "$file.1") {
+        touch("$file.1");
+    }
+    my $mtime = (stat "$file.1")[9];
+    if ($time - $mtime >= 86400) {
+        # it's time to rotate!
+        if (-e "$file.2") {
+            xunlink("$file.2");
+        }
+        xrename("$file.1" => "$file.2");
+        xrename($file => "$file.1");
+    }
+}
+
 while (1) {
     my $start_time = time;
+
+    if ($rotate_logs) {
+        rotate($stdout);
+        rotate($stderr);
+    }
 
     # we reopen logs on every loop, so we don't have to restart periodic service on logrotate
     if ($stdout) {

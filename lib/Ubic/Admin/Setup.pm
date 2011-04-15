@@ -134,6 +134,7 @@ sub setup {
     my $opt_reconfigure;
     my $opt_service_dir;
     my $opt_data_dir;
+    my $opt_log_dir;
     my $opt_default_user = 'root';
     my $opt_sticky_777 = 1;
     my $opt_install_services = 1;
@@ -145,6 +146,7 @@ sub setup {
         'reconfigure!' => \$opt_reconfigure,
         'service-dir=s' => \$opt_service_dir,
         'data-dir=s' => \$opt_data_dir,
+        'log-dir=s' => \$opt_log_dir,
         'default-user=s' => \$opt_default_user,
         'sticky-777!' => \$opt_sticky_777,
         'install-services!' => \$opt_install_services,
@@ -195,6 +197,12 @@ sub setup {
     $default_data_dir = $opt_data_dir if defined $opt_data_dir;
     my $data_dir = prompt_str("Data dir?", $default_data_dir);
 
+    print_tty "\nLog dir is a directory into which ubic.watchdog will write its logs.\n";
+    print_tty "(Your own services are free to write logs wherever they want.)\n";
+    my $default_log_dir = ($is_root ? '/var/log/ubic' : "$home/ubic/log");
+    $default_log_dir = $opt_log_dir if defined $opt_log_dir;
+    my $log_dir = prompt_str("Log dir?", $default_log_dir);
+
     # TODO - sanity checks?
 
     my $default_user;
@@ -215,7 +223,7 @@ sub setup {
 
     my $enable_1777;
     if ($is_root) {
-        print_tty "\nSystem-wide installations need to store service-related data\n";
+        print_tty "\nSystem-wide installations usually need to store service-related data\n";
         print_tty "into data dir for different users. For non-root services to work\n";
         print_tty "1777 grants for some data dir subdirectories is required.\n";
         print_tty "(1777 grants means that everyone is able to write to the dir,\n";
@@ -235,7 +243,6 @@ sub setup {
         print_tty "If you'll choose to install them, ubic.watchdog will be started automatically\n";
         print_tty "and two other services will be disabled.\n";
         $install_services = prompt_bool("Do you want to install standard services?", $opt_install_services);
-
     }
 
     my $enable_crontab;
@@ -261,6 +268,7 @@ sub setup {
 
     xsystem('mkdir', '-p', '--', $service_dir);
     xsystem('mkdir', '-p', '--', $data_dir);
+    xsystem('mkdir', '-p', '--', $log_dir);
 
     for my $subdir (qw[
         status simple-daemon/pid lock ubic-daemon tmp watchdog/lock watchdog/status
@@ -292,7 +300,7 @@ sub setup {
             'watchdog',
             "use Ubic::Service::SimpleDaemon;\n"
             ."Ubic::Service::SimpleDaemon->new(\n"
-            ."bin => 'ubic-periodic --period=60 --stdout=/var/log/ubic/watchdog.log --stderr=/var/log/ubic/watchdog.err.log ubic-watchdog',\n"
+            ."bin => [ 'ubic-periodic', '--rotate-logs', '--period=60', '--stdout=$log_dir/watchdog.log', '--stderr=$log_dir/watchdog.err.log', 'ubic-watchdog' ],\n"
             .");\n"
         );
 
@@ -300,7 +308,7 @@ sub setup {
             'update',
             "use Ubic::Service::SimpleDaemon;\n"
             ."Ubic::Service::SimpleDaemon->new(\n"
-            ."bin => 'ubic-periodic --period=60 --stdout=/var/log/ubic/update.log --stderr=/var/log/ubic/update.err.log ubic-update',\n"
+            ."bin => [ 'ubic-periodic', '--rotate-logs', '--period=60', '--stdout=$log_dir/update.log', '--stderr=$log_dir/update.err.log', 'ubic-update' ],\n"
             .");\n"
         );
     }
