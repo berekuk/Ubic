@@ -1,3 +1,18 @@
+ubic (1.27) UNRELEASED; urgency=low
+
+  * ubic-admin script
+  * ubic.watchdog and ubic.update are now ubic services; ubic-ping renamed to
+    ubic.ping
+  * 'ubic status' changes:
+   - real status will be checked and printed if current user is equal
+     to service user
+   - "Not a root, printing cached statuses" message removed;
+     instead, 'ubic status' will print "[cached]" note for every cached status
+  * some refactoring to postinst/preinst/postrm scripts
+  (but upgrade should be transparent)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 15 Apr 2011 21:59:40 +0400
+
 ubic (1.25) unstable; urgency=low
 
   * MacOSX support (hmm, this change doesn't make sense in Debian changelog...)
