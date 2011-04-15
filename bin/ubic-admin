@@ -12,13 +12,14 @@ use warnings;
 
 =cut
 
+use Pod::Usage;
 use Ubic::Admin::Setup;
 
 return 1 if caller;
 
 my $command = shift @ARGV;
 
-unless ($command eq 'setup') {
+if (not defined $command or $command ne 'setup') {
     pod2usage(2);
 }
 
