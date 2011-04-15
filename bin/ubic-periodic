@@ -44,7 +44,7 @@ sub xrename {
 
 sub touch {
     my $file = shift;
-    open my $fh '>', $file or die "Can't touch '$file': $!";
+    open my $fh, '>', $file or die "Can't touch '$file': $!";
 }
 
 sub rotate {
