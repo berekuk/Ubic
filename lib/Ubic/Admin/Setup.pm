@@ -242,10 +242,8 @@ sub setup {
     {
         print_tty "\n'ubic.watchdog' is a service which checks all services and restarts them if\n";
         print_tty "there are any problems with their statuses.\n";
-        print_tty "It is very small, but since it's so important that watchdog never goes down,\n",
-        print_tty "it is recommended to install the cron job which checks watchdog itself.\n";
-        print_tty "Even if you won't install it as a cron job, you'll always be able to run it\n";
-        print_tty "manually.\n";
+        print_tty "It is very simple and robust, but since it's important that watchdog never\n";
+        print_tty "goes down, we recommended to install the cron job which checks watchdog itself.\n";
         $enable_crontab = prompt_bool("Install watchdog's watchdog as a cron job?", $opt_crontab);
     }
 
