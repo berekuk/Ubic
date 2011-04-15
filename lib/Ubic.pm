@@ -104,6 +104,8 @@ sub new {
         data_dir => { type => SCALAR, optional => 1 },
     });
 
+    Ubic::Settings->check_settings;
+
     for my $key (qw/ service_dir data_dir /) {
         Ubic::Settings->$key($options->{ $key }) if defined $options->{$key};
     }
@@ -519,7 +521,7 @@ sub set_data_dir($$) {
     };
 
     $md->($dir);
-    # FIXME - directory list is copy-pasted from ubic-admin script
+    # FIXME - directory list is copy-pasted from Ubic::Admin::Setup
     for my $subdir (qw[
         status simple-daemon simple-daemon/pid lock ubic-daemon tmp watchdog watchdog/lock watchdog/status
     ]) {
