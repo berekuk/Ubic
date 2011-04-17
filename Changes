@@ -11,6 +11,10 @@ Revision history for Ubic
            to service user
          - "Not a root, printing cached statuses" message removed;
            instead, 'ubic status' will print "[cached]" note for every cached status
+        * ubic-ping service renamed to ubic.ping
+        * ubic-watchdog and ubic-update now run as ubic.watchdog and ubic.update services
+        instead of cron jobs; "ubic-watchdog ubic.watchdog" cron job is still recommended.
+        * ubic-periodic script for recurrent job running
 
 1.26    2011-04-10
         Hotfix release (https://github.com/berekuk/Ubic/issues/12):
