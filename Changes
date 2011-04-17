@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.27    2011-04-17
         * ubic-admin script:
          - system-wide setup with one command 'ubic-admin setup'
          - home directory setup with the same 'ubic-admin setup' command
