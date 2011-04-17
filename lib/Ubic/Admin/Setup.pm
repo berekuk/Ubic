@@ -238,10 +238,10 @@ sub setup {
     {
         print_tty "There are three standard services in ubic service tree:\n";
         print_tty " - ubic.watchdog (universal watchdog)\n";
-        print_tty " - ubic.ping (http service status reporter)\n",
+        print_tty " - ubic.ping (http service status reporter)\n";
         print_tty " - ubic.update (helper process which updates service portmap, used by ubic.ping service)\n";
         print_tty "If you'll choose to install them, ubic.watchdog will be started automatically\n";
-        print_tty "and two other services will be disabled.\n";
+        print_tty "and two other services will be initially disabled.\n";
         $install_services = prompt_bool("Do you want to install standard services?", $opt_install_services);
     }
 
