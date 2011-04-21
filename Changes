@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * 'ubic status' always shows non-cached statuses if called by root
 
 1.27    2011-04-17
         * ubic-admin script:

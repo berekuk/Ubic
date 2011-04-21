@@ -295,6 +295,7 @@ sub print_status($$;$$) {
     my $force_cached = shift;
     my $results = shift || Ubic::Cmd::Results->new;
 
+    # TODO - use Credentials instead
     my $user = getpwuid($>);
     unless (defined $user) {
         die "Can't detect user by uid $>";
@@ -313,7 +314,7 @@ sub print_status($$;$$) {
 
         my $status;
         my $cached;
-        if ($force_cached or $user ne Ubic->service($name)->user) {
+        if ($force_cached or ($> and $user ne Ubic->service($name)->user)) {
             $status = Ubic->cached_status($name);
             $cached = 1;
         }
