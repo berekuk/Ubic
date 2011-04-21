@@ -64,7 +64,11 @@ sub slurp {
 our $local_ubic;
 sub local_ubic {
     my $params = validate(@_, {
-        service_dirs => { type => ARRAYREF, default => ['t/service/common', 'etc/ubic/service'] }
+        service_dirs => { type => ARRAYREF, default => ['t/service/common', 'etc/ubic/service'] },
+        default_user => {
+            type => SCALAR,
+            default => $ENV{LOGNAME} || $ENV{USERNAME},
+        },
     });
 
     xsystem('mkdir tfiles/service');
@@ -75,7 +79,7 @@ sub local_ubic {
     require Ubic;
     Ubic->set_data_dir('tfiles/ubic');
     Ubic->set_service_dir('tfiles/service');
-    Ubic->set_default_user($ENV{LOGNAME} || $ENV{USERNAME});
+    Ubic->set_default_user($params->{default_user});
 }
 
 1;
