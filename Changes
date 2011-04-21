@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.28    2011-04-21
         * 'ubic status' always shows non-cached statuses if called by root
         * ubic.ping status now uses sane timeout when it checks service via http
 
