@@ -1,6 +1,7 @@
 ubic (1.28) UNRELEASED; urgency=low
 
   * 'ubic status' always shows non-cached statuses if called by root
+  * ubic.ping status now uses sane timeout when it checks service via http
 
  -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 21 Apr 2011 20:07:36 +0400
 
