@@ -204,11 +204,12 @@ sub check($) {
             Ubic->start($name);
         }
         $status = Ubic->status($name);
-        alarm(0);
 
         if ($status->status ne 'running') {
             INFO("$name started, but status is still '$status'");
         }
+
+        alarm(0);
         Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
     }
     catch {
