@@ -8,10 +8,9 @@ use warnings;
 =head1 SYNOPSIS
 
     use Ubic::Service::SimpleDaemon;
-    my $service = Ubic::Service::SimpleDaemon->new({
-        name => "sleep",
-        bin => "sleep 1000",
-    });
+    my $service = Ubic::Service::SimpleDaemon->new(
+        bin => "sleep 1000"
+    );
 
 =head1 DESCRIPTION
 
