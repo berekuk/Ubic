@@ -1,6 +1,6 @@
 package Ubic::Manual::Intro;
 
-# ABSTRACT: general ubic concepts and architecture
+# ABSTRACT: General ubic concepts and architecture
 
 =head1 DESCRIPTION
 
