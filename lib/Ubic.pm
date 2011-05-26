@@ -424,7 +424,7 @@ sub service_names($) {
 
 Get root service.
 
-Root service doesn't have a name and returns all top-level services with C<services()> method. You can use it to traverse all services' tree.
+Root service doesn't have a name and returns all top-level services with C<services()> method. You can use it to traverse the whole service tree.
 
 =cut
 sub root_service($) {
