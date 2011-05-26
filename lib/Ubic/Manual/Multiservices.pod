@@ -1,0 +1,110 @@
+package Ubic::Manual::Multiservices;
+
+# ABSTRACT: Multiservices - dynamic generation of service tree
+
+=head1 DESCRIPTION
+
+Multiservice is an object which tells ubic what services you have.
+
+In other words, multiservices populate service tree by providing simple list/get, virtual-filesystem-like API.  This API is documented in L<Ubic::Multiservice> abstract class.
+
+Even the configs in your ubic service dir are loaded by L<Ubic::Multiservice::Dir> instance. This instance is named I<root_service> and can be obtained via C<root_service()> method in L<Ubic> module.
+
+=head1 EXAMPLES
+
+There are several common use cases for multiservices.
+
+=head2 Simple multiservice with several parts
+
+Some services are meant to work together. For example, your project can consist of PSGI app, memcached process and nginx frontend (yes, you can run nginx with ubic if you want to). You can just put them all in subdirectory in your service dir:
+
+    $ ls -1 /etc/ubic/service/my/
+    app
+    memcached
+    nginx
+
+They all will be loaded by root multiservice, since C<Ubic::Multiservice::Dir> does traverse subdirectories:
+
+    $ ubic status my
+    my
+        my.app          running
+        my.memcached    running
+        my.nginx        running
+
+(You can see another example in C<ubic.*> services which you have out of the box in common ubic installation).
+
+On the other hand, maybe your three services are tightly coupled and you don't want to copy-paste memcached port both to I<my.app> service declaration and I<my.memcached>.  In this case, you can create all three services in one file:
+
+    # content of the file /etc/ubic/service/my
+    use Ubic::Multiservice::Simple;
+
+    my $app_service = ...;
+    my $memcached_service = ...;
+    my $nginx_service = ...;
+
+    Ubic::Multiservice::Simple->new({
+        app => $app_service,
+        memcached => $memcached_service,
+        nginx => $nginx_service,
+    });
+
+=head2 Simple multiservice with several workers
+
+This example is similar to the previous one, but it solves a different task.
+
+What if you have only one program, but want to run several instances of it? For example, your process may be some kind of a fetching robot which fetches the list of urls and stores them in external database, and you want to make it run in parallel, either because with to utilize multiple CPUs, or you're just don't want to learn parallel programming techniques.
+
+Anyway, here is the example:
+
+    # content of the file /etc/ubic/service/robot
+    use Ubic::Multiservice::Simple;
+    use Ubic::Service::SimpleDaemon;
+
+    my $robot_service = Ubic::Service::SimpleDaemon->new(bin => "/usr/bin/fetching_robot.pl");
+
+    Ubic::Multiservice::Simple->new({
+        map {
+            "robot$_" => Ubic::Service::SimpleDaemon->new(bin => "/usr/bin/fetching_robot.pl")
+        } (1..10)
+    });
+
+Note that you could easily alter some properties of each service, for example, pass C<stdout> option to SimpleDaemon constructor with different log file for every process.
+
+By the way, this example is easy and powerful, but please consider other options if your number of services will get high (more than tens of workers). Ubic watchdog checks each service separately and forks once or even twice per service, so it can create pretty high CPU overhead.
+
+=head1 Dynamic multiservice with external configs
+
+Let's assume that a fetching robot from the previous example uses files in multiple local directories C<< /var/spool/fetching_robot/queues/* >> as the list of urls to process.
+Let's also assume that you don't want to run multiple workers to parallel your fetching, but you want to process each queue in separate process.
+
+You may declare one service per queue, but it's double work. And there is a better solution: let's implement multiservice which creates as many services as there are queues.
+
+    # content of the file /etc/ubic/service/robot
+    use parent qw(Ubic::Multiservice);
+
+    my $queue_dir = "/var/spool/fetching_robot/queues";
+
+    sub new {
+        return bless {} => shift;
+    }
+
+    sub service_names {
+        return map { s{^\Q$queue_dir/\E}{} } glob "$queue_dir/*";
+    }
+
+    sub simple_service {
+        my ($self, $name) = @_;
+        return Ubic::Service::SimpleDaemon->new(
+            bin => ["/usr/bin/fetching_robot.pl", "--queue-dir", "$queue_dir/$name"]
+        );
+    }
+
+    __PACKAGE__->new;
+
+You could also implement this multiservice as simple service, but this code is theoretically more efficient: it doesn't create subservice object until it is asked to do so.
+
+You can apply the similar technique to write service declarations in any config format you want, transforming these configs into service objects by some multiservice.
+
+Important side note: don't forget to stop the service before removing the config (or in this case, queue dir). Ubic won't remember that service was running if it's not present in service tree!
+
+=cut
