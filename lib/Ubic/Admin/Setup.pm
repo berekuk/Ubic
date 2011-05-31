@@ -316,7 +316,7 @@ sub setup {
     if ($enable_crontab) {
         print "Installing cron jobs...\n";
         my $old_crontab = qx(crontab -l);
-        if ($?) {
+        if ($? and $old_crontab !~ /no crontab/) {
             die "crontab -l failed";
         }
         if ($old_crontab =~ /\subic-watchdog\b/) {
