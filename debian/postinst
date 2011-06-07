@@ -11,6 +11,9 @@ if [ "$1" = "configure" ]; then
             update-rc.d ubic-ping remove
             update-rc.d ubic-watchdog defaults
             ubic start -f ubic
+        elif dpkg --compare-versions "$2" lt 1.29; then
+            rm -f /var/log/ubic/watch_watchdog.* # renamed to cron-watchdog.log
+            ubic try-restart -f ubic
         else
             ubic try-restart -f ubic
         fi
