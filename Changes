@@ -3,6 +3,10 @@ Revision history for Ubic
 {{$NEXT}}
         * ubic-admin script: fix crontab install when user doesn't have previous crontab
         * ubic script: fix 'ubic unknown-cmd' error reporting
+        * watchdog improvements:
+         - don't ask for status twice if service works
+         - permanently set credentials instead of using forks for non-root services
+         - log status obtained by status check, instead of just logging 'service is broken'
         * POD improvements:
          - Ubic::Manual::Intro
          - Ubic::Manual::Multiservices
