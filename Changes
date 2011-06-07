@@ -3,6 +3,10 @@ Revision history for Ubic
 {{$NEXT}}
         * ubic-admin script: fix crontab install when user doesn't have previous crontab
         * ubic script: fix 'ubic unknown-cmd' error reporting
+        * POD improvements:
+         - Ubic::Manual::Intro
+         - Ubic::Manual::Multiservices
+         - various POD fixes
 
 1.28    2011-04-21
         * 'ubic status' always shows non-cached statuses if called by root
