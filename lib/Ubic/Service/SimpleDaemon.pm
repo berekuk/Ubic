@@ -95,6 +95,7 @@ sub new {
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
         ubic_log => { type => SCALAR, optional => 1 },
+        term_timeout => { type => SCALAR, regex => qr/^\d+$/, optional => 1 },
     });
 
     return bless {%$params} => $class;
@@ -119,6 +120,7 @@ sub start_impl {
         stdout => $self->{stdout} || "/dev/null",
         stderr => $self->{stderr} || "/dev/null",
         ubic_log => $self->{ubic_log} || "/dev/null",
+        term_timeout => $self->{term_timeout} || 10,
     };
     if ($self->{user}) {
         $start_params->{user} = $self->{user}; # do we actually need this? Ubic.pm should call setuid for us...
@@ -142,7 +144,13 @@ sub group {
 
 sub stop_impl {
     my ($self) = @_;
-    stop_daemon($self->pidfile);
+
+    # 'timeout' arg to stop_daemon must be greater than term_timeout
+    my $timeout = $self->{term_timeout} || 10;
+    $timeout = $timeout + 10;
+    $timeout = 30 if $timeout < 30;
+
+    stop_daemon($self->pidfile, { timeout => $timeout });
 }
 
 sub status_impl {

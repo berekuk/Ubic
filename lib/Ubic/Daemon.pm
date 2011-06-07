@@ -74,6 +74,8 @@ Stop daemon which was started with C<$pidfile>.
 
 It sends I<SIGTERM> to process with pid specified in C<$pidfile> until it will stop to exist (according to C<check_daemon()> method).
 
+Note that this process is not a daemon itself, but its I<ubic-guardian>, which will send I<SIGTERM> and then I<SIGKILL> to the underlying daemon according to its I<term_timeout> parameter from C<start_daemon>.
+
 If it fails to stop process after several seconds, exception will be raised (this should never happen, assuming you have enough grants).
 
 Options:
@@ -82,7 +84,7 @@ Options:
 
 =item I<timeout>
 
-Number of seconds to wait before raising exception that daemon can't be stopped.
+Number of seconds to wait before raising an exception that daemon can't be stopped.
 
 =back
 
