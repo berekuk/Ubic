@@ -1,0 +1,117 @@
+package Ubic::Manual::Intro;
+
+# ABSTRACT: General ubic concepts and architecture
+
+=head1 DESCRIPTION
+
+Ubic is a perl-based service manager.
+
+Ubic can run any program as a service and provides frontend script C<ubic> to manage services.
+
+Ubic includes centralized watchdog process which checks every service periodically and brings them back online if necessary.
+
+=head1 GLOSSARY
+
+=over
+
+=item I<< Service >>
+
+Ubic service is an object describing how your service works.
+
+Service object must conform to the API of the L<Ubic::Service> class, so it must implement C<start>, C<stop> and C<status> methods.
+
+It can also provide other methods: which user should be used to run the service, how often the service should be checked by the watchdog, etc.
+
+=item I<< Service class >>
+
+Most services don't implement start/stop methods themselves. Instead, they are declared as instances of some existing service class, for example, L<Ubic::Service::SimpleDaemon>.
+
+=item I<< Service dir >>
+
+Service declarations are stored in ubic I<service dir>.
+
+Service delaration is a single file with perl code which returns service object when executed with C<do>.
+
+If you're using host-level installation, service dir is I</etc/ubic/service>. If you're using installation to home dir, service dir is I<~/ubic/service>.
+
+=item I<< Multiservice and service tree >>
+
+Service dir can contain another type of object: I<multiservices>.
+
+Multiservice is an object implementing L<Ubic::Multiservice> API.
+
+Multiservices allow to generate a list of services dynamically and fill it by other means than by writing perl code for each service.
+
+All services collected by evaluation of service delaration and traversing multiservices, make up the I<service tree>.
+
+=item I<< Status >>
+
+Every service implements C<status()> method. You can see it by invoking C<< ubic status >> command from terminal.
+
+=item I<< Watchdog >>
+
+Default installation provides some services out of the box. The most important of them is I<ubic.watchdog>.
+
+Watchdog service checks every service status periodically and restarts them if they broke.
+
+=back
+
+=head1 INSTALLATION
+
+Installing C<Ubic> is easy.
+
+First, install the module using your favorite CPAN client, for example, C<< cpanm Ubic >>.
+
+Second, invoke ubic-admin script to perform initial configuration: C<< ubic-admin setup >>.
+
+If you don't like that setup process asks too many questions, you can invoke it as C<< ubic-admin setup --batch-mode --quiet >>.
+
+Alternatively, if you're using Debian or Ubuntu, you can install ubic .deb package from official launchpad PPA repository: https://launchpad.net/~berekuk/+archive/ubic.
+
+=head1 WRITE YOUR FIRST SERVICE
+
+Put this code in your service dir, i.e. in file I</etc/ubic/service/example> (or if you're using home-dir installation, in I<~/ubic/service/example>):
+
+    use Ubic::Service::SimpleDaemon;
+    Ubic::Service::SimpleDaemon->new(
+        bin => 'sleep 1000',
+    );
+
+Start it:
+
+    $ ubic start example
+    Starting example... started (pid 41209)
+
+Check its status:
+
+    $ ubic status
+    example running (pid 41209)
+    ubic
+        ubic.ping   off
+        ubic.update off
+        ubic.watchdog   running (pid 93226)
+
+Or:
+
+    $ ubic status example
+    example running (pid 41209)
+
+Now let's see how watchdog works by killing the process (don't forget to change pid with the pid you got in status command above):
+
+    $ kill 41209
+
+    $ ubic status example
+    example not running
+
+    $ ubic-watchdog
+    [Thu May 26 20:20:54 2011]  example is broken, restarting
+
+You don't have to run ubic-watchdog manually; it will do its work in background in a minute.
+
+=head1 SEE ALSO
+
+L<Ubic::Service::SimpleDaemon> allows you to tune other service aspects other than I<bin>. Check it out.
+
+L<< Series of blog posts written as tutorials|http://blogs.perl.org/mt/mt-search.fcgi?blog_id=310&tag=tutorial&limit=20 >>
+
+=cut

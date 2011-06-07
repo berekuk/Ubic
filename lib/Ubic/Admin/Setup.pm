@@ -21,6 +21,7 @@ use warnings;
 
 use Getopt::Long 2.33;
 use Carp;
+use IPC::Open3;
 
 use Ubic::Settings;
 use Ubic::Settings::ConfigFile;
@@ -122,6 +123,19 @@ sub xsystem {
         push @msg, "exit code ".($? >> 8) if $? >> 8;
     }
     die join ", ", @msg;
+}
+
+=item B<< slurp($file) >>
+
+Read file contents.
+
+=cut
+sub slurp {
+    my ($file) = @_;
+    open my $fh, '<', $file or die "Can't open $file: $!";
+    my $result = join '', <$fh>;
+    close $fh;
+    return $result;
 }
 
 =item B<< setup() >>
@@ -315,10 +329,16 @@ sub setup {
 
     if ($enable_crontab) {
         print "Installing cron jobs...\n";
-        my $old_crontab = qx(crontab -l);
-        if ($?) {
+
+        system("crontab -l >$data_dir/tmp/crontab.stdout 2>$data_dir/tmp/crontab.stderr");
+        my $old_crontab = slurp("$data_dir/tmp/crontab.stdout");
+        my $stderr = slurp("$data_dir/tmp/crontab.stderr");
+        unlink "$data_dir/tmp/crontab.stdout";
+        unlink "$data_dir/tmp/crontab.stderr";
+        if ($stderr and $stderr !~ /no crontab/) {
             die "crontab -l failed";
         }
+
         if ($old_crontab =~ /\subic-watchdog\b/) {
             print "Looks like you already have ubic commands in your crontab.\n";
         }

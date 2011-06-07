@@ -455,7 +455,7 @@ sub check_daemon {
         return undef;
     }
     if ($guid eq $piddata->{guid}) {
-        warn "killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile\n";
+        print "killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile\n";
         kill -9 => $piddata->{daemon};
         $pid_state->remove;
         print "pidfile $pidfile removed\n";

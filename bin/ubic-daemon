@@ -43,6 +43,6 @@ start_daemon({
 
 L<Ubic::Daemon>
 
-There is a similar program named C<start-stop-daemon> in Debian.and some other Linux distributions which does daemonization and have some other powerful features.
+There is a similar program named C<start-stop-daemon> in Debian and some other Linux distributions which does daemonization and have some other powerful features.
 
 =cut

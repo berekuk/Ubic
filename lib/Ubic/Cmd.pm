@@ -386,6 +386,27 @@ sub run {
     exit $results->exit_code;
 }
 
+sub _check_multiop {
+    my $self = _obj(shift);
+    my ($service, $command, $force) = validate_pos(@_, 1, 1, 1);
+
+    return unless $service->isa('Ubic::Multiservice');
+
+    my $screen_name = $service->name || 'root';
+    my $multiop = $service->multiop;
+    if ($multiop eq 'forbidden') {
+        die "$screen_name multiservice forbids $command\n";
+    }
+    elsif ($multiop eq 'protected') {
+        unless ($force) {
+            die "$screen_name is protected multiservice, specify --force if you know what you're doing\n";
+        }
+    }
+    elsif ($multiop ne 'allowed') {
+        die "$screen_name has strange multiop value '$multiop'\n";
+    }
+}
+
 # run and modify results object
 sub _run_impl {
     my $self = _obj(shift);
@@ -424,25 +445,10 @@ sub _run_impl {
     # but we need to construct service to check it's custom commands
     my $service = $name ? Ubic->service($name) : Ubic->root_service;
 
-    if ($service->isa('Ubic::Multiservice')) {
-        my $screen_name = $name || 'root';
-        my $multiop = $service->multiop;
-        if ($multiop eq 'forbidden') {
-            die "$screen_name multiservice forbids $command";
-        }
-        elsif ($multiop eq 'protected') {
-            unless ($params->{force}) {
-                die "$screen_name is protected multiservice, specify --force if you know what you're doing";
-            }
-        }
-        elsif ($multiop ne 'allowed') {
-            die "$screen_name has strange multiop value '$multiop'";
-        }
-    }
-
     # yes, custom "start" command will override default "start" command, although it's not very useful :)
     # but we need this because of current "logrotate" hack
     if (grep { $_ eq $command } $service->custom_commands) {
+        $self->_check_multiop($service, $command, $params->{force});
         try {
             $self->do_custom_command($service, $command, $results);
         }
@@ -461,6 +467,7 @@ sub _run_impl {
         $self->usage($command);
     }
 
+    $self->_check_multiop($service, $command, $params->{force});
     try {
         $self->$method($service, $results);
     }
