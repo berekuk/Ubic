@@ -20,8 +20,8 @@ sub setup :Test(setup) {
 }
 
 sub unknown_command :Test(1) {
-    xsystem("$perl bin/ubic blah >>tfiles/log 2>>tfiles/err.log");
-    is(slurp('tfiles/log'), "Unknown command 'blah'\n", 'unknown command error');
+    system("$perl bin/ubic blah >>tfiles/log 2>>tfiles/err.log");
+    is(slurp('tfiles/err.log'), "Unknown command 'blah'\n", 'unknown command error');
 }
 
 # most of script tests are in t/ubic.t, implemented as Ubic::Cmd tests
