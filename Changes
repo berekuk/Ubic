@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.29    2011-06-07
         * ubic-admin script: fix crontab install when user doesn't have previous crontab
         * ubic script: fix 'ubic unknown-cmd' error reporting
         * watchdog improvements:
