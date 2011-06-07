@@ -21,13 +21,13 @@ This module is a perl frontend to ubic services.
 
 Further directions:
 
-if you are looking for a general introduction to Ubic, follow this link: L<http://blogs.perl.org/mt/mt-search.fcgi?blog_id=310&tag=tutorial&limit=20>;
+if you are looking for a general introduction to Ubic, see L<Ubic::Manual::Intro>;
 
 if you want to use ubic from command line, see L<ubic>;
 
 if you want to manage ubic services from perl scripts, read this POD;
 
-if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Service::*> modules. Check out L<Ubic::Run> for integration with SysV init script system too.
+if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Service::*> modules.
 
 =head1 DESCRIPTION
 
@@ -424,7 +424,7 @@ sub service_names($) {
 
 Get root service.
 
-Root service doesn't have a name and returns all top-level services with C<services()> method. You can use it to traverse all services' tree.
+Root service doesn't have a name and returns all top-level services with C<services()> method. You can use it to traverse the whole service tree.
 
 =cut
 sub root_service($) {
