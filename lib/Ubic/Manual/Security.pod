@@ -1,7 +1,0 @@
-package Ubic::Manual::Security;
-
-# ABSTRACT: Security and permissions stuff
-
-=head1 DESCRIPTION
-
-
