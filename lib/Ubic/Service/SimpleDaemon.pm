@@ -3,7 +3,7 @@ package Ubic::Service::SimpleDaemon;
 use strict;
 use warnings;
 
-# ABSTRACT: variant of service when your service is simple daemonized binary
+# ABSTRACT: declarative service for daemonizing any binary
 
 =head1 SYNOPSIS
 
