@@ -22,8 +22,6 @@ Use this class to daemonize any binary.
 
 This class uses L<Ubic::Daemon> module for process daemonization. All pidfiles are stored in ubic data dir, with their names based on service names.
 
-This class is based on C<Ubic::Service::Skeleton>, so feel free to override C<start_impl>, C<stop_impl> and C<status_impl> methods if you need to add pre-start code or implement additional status checks.
-
 =cut
 
 use parent qw(Ubic::Service::Skeleton);
