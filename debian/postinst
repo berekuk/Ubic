@@ -5,9 +5,10 @@ if [ "$1" = "configure" ]; then
     if [ -n "$2" ]; then
         if dpkg --compare-versions "$2" lt 1.27; then
             ubic-admin setup --batch-mode --no-crontab --no-install-services
-            ubic stop ubic-ping
-            rm /etc/ubic/service/ubic-ping
-            rm /etc/init.d/ubic-ping
+            if [ -e '/etc/ubic/service/ubic-ping' ]; then
+                ubic stop ubic-ping
+            fi
+            rm -f /etc/ubic/service/ubic-ping /etc/init.d/ubic-ping
             update-rc.d ubic-ping remove
             update-rc.d ubic-watchdog defaults
             ubic start -f ubic
