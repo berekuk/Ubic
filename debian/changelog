@@ -1,3 +1,12 @@
+ubic (1.30) unstable; urgency=low
+
+  * Ubic::AtomicFile for storing any file safely
+  * POD improvements:
+   - Ubic::Manual::Overview
+   - Ubic::Service::SimpleDaemon now makes sense
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 28 Jun 2011 02:22:36 +0400
+
 ubic (1.29) unstable; urgency=low
 
   * ubic-admin script: fix crontab install when user doesn't have previous
