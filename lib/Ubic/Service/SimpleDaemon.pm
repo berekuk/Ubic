@@ -20,7 +20,7 @@ use warnings;
 
 Use this class to daemonize any binary.
 
-This class uses L<Ubic::Daemon> module for process daemonization. All pidfiles are stored in ubic data dir, with their names based on service names.
+This module uses L<Ubic::Daemon> module for process daemonization. All pidfiles are stored in ubic data dir, with their names based on service names.
 
 =cut
 
