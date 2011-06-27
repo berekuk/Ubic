@@ -69,4 +69,4 @@ Default installation provides some services out of the box. The most important o
 
 Watchdog service checks every service status periodically and restarts them if they are broken or down.
 
-=back
+=cut
