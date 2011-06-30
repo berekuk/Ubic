@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * fix ubic-admin setup - forgot to import IO::Handle
+        (https://github.com/berekuk/Ubic/issues/13)
 
 1.30    2011-06-28
         * Ubic::AtomicFile for storing any file safely

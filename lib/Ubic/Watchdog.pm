@@ -21,6 +21,7 @@ This is considered to be a non-public class. Its interface is subject to change 
 =cut
 
 use POSIX;
+use IO::Handle;
 use Params::Validate qw(:all);
 use Try::Tiny;
 use List::MoreUtils qw(any);

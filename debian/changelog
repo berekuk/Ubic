@@ -1,3 +1,10 @@
+ubic (1.31) unstable; urgency=low
+
+  * fix ubic-admin setup - forgot to import IO::Handle
+  (https://github.com/berekuk/Ubic/issues/13)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 30 Jun 2011 12:34:36 +0400
+
 ubic (1.30) unstable; urgency=low
 
   * Ubic::AtomicFile for storing any file safely
