@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.32    2011-07-07
         * Fix ubic-admin setup again. Sorry.
 
 1.31    2011-06-30
