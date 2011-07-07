@@ -15,6 +15,10 @@ use warnings;
 
 =over
 
+=cut
+
+use IO::Handle;
+
 =item B<store($data, $file)>
 
 Store C<$data> into C<$file> atomically. Temporary C<$file.new> will be created and then renamed to C<$file>.

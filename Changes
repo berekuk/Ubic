@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * Fix ubic-admin setup again. Sorry.
 
 1.31    2011-06-30
         * fix ubic-admin setup - forgot to import IO::Handle

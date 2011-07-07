@@ -1,3 +1,9 @@
+ubic (1.32) unstable; urgency=low
+
+  * Fix ubic-admin setup again. Sorry.
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 07 Jul 2011 23:25:22 +0400
+
 ubic (1.31) unstable; urgency=low
 
   * fix ubic-admin setup - forgot to import IO::Handle
