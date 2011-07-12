@@ -22,6 +22,7 @@ use warnings;
 
 use JSON;
 use Ubic::Lockf;
+use Ubic::AtomicFile;
 
 {
     # JSON.pm v2 incompatibility with v1 is really, really annoying.
@@ -92,11 +93,8 @@ Write data back on disk.
 sub commit {
     my $self = shift;
     my $fname = $meta->{$self}{fname};
-    open my $tmp_fh, '>', "$fname.new" or die "Can't write '$fname.new': $!";
 
-    print {$tmp_fh} objToJson({ %$self });
-    close $tmp_fh or die "Can't write to '$fname.new': $!";
-    rename "$fname.new" => $fname or die "Can't rename '$fname.new' to '$fname': $!";
+    Ubic::AtomicFile::store(objToJson({ %$self }) => $fname);
 }
 
 sub DESTROY {

@@ -1,3 +1,42 @@
+ubic (1.32) unstable; urgency=low
+
+  * Fix ubic-admin setup again. Sorry.
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 07 Jul 2011 23:25:22 +0400
+
+ubic (1.31) unstable; urgency=low
+
+  * fix ubic-admin setup - forgot to import IO::Handle
+  (https://github.com/berekuk/Ubic/issues/13)
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 30 Jun 2011 12:34:36 +0400
+
+ubic (1.30) unstable; urgency=low
+
+  * Ubic::AtomicFile for storing any file safely
+  * POD improvements:
+   - Ubic::Manual::Overview
+   - Ubic::Service::SimpleDaemon now makes sense
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 28 Jun 2011 02:22:36 +0400
+
+ubic (1.29) unstable; urgency=low
+
+  * ubic-admin script: fix crontab install when user doesn't have previous
+    crontab
+  * ubic script: fix 'ubic unknown-cmd' error reporting
+  * watchdog improvements:
+   - don't ask for status twice if service works
+   - permanently set credentials instead of using forks for non-root services
+   - log status obtained by status check, instead of just logging 'service is
+     broken'
+  * POD improvements:
+   - Ubic::Manual::Intro
+   - Ubic::Manual::Multiservices
+   - various POD fixes
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Tue, 07 Jun 2011 21:48:11 +0400
+
 ubic (1.28) unstable; urgency=low
 
   * 'ubic status' always shows non-cached statuses if called by root

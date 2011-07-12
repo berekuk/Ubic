@@ -1,8 +1,27 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.32    2011-07-07
+        * Fix ubic-admin setup again. Sorry.
+
+1.31    2011-06-30
+        * fix ubic-admin setup - forgot to import IO::Handle
+        (https://github.com/berekuk/Ubic/issues/13)
+
+1.30    2011-06-28
+        * Ubic::AtomicFile for storing any file safely
+        * POD improvements:
+         - Ubic::Manual::Overview
+         - Ubic::Service::SimpleDaemon now makes sense
+
+1.29    2011-06-07
         * ubic-admin script: fix crontab install when user doesn't have previous crontab
         * ubic script: fix 'ubic unknown-cmd' error reporting
+        * watchdog improvements:
+         - don't ask for status twice if service works
+         - permanently set credentials instead of using forks for non-root services
+         - log status obtained by status check, instead of just logging 'service is broken'
         * POD improvements:
          - Ubic::Manual::Intro
          - Ubic::Manual::Multiservices

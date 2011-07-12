@@ -36,7 +36,7 @@ sub reviving :Test(4) {
     is(scalar(Ubic->service('fake-http-service')->status), 'not running', 'service stopped (i.e. broken)');
 
     xsystem("$perl bin/ubic-watchdog >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    like(slurp('tfiles/watchdog.log'), qr/fake-http-service is broken, restarting/, 'watchdog prints logs about restarted service');
+    like(slurp('tfiles/watchdog.log'), qr/fake-http-service status is 'not running', restarting/, 'watchdog prints logs about restarted service');
     is(slurp('tfiles/watchdog.err.log'), '', "watchdog don't print anything to error log");
     is(scalar(Ubic->service('fake-http-service')->status), 'running', 'service is running again');
     Ubic->stop('fake-http-service');

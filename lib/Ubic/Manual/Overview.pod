@@ -1,0 +1,72 @@
+package Ubic::Manual::Overview;
+
+# ABSTRACT: General ubic concepts and architecture
+
+=head1 DESCRIPTION
+
+=head2 Services and service dir
+
+Ubic I<service> is an object describing how your service works.
+
+Service object must conform to the API of the L<Ubic::Service> class, so it must implement C<start>, C<stop> and C<status> methods.
+It can also provide other methods: which user should be used to run the service, how often the service should be checked by the watchdog, etc.
+
+Service declarations are stored in ubic I<service dir>.
+Service delaration is a single file with perl code which returns service object when executed with C<do>.
+If you use host-level installation, service dir is I</etc/ubic/service>. If you prefer installation to home dir, service dir is I<~/ubic/service>.
+
+=head2 'ubic' script
+
+C<ubic> script is the main tool for manipulating your services.
+
+C<ubic status> command, for example, will show the list of all services declared in service dir, along with their statuses.
+C<ubic start> and C<ubic stop> can be used to start and stop all or some services. Refer to L<ubic> POD for more details.
+
+=head2 Service status
+
+Every service can report its status via C<status> method.
+
+In the plane of perl API, statuses are instances of L<Ubic::Result> class. Refer to its POD for gory details on various possible status values.
+
+Beside the real status, which can be calculated by calling C<status> method, there is also the I<cached status>, stored on the disk in the special data dir.
+This status is used in two ways.
+First, users without appropriate rights to run actual status check, can invoke C<ubic status> command and see cached statuses.
+Second, watchdog process compares cached status with current status to identify broken services and bring them back to life.
+
+=head2 Common service classes
+
+Since service descriptions are just a perl code, you get the full power of code reuse, and especially OOP-style code reuse, i.e. inheritance.
+
+The most important property of well-behaved service is that it would prevent you from starting it twice, won't fail if you try to stop it twice, and will report correct statuses in all conditions. C<Ubic::Service::Skeleton> helps you to do these things by asking for current service status before start and stop operations. It also solves the common task of re-asking service status in a loop with sleeps on start.
+
+C<Ubic::Service::Common> class is very similar to C<Ubic::Service::Skeleton>, but it allows you to pass start/stop/status code via callbacks instead of inheritance.
+
+Finally, there is C<Ubic::Service::SimpleDaemon>, which can turn any script or binary into service. It uses C<Ubic::Daemon> module for all daemonization stuff.
+
+There are also some other modules on CPAN for more specific tasks: L<Ubic::Service::Plack>, L<Ubic::Service::Memcached>.
+
+=head2 Service tree
+
+Service dir can contain subfolders with service definitions inside of these subfolders. It allows you to group your services together and make group operations on them. For example, C<ubic stop -f my> will stop both C<my.foo> and C<my.bar> services.
+
+What's even more interesting is that subfolders with separate files in them is not the only way to populate service tree. Read L<Ubic::Manual::Multiservices> to learn more!
+
+=head2 Permissions and security
+
+Every service is meant to be started by a specific user and group. Service can either provide user and group itself, or default user will be used.
+
+Default user is C<root> on system-wide installations, and the home folder owner on home dir installations. You can change it in global C<ubic.cfg> file.
+
+All service operations are performed using its user and group: start/stop operations, status checks, status file updates, watchdog checks. Ubic tries to change user to service user as soon as possible (but it still happens after service definition's compilation, of course). It means that service not only always started from correct user, even if you called C<ubic start foo> being root, for example, but also that service user is always has enough grants to operate service too.
+
+This feature requires 1777 grants to ubic data dir (readable and writable for everyone, but with sticky bit enabled). It should be secure, but if it worries you, you can try to change it to 1577 (writable for specific group), and add all service users to this group.
+
+Note also that you can't change user of existing service and expect your service to work. Refer to "Permission denied" question in L<Ubic::Manual::FAQ> for more on this.
+
+=head2 Watchdog
+
+Default installation provides some services out of the box. The most important of them is I<ubic.watchdog>.
+
+Watchdog service checks every service status periodically and restarts them if they are broken or down.
+
+=cut

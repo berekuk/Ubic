@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Test::Exception;
 
-if ($^O =~ /MSWin/i) {
+if ($^O =~ /MSWin|cygwin/i) {
     BAIL_OUT("OS unsupported");
 }
 

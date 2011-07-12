@@ -3,18 +3,24 @@ package Ubic::Service::SimpleDaemon;
 use strict;
 use warnings;
 
-# ABSTRACT: variant of service when your service is simple daemonized binary
+# ABSTRACT: declarative service for daemonizing any binary
 
 =head1 SYNOPSIS
 
     use Ubic::Service::SimpleDaemon;
     my $service = Ubic::Service::SimpleDaemon->new(
-        bin => "sleep 1000"
+        bin => "sleep 1000",
+        stdout => "/var/log/sleep.log",
+        stderr => "/var/log/sleep.err.log",
+        ubic_log => "/var/log/sleep.ubic.log",
+        user => "nobody",
     );
 
 =head1 DESCRIPTION
 
-Unlike L<Ubic::Service::Common>, this class allows you to specify only name and binary of your service.
+Use this class to daemonize any binary.
+
+This module uses L<Ubic::Daemon> module for process daemonization. All pidfiles are stored in ubic data dir, with their names based on service names.
 
 =cut
 

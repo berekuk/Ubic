@@ -23,6 +23,7 @@ use Getopt::Long 2.33;
 use Carp;
 use IPC::Open3;
 
+use Ubic::AtomicFile;
 use Ubic::Settings;
 use Ubic::Settings::ConfigFile;
 
@@ -299,9 +300,7 @@ sub setup {
             print "Installing ubic.$name service...\n";
 
             my $file = "$service_dir/ubic/$name";
-            open my $fh, '>', $file or die "Can't write to '$file': $!";
-            print {$fh} $content or die "Can't write to '$file': $!";
-            close $fh or die "Can't close '$file': $!";
+            Ubic::AtomicFile::store($content => $file);
         };
 
         $add_service->(

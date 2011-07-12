@@ -21,6 +21,7 @@ This is considered to be a non-public class. Its interface is subject to change 
 =cut
 
 use POSIX;
+use IO::Handle;
 use Params::Validate qw(:all);
 use Try::Tiny;
 use List::MoreUtils qw(any);
@@ -172,6 +173,8 @@ sub check($) {
 
     try {
         alarm($service->check_timeout);
+
+        # TODO - do additional fork, so that if service code overrides SIG{ALRM} or resets alarm(), watchdog still will finish in time
         $SIG{ALRM} = sub {
             ERROR("$name check_timeout exceeded");
             STDOUT->flush;
@@ -180,10 +183,13 @@ sub check($) {
             ERROR "kill sent, still alive"; # should never happen, we called setsid earlier
         };
 
-        my $watchdog_lock = do {
-            my $guard = Ubic->access_guard($name);
-            Ubic::SingletonLock->new(Ubic->get_data_dir()."/watchdog/lock/".$name, { blocking => 0 });
-        };
+        # permanently use service credentials
+        # this line optimizes the number of fork calls - future status/restart calls would perform forked_call() otherwise
+        Ubic::Credentials->new( service => $service )->set;
+
+        # so we don't need access guard for this lock
+        my $watchdog_lock = Ubic::SingletonLock->new(Ubic->get_data_dir()."/watchdog/lock/".$name, { blocking => 0 });
+
         unless ($watchdog_lock) {
             if ($self->{verbose}) {
                 INFO "$name is locked by another watchdog process";
@@ -199,16 +205,20 @@ sub check($) {
 
         my $status = Ubic->status($name);
         unless ($status->status eq 'running') {
-            Ubic->set_cached_status($name, $status->status); # following start can throw exception
-            ERROR("$name is broken, restarting");
-            Ubic->start($name);
-        }
-        $status = Ubic->status($name);
-        alarm(0);
+            # following code can throw an exception, so we want to cache invalid status immediately
+            Ubic->set_cached_status($name, $status->status);
 
-        if ($status->status ne 'running') {
-            INFO("$name started, but status is still '$status'");
+            ERROR("$name status is '$status', restarting");
+            Ubic->restart($name);
+
+            # This is a precaution against services with wrong start/status logic.
+            $status = Ubic->status($name);
+            if ($status->status ne 'running') {
+                INFO("$name started, but status is still '$status'");
+            }
         }
+
+        alarm(0);
         Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
     }
     catch {
