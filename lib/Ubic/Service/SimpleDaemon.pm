@@ -30,6 +30,7 @@ use Cwd;
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 use Ubic::Result qw(result);
 use Ubic::Settings;
+use File::Spec;
 
 use Params::Validate qw(:all);
 
@@ -142,6 +143,12 @@ sub start_impl {
         stderr => $self->{stderr} || "/dev/null",
         ubic_log => $self->{ubic_log} || "/dev/null",
     };
+    if ($old_cwd) {
+        for my $key (qw/ pidfile stdout stderr ubic_log /) {
+            next unless defined $start_params->{$key};
+            $start_params->{$key} = File::Spec->rel2abs($start_params->{$key}, $old_cwd);
+        }
+    }
     start_daemon($start_params);
 
     if (defined $old_cwd) {
