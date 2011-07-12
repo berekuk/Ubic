@@ -17,7 +17,7 @@ use Cwd;
 sub import {
     my $class = shift;
     if ($ENV{PERL5LIB}) {
-        $ENV{PERL5LIB} = $ENV{PERL5LIB}.":".getcwd()."/lib";
+        $ENV{PERL5LIB} = getcwd()."/lib:".$ENV{PERL5LIB};
     }
     else {
         $ENV{PERL5LIB} = getcwd()."/lib";

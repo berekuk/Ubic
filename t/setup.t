@@ -14,8 +14,9 @@ use Config;
 my $perl = $Config{perlpath};
 
 local $ENV{HOME} = 'tfiles';
+warn $ENV{PERL5LIB};
 
-xsystem("$perl ./bin/ubic-admin setup --batch-mode --no-install-services");
+xsystem("$perl ./bin/ubic-admin setup --batch-mode --no-install-services --local");
 
 ok(-d 'tfiles/ubic/data', 'ubic data dir created');
 ok(-d 'tfiles/ubic/log', 'ubic log dir created');
