@@ -58,4 +58,4 @@ select $fh;
 my $results = Ubic::Cmd->start('broken');
 select $stdout;
 is($results->exit_code, 1, 'exit code when starting broken service');
-like($out, qr{^\QStarting broken... oops, this service can't stop at tfiles/service/broken line \E\d+\.$}, 'stdout when starting broken service');
+like($out, qr{^Starting broken\.\.\. oops, this service can't stop at .*tfiles/service/broken line \d+\.$}, 'stdout when starting broken service');
