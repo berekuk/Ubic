@@ -20,6 +20,7 @@ Unlike L<Ubic::Service::Common>, this class allows you to specify only name and 
 
 use parent qw(Ubic::Service::Skeleton);
 
+use Cwd;
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
 use Ubic::Result qw(result);
 use Ubic::Settings;
@@ -57,12 +58,6 @@ Parameters:
 
 Daemon binary.
 
-=item I<name>
-
-Service's name.
-
-Optional, will usually be set by upper-level multiservice. Don't set it unless you know what you're doing.
-
 =item I<user>
 
 User under which daemon will be started. Optional, default is C<root>.
@@ -81,6 +76,12 @@ File into which daemon's stdout will be redirected. Default is C</dev/null>.
 
 File into which daemon's stderr will be redirected. Default is C</dev/null>.
 
+=item I<name>
+
+Service's name.
+
+Optional, will usually be set by upper-level multiservice. Don't set it unless you know what you're doing.
+
 =back
 
 =cut
@@ -94,6 +95,8 @@ sub new {
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
         ubic_log => { type => SCALAR, optional => 1 },
+        cwd => { type => SCALAR, optional => 1 },
+        env => { type => HASHREF, optional => 1 },
     });
 
     return bless {%$params} => $class;
@@ -112,6 +115,20 @@ sub pidfile {
 
 sub start_impl {
     my ($self) = @_;
+
+    my $old_cwd;
+    if (defined $self->{cwd}) {
+        $old_cwd = getcwd;
+        chdir $self->{cwd} or die "chdir to '$self->{cwd}' failed: $!";
+    }
+
+    local %ENV = %ENV;
+    if (defined $self->{env}) {
+        for my $key (keys %{ $self->{env} }) {
+            $ENV{$key} = $self->{env}{$key};
+        }
+    }
+
     my $start_params = {
         pidfile => $self->pidfile,
         bin => $self->{bin},
@@ -119,10 +136,11 @@ sub start_impl {
         stderr => $self->{stderr} || "/dev/null",
         ubic_log => $self->{ubic_log} || "/dev/null",
     };
-    if ($self->{user}) {
-        $start_params->{user} = $self->{user}; # do we actually need this? Ubic.pm should call setuid for us...
-    }
     start_daemon($start_params);
+
+    if (defined $old_cwd) {
+        chdir $old_cwd or die "chdir to '$old_cwd' failed: $!";
+    }
 }
 
 sub user {
@@ -163,4 +181,3 @@ L<Ubic::Daemon> - module to daemonize any binary
 =cut
 
 1;
-

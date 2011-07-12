@@ -77,8 +77,8 @@ sub local_ubic {
     }
 
     require Ubic;
-    Ubic->set_data_dir('tfiles/ubic');
-    Ubic->set_service_dir('tfiles/service');
+    Ubic->set_data_dir(getcwd.'/tfiles/ubic');
+    Ubic->set_service_dir(getcwd.'/tfiles/service');
     Ubic->set_default_user($params->{default_user});
 }
 
