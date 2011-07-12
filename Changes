@@ -1,6 +1,10 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * new options in Ubic::Service::SimpleDaemon:
+         - cwd - set daemon working dir
+         - env - set daemon environment
+        * minimal setup test
 
 1.32    2011-07-07
         * Fix ubic-admin setup again. Sorry.

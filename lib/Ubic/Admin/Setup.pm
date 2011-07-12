@@ -154,6 +154,7 @@ sub setup {
     my $opt_sticky_777 = 1;
     my $opt_install_services = 1;
     my $opt_crontab = 1;
+    my $opt_local;
 
     GetOptions(
         'batch-mode' => \$batch_mode,
@@ -166,6 +167,7 @@ sub setup {
         'sticky-777!' => \$opt_sticky_777,
         'install-services!' => \$opt_install_services,
         'crontab!' => \$opt_crontab,
+        'local!' => \$opt_local,
     ) or die "Getopt failed";
 
     die "Unexpected arguments '@ARGV'" if @ARGV;
@@ -180,41 +182,46 @@ sub setup {
     print_tty "Ubic can be installed either in your home dir or into standard system paths (/etc, /var).\n";
     print_tty "You need to be root to install it into system.\n";
 
+    # ideally, we want is_root option and local option to be orthogonal
+    # it's not completely true by now, though
     my $is_root = ( $> ? 0 : 1 );
-    if ($is_root) {
-        my $ok = prompt_bool("You are root, install into system?", 1);
-        return unless $ok;
-    }
-    else {
-        my $ok = prompt_bool("You are not root, install locally?", 1);
-        return unless $ok;
+    my $local = $opt_local;
+    unless (defined $local) {
+        if ($is_root) {
+            my $ok = prompt_bool("You are root, install into system?", 1);
+            $local = 1 unless $ok; # root can install locally
+        }
+        else {
+            my $ok = prompt_bool("You are not root, install locally?", 1);
+            return unless $ok; # non-root user can't install into system
+        }
     }
 
-    my $home;
-    unless ($is_root) {
-        $home = $ENV{HOME};
-        unless (defined $home) {
+    my $local_dir;
+    if ($local) {
+        $local_dir = $ENV{HOME};
+        unless (defined $local_dir) {
             die "Can't find your home!";
         }
-        unless (-d $home) {
-            die "Can't find your home dir '$home'!";
+        unless (-d $local_dir) {
+            die "Can't find your home dir '$local_dir'!";
         }
     }
 
     print_tty "\nService dir is a directory with descriptions of your services.\n";
-    my $default_service_dir = ($is_root ? '/etc/ubic/service' : "$home/ubic/service");
+    my $default_service_dir = (defined($local_dir) ? "$local_dir/ubic/service" : '/etc/ubic/service');
     $default_service_dir = $opt_service_dir if defined $opt_service_dir;
     my $service_dir = prompt_str("Service dir?", $default_service_dir);
 
     print_tty "\nData dir is a directory into which ubic stores all of its data: locks,\n";
     print_tty "status files, tmp files.\n";
-    my $default_data_dir = ($is_root ? '/var/lib/ubic' : "$home/ubic/data");
+    my $default_data_dir = (defined($local_dir) ? "$local_dir/ubic/data" : '/var/lib/ubic');
     $default_data_dir = $opt_data_dir if defined $opt_data_dir;
     my $data_dir = prompt_str("Data dir?", $default_data_dir);
 
     print_tty "\nLog dir is a directory into which ubic.watchdog will write its logs.\n";
     print_tty "(Your own services are free to write logs wherever they want.)\n";
-    my $default_log_dir = ($is_root ? '/var/log/ubic' : "$home/ubic/log");
+    my $default_log_dir = (defined($local_dir) ? "$local_dir/ubic/log" : '/var/log/ubic');
     $default_log_dir = $opt_log_dir if defined $opt_log_dir;
     my $log_dir = prompt_str("Log dir?", $default_log_dir);
 
@@ -269,7 +276,7 @@ sub setup {
         $enable_crontab = prompt_bool("Install watchdog's watchdog as a cron job?", $opt_crontab);
     }
 
-    my $config_file = ($is_root ? '/etc/ubic/ubic.cfg' : "$home/.ubic.cfg");
+    my $config_file = ($local_dir ? "$local_dir/.ubic.cfg" : '/etc/ubic/ubic.cfg');
 
     {
         print_tty "\nThat's all I need to know.\n";
