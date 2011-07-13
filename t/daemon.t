@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 28;
 use Test::Exception;
 
 use lib 'lib';
@@ -88,10 +88,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     my ($pid) = $piddata =~ /pid\s+(\d+)/ or die "Unknown pidfile content '$piddata'";
     kill -9 => $pid;
     sleep 1;
-    {
-        my $ignore_warn = ignore_warn(qr{(killing unguarded daemon|pidfile tfiles/pid removed)});
-        ok(!check_daemon("tfiles/pid"), 'ubic-guardian is dead');
-    }
+    ok(!check_daemon("tfiles/pid", { quiet => 1 }), 'ubic-guardian is dead');
 
     start_daemon({
         bin => "$perl t/bin/locking-daemon",
@@ -240,4 +237,75 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
 {
     lives_ok(sub { stop_daemon('aeuklryaweur') }, 'stop_daemon with non-existing pidfile is ok');
     dies_ok(sub { stop_daemon({ pidfile => 'auerawera' }) }, 'calling stop_daemon with invalid parameters is wrong');
+}
+
+# ubic_log (5)
+{
+    {
+        rebuild_tfiles; local_ubic;
+        start_daemon({
+            bin => "sleep 10",
+            pidfile => "tfiles/pid",
+            ubic_log => 'tfiles/ubic.log',
+        });
+        stop_daemon('tfiles/pid');
+        my $log = slurp('tfiles/ubic.log');
+        like($log, qr/daemon \d+ exited by sigterm$/m, 'exit via sigterm');
+    }
+
+    {
+        rebuild_tfiles; local_ubic;
+        start_daemon({
+            bin => q|perl -e '$SIG{TERM} = sub { exit }; sleep 10'|,
+            pidfile => "tfiles/pid",
+            ubic_log => 'tfiles/ubic.log',
+        });
+        sleep 1;
+        stop_daemon('tfiles/pid');
+        my $log = slurp('tfiles/ubic.log');
+        like($log, qr/daemon \d+ exited$/m, 'exit voluntarily');
+    }
+
+    {
+        rebuild_tfiles; local_ubic;
+        start_daemon({
+            bin => q|perl -e 'exit 3'|,
+            pidfile => "tfiles/pid",
+            ubic_log => 'tfiles/ubic.log',
+        });
+        sleep 1;
+        my $log = slurp('tfiles/ubic.log');
+        like($log, qr/daemon \d+ failed, exit code 3$/m, 'exit with non-zero code');
+    }
+
+    {
+        rebuild_tfiles; local_ubic;
+        start_daemon({
+            bin => q|perl -e '$SIG{TERM} = "IGNORE"; sleep 30'|,
+            pidfile => "tfiles/pid",
+            ubic_log => 'tfiles/ubic.log',
+            term_timeout => 1,
+        });
+        sleep 1;
+        stop_daemon('tfiles/pid');
+        my $log = slurp('tfiles/ubic.log');
+        like($log, qr/daemon \d+ probably killed by SIGKILL$/m, 'exit via sigkill');
+    }
+
+    {
+        rebuild_tfiles; local_ubic;
+        start_daemon({
+            bin => q|perl -e '$SIG{TERM} = "IGNORE"; sleep 30'|,
+            pidfile => "tfiles/pid",
+            ubic_log => 'tfiles/ubic.log',
+            term_timeout => 1,
+        });
+        sleep 1;
+        my $status = check_daemon('tfiles/pid');
+        kill 9 => $status->pid;
+        sleep 1;
+        stop_daemon('tfiles/pid');
+        my $log = slurp('tfiles/ubic.log');
+        like($log, qr/daemon \d+ failed with signal KILL \(9\)$/m, 'exit via signal to daemon');
+    }
 }

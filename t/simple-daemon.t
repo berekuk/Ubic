@@ -8,6 +8,7 @@ use Test::More tests => 17;
 use lib 'lib';
 
 use Time::HiRes qw(sleep);
+use IO::Handle;
 
 use t::Utils;
 
@@ -46,7 +47,7 @@ use Ubic::Service::SimpleDaemon;
     use Cwd;
     my $service = Ubic::Service::SimpleDaemon->new({
         name => 'simple1',
-        bin => ['perl', '-e', 'use Cwd; print getcwd."\n"; STDOUT->flush; sleep 1000'],
+        bin => ['perl', '-e', 'use Cwd; use IO::Handle; print getcwd."\n"; STDOUT->flush; sleep 1000'],
         stdout => getcwd.'/tfiles/stdout',
         stderr => getcwd.'/tfiles/stderr',
         cwd => 'tfiles',
@@ -76,7 +77,7 @@ use Ubic::Service::SimpleDaemon;
     local $ENV{XXX} = 666;
     my $service = Ubic::Service::SimpleDaemon->new({
         name => 'simple1',
-        bin => ['perl', '-e', 'use Cwd; print "FOO: $ENV{FOO}\n"; print "BAR: $ENV{BAR}\n"; print "XXX: $ENV{XXX}\n"; STDOUT->flush; sleep 1000'],
+        bin => ['perl', '-e', 'use Cwd; use IO::Handle; print "FOO: $ENV{FOO}\n"; print "BAR: $ENV{BAR}\n"; print "XXX: $ENV{XXX}\n"; STDOUT->flush; sleep 1000'],
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
         env => {

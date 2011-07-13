@@ -32,6 +32,7 @@ use POSIX qw(setsid);
 use Time::HiRes qw(sleep);
 use Params::Validate qw(:all);
 use Carp;
+use Config;
 
 use Ubic::Lockf;
 use Ubic::Daemon::Status;
@@ -58,6 +59,18 @@ sub import {
         die "failed to initialize OS-specific module $module: $@";
     }
     __PACKAGE__->export_to_level(1, @_);
+}
+
+{
+    my @signame;
+    sub _signame {
+        my $signum = shift;
+        unless (@signame) {
+            @signame = split /\s+/, $Config{sig_name};
+        }
+        return $signame[$signum];
+
+    }
 }
 
 sub _log {
@@ -177,9 +190,17 @@ Write all daemon's error output to given file. If not specified, all stderr will
 
 =item I<ubic_log>
 
-Optional filename of ubic log. It will contain some technical information about running daemon.
+Optional filename of ubic log. Log will contain some technical information about running daemon.
 
 If not specified, this logging facility will be disabled.
+
+=item I<cwd>
+
+Change working directory before starting a daemon. Optional.
+
+=item I<env>
+
+Modify environment before starting a daemon. Optional. Must be a plain hashref if specified.
 
 =item I<term_timeout>
 
@@ -203,9 +224,11 @@ sub start_daemon($) {
         ubic_log => { type => SCALAR, optional => 1 },
         user => { type => SCALAR, optional => 1 },
         term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
+        cwd => { type => SCALAR, optional => 1 },
+        env => { type => HASHREF, optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user, $term_timeout)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user term_timeout /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user, $term_timeout, $cwd, $env)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user   term_timeout   cwd   env /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -240,7 +263,7 @@ sub start_daemon($) {
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
-            my $status = shift; # nobody cares for this status, anyway...
+            my $status = shift; # nobody cares for this status anyway...
             close($ubic_fh) if $ubic_fh;
             STDOUT->flush;
             STDERR->flush;
@@ -314,7 +337,7 @@ sub start_daemon($) {
                     }
                     _log($ubic_fh, "sending SIGKILL to $child");
                     kill -9 => $child;
-                    _log($ubic_fh, "child probably killed by SIGKILL");
+                    _log($ubic_fh, "daemon $child probably killed by SIGKILL");
                     $pid_state->remove();
                     $instant_exit->(0);
                 };
@@ -338,25 +361,33 @@ sub start_daemon($) {
                 $? = 0;
                 waitpid($child, 0);
                 if ($? > 0) {
-                    my $msg;
-                    my $signal = $? & 127;
-                    if ($signal) {
+                    my $msg = "daemon $child failed with \$? = $?";
+                    if (my $signal = $? & 127) {
                         if ($sigterm_sent && $signal == &POSIX::SIGTERM) {
                             # it's ok, we probably sent this signal ourselves
-                            _log($ubic_fh, "daemon exited by sigterm");
+                            _log($ubic_fh, "daemon $child exited by sigterm");
                             $pid_state->remove;
                             $instant_exit->(0);
                         }
-                        $msg = "Daemon $child failed with signal $signal";
+                        my $signame = _signame($signal);
+                        if (defined $signame) {
+                            $msg = "daemon $child failed with signal $signame ($signal)";
+                        }
+                        else {
+                            $msg = "daemon $child failed with signal $signal";
+                        }
                     }
-                    else {
-                        $msg = "Daemon failed: $?";
+                    elsif ($? & 128) {
+                        $msg = "daemon $child failed, core dumped";
+                    }
+                    elsif (my $code = $? >> 8) {
+                        $msg = "daemon $child failed, exit code $code";
                     }
                     _log($ubic_fh, $msg);
                     $pid_state->remove;
                     $instant_exit->(1);
                 }
-                _log($ubic_fh, "daemon exited");
+                _log($ubic_fh, "daemon $child exited");
                 $pid_state->remove;
                 $instant_exit->(0);
             }
@@ -369,6 +400,15 @@ sub start_daemon($) {
                 # start new process group - become immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
                 $0 = "ubic-daemon $name";
+
+                if (defined $cwd) {
+                    chdir $cwd or die "chdir to '$cwd' failed: $!";
+                }
+                if (defined $env) {
+                    for my $key (keys %{ $env }) {
+                        $ENV{$key} = $env->{$key};
+                    }
+                }
 
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";
@@ -383,7 +423,6 @@ sub start_daemon($) {
                 else {
                     $function->();
                 }
-
             }
         };
         if ($write_pipe) {
@@ -415,7 +454,14 @@ Returns instance of L<Ubic::Daemon::Status> class if daemon is alive, and false 
 
 =cut
 sub check_daemon {
-    my ($pidfile) = @_;
+    my $pidfile = shift;
+    my $options = validate(@_, {
+        quiet => { optional => 1 },
+    });
+
+    my $print = sub {
+        print @_, "\n" unless $options->{quiet};
+    };
 
     my $pid_state = Ubic::Daemon::PidState->new($pidfile);
     return undef if $pid_state->is_empty;
@@ -442,7 +488,7 @@ sub check_daemon {
     }
     unless ($OS->pid_exists($piddata->{daemon})) {
         $pid_state->remove;
-        print "pidfile $pidfile removed - daemon with cached pid $piddata->{daemon} not found\n";
+        $print->("pidfile $pidfile removed - daemon with cached pid $piddata->{daemon} not found");
         return undef;
     }
 
@@ -451,19 +497,19 @@ sub check_daemon {
 
     my $guid = $OS->pid2guid($piddata->{daemon});
     unless ($guid) {
-        print "daemon '$daemon_cmd' from $pidfile just disappeared\n";
+        $print->("daemon '$daemon_cmd' from $pidfile just disappeared");
         return undef;
     }
     if ($guid eq $piddata->{guid}) {
-        print "killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile\n";
+        $print->("killing unguarded daemon '$daemon_cmd' with pid $piddata->{daemon} from $pidfile");
         kill -9 => $piddata->{daemon};
         $pid_state->remove;
-        print "pidfile $pidfile removed\n";
+        $print->("pidfile $pidfile removed");
         return undef;
     }
-    print "daemon pid $piddata->{daemon} cached in pidfile $pidfile, ubic-guardian not found\n";
-    print "current process '$daemon_cmd' with that pid looks too fresh and will not be killed\n";
-    print "pidfile $pidfile removed\n";
+    $print->("daemon pid $piddata->{daemon} cached in pidfile $pidfile, ubic-guardian not found");
+    $print->("current process '$daemon_cmd' with that pid looks too fresh and will not be killed");
+    $print->("pidfile $pidfile removed");
     $pid_state->remove;
     return undef;
 }

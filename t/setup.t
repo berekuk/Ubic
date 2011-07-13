@@ -14,7 +14,6 @@ use Config;
 my $perl = $Config{perlpath};
 
 local $ENV{HOME} = 'tfiles';
-warn $ENV{PERL5LIB};
 
 xsystem("$perl ./bin/ubic-admin setup --batch-mode --no-install-services --local");
 
