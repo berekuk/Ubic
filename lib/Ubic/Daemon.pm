@@ -474,9 +474,9 @@ sub check_daemon {
 
 Probably. But it definitely is ready for production usage.
 
-This module currently is Linux-specific, because it uses C</proc> some magic. Patches are very welcome to fix this.
+This module is not compatible with Windows by now. It can be fixed by implementing correct C<Ubic::Daemon::OS::Windows> module.
 
-If you can't figure out why there are C<ubic-guardian> processes in your C<ps> output, see L<Ubic::Manual::FAQ>, answer is there.
+If you wonder why there are C<ubic-guardian> processes in your C<ps> output, see L<Ubic::Manual::FAQ>, answer is there.
 
 =head1 SEE ALSO
 
@@ -484,7 +484,7 @@ L<Ubic::Service::SimpleDaemon> - simplest ubic service which uses Ubic::Daemon
 
 There are also a plenty of other daemonizers on CPAN:
 
-L<MooseX::Daemonize>, L<Proc::Daemon>, L<Daemon::Generic>, L<Net::ServeR::Daemonize>.
+L<MooseX::Daemonize>, L<Proc::Daemon>, L<Daemon::Generic>, L<Net::Server::Daemonize>.
 
 =cut
 
