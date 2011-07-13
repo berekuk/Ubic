@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.32_02 2011-07-13
         * Ubic::Daemon improvements:
          - 'cwd' and 'env' options (SimpleDaemon now just passes them to start_daemon())
          - log signal name, exit code and other events to ubic_log prettier and more consistently
