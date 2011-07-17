@@ -76,7 +76,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
 # reviving after kill -9 on ubic-guardian (4)
 {
     start_daemon({
-        bin => "$perl t/bin/locking-daemon",
+        bin => [$perl, 't/bin/locking-daemon'],
         pidfile => 'tfiles/pid',
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
@@ -91,7 +91,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     ok(!check_daemon("tfiles/pid", { quiet => 1 }), 'ubic-guardian is dead');
 
     start_daemon({
-        bin => "$perl t/bin/locking-daemon",
+        bin => [$perl, 't/bin/locking-daemon'],
         pidfile => 'tfiles/pid',
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
@@ -256,8 +256,10 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     {
         rebuild_tfiles; local_ubic;
         start_daemon({
-            bin => q|perl -e '$SIG{TERM} = sub { exit }; sleep 10'|,
+            bin => ['perl', '-le', '$SIG{TERM} = sub { print "term"; exit }; sleep 10'],
             pidfile => "tfiles/pid",
+            stdout => 'tfiles/log',
+            stderr => 'tfiles/err.log',
             ubic_log => 'tfiles/ubic.log',
         });
         sleep 1;
@@ -269,7 +271,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     {
         rebuild_tfiles; local_ubic;
         start_daemon({
-            bin => q|perl -e 'exit 3'|,
+            bin => ['perl', '-e', 'exit 3'],
             pidfile => "tfiles/pid",
             ubic_log => 'tfiles/ubic.log',
         });
@@ -281,7 +283,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     {
         rebuild_tfiles; local_ubic;
         start_daemon({
-            bin => q|perl -e '$SIG{TERM} = "IGNORE"; sleep 30'|,
+            bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
             pidfile => "tfiles/pid",
             ubic_log => 'tfiles/ubic.log',
             term_timeout => 1,
@@ -295,7 +297,7 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     {
         rebuild_tfiles; local_ubic;
         start_daemon({
-            bin => q|perl -e '$SIG{TERM} = "IGNORE"; sleep 30'|,
+            bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
             pidfile => "tfiles/pid",
             ubic_log => 'tfiles/ubic.log',
             term_timeout => 1,

@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * fix daemon tests
 
 1.32_02 2011-07-13
         * Ubic::Daemon improvements:
