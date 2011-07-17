@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.32_03 2011-07-17
         * fix daemon tests
 
 1.32_02 2011-07-13
