@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.32_04 2011-07-18
         * don't mess with crontab on setup tests
         (see https://github.com/berekuk/Ubic/issues/17)
 
