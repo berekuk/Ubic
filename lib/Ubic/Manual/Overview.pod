@@ -12,8 +12,10 @@ Service object must conform to the API of the L<Ubic::Service> class, so it must
 It can also provide other methods: which user should be used to run the service, how often the service should be checked by the watchdog, etc.
 
 Service declarations are stored in ubic I<service dir>.
-Service delaration is a single file with perl code which returns service object when executed with C<do>.
+Service declaration is a single file with perl code which returns service object when executed with C<do>.
 If you use host-level installation, service dir is I</etc/ubic/service>. If you prefer installation to home dir, service dir is I<~/ubic/service>.
+
+Service file name can contain digits, letters underscores and dashes. Dot is not a valid symbol and all files with dots in their names will be ignored.
 
 =head2 'ubic' script
 
@@ -47,7 +49,7 @@ There are also some other modules on CPAN for more specific tasks: L<Ubic::Servi
 
 =head2 Service tree
 
-Service dir can contain subfolders with service definitions inside of these subfolders. It allows you to group your services together and make group operations on them. For example, C<ubic stop -f my> will stop both C<my.foo> and C<my.bar> services.
+Service dir can contain subfolders with service definitions inside of these subfolders. It allows you to group your services together and make group operations on them. For example, if you have C</etc/ubic/service/my/foo> and C</etc/ubic/service/my/bar> configs, C<ubic stop -f my> will stop both C<my.foo> and C<my.bar> services.
 
 What's even more interesting is that subfolders with separate files in them is not the only way to populate service tree. Read L<Ubic::Manual::Multiservices> to learn more!
 
