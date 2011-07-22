@@ -10,7 +10,7 @@ Run 'cpan -i Ubic && ubic-admin setup' to install Ubic.
 We also provide .deb packages for Debian/Ubuntu. Latest .deb package can be downloaded from ppa:berekuk/ubic (see <https://launchpad.net/~berekuk/+archive/ubic> for details).
 
 Debian package build can be reproduced with this command:
-    dzil build && cd Ubic* && debuild
+    dzil build && cd Ubic* && cp -r ../debian . && debuild
 
 If you'll write ebuilds for Gentoo or specs for RPM-based systems, please contribute them back :)
 
