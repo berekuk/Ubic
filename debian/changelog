@@ -1,3 +1,14 @@
+ubic (1.33) unstable; urgency=low
+
+  * Ubic::Daemon improvements:
+   - 'cwd' and 'env' options (SimpleDaemon now just passes them to start_daemon())
+   - log signal name, exit code and other events to ubic_log prettier and more consistently
+  * new options in Ubic::Service::SimpleDaemon:
+   - cwd - set daemon working dir
+   - env - set daemon environment
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 22 Jul 2011 23:00:14 +0400
+
 ubic (1.32) unstable; urgency=low
 
   * Fix ubic-admin setup again. Sorry.

@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * stable release
 
 1.32_04 2011-07-18
         * don't mess with crontab on setup tests
