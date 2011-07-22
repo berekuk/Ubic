@@ -30,7 +30,7 @@ debian/install-stamp: debian/build-stamp
 	dh_testroot
 	dh_clean -k
 	$(MAKE) install DESTDIR=$(DESTDIR) PREFIX=/usr
-	rm -rf $(DESTDIR)/usr/lib/perl/5.8/
+	rm -rf $(DESTDIR)/usr/lib/perl/5.*/ # remove perllocal.pod
 	cp -r etc $(DESTDIR)/
 	install -D -m644 debian/lintian-overrides $(DESTDIR)/usr/share/lintian/overrides/ubic
 	touch $@
