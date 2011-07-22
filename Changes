@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * fix setup.t - don't fail if ubic is already installed
 
 1.33    2011-07-22
         * stable release
