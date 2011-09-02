@@ -5,6 +5,7 @@ Revision history for Ubic
         * more questions in Ubic::Manual::FAQ, other various doc improvements
         * partially align status column on 'ubic status' command
         * silently skip configs with taboo extensions, complain about others to stderr
+          (see https://github.com/berekuk/Ubic/issues/15)
         * Ubic::Daemon on linux doesn't fail if can't read from /proc cmdline file:
           there are cases when it is a possible state (usually after reboot)
 
