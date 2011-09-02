@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.33_01 2011-09-02
         * fix setup.t - don't fail if ubic is already installed
         * more questions in Ubic::Manual::FAQ, other various doc improvements
         * partially align status column on 'ubic status' command
