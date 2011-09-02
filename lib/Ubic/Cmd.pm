@@ -276,7 +276,7 @@ sub traverse($$$) {
     }
     else {
         print(' ' x $indent);
-        return $callback->($service);
+        return $callback->($service, $indent);
     }
 }
 
@@ -301,10 +301,34 @@ sub print_status($$;$$) {
         die "Can't detect user by uid $>";
     }
 
+    my $max_offset = 0;
     $self->traverse($service, sub {
-        my $service = shift;
+        my ($service, $indent) = @_;
         my $name = $service->full_name;
-        print "$name\t";
+        print $name;
+
+        # calculating the number of tabs to separate service name from status
+        # status will be aligned whenether possible without sacrificing the real-time properties
+        # i.e., we add several tabs to align status with previous lines, but following lines can increase the number of tabs if necessary
+        # TODO - there are two possibilities to improve this:
+        # 1) look at the further *simple* services and add tabs:
+        # blah
+        #     blah.a            off
+        #     blah.blahblahblah off
+        #     blah.c            off
+        # (current implementation wouldn't align "blah.a" line correctly)
+        # this would require the change to traverse() method api, though
+        # 2) pre-compile whole service tree before printing anything
+        # but output speed would suffer
+        my $offset = length($name) + $indent;
+        if ($offset < $max_offset) {
+            print "\t" x (int($max_offset) / 8 - int($offset / 8));
+        }
+        else {
+            $max_offset = $offset;
+        }
+        print "\t";
+
         my $enabled = Ubic->is_enabled($name);
         unless ($enabled) {
             print "off\n";
