@@ -46,7 +46,9 @@ sub pid2cmd {
     my $daemon_cmd = <$daemon_cmd_fh>;
     unless ($daemon_cmd) {
         # strange, open succeeded but file is empty
-        die "Can't read daemon cmdline";
+        # this can happen, though, for example if pid belongs to the kernel thread
+        warn "Can't read daemon cmdline";
+        return 'unknown';
     }
     $daemon_cmd =~ s/\x{00}$//;
     $daemon_cmd =~ s/\x{00}/ /g;
