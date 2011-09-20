@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * example system paths in setup depend on os
 
 1.33_04 2011-09-20
         * use pure perl for mkdir and chmod operations
