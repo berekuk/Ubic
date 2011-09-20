@@ -335,7 +335,7 @@ sub setup {
         status simple-daemon/pid lock ubic-daemon tmp watchdog/lock watchdog/status
     ]) {
         xsystem('mkdir', '-p', '--', "$data_dir/$subdir");
-        xsystem('chmod', '1777', '--', "$data_dir/$subdir") if $enable_1777;
+        xsystem('chmod', '1777', "$data_dir/$subdir") if $enable_1777;
     }
 
     xsystem('mkdir', '-p', '--', "$service_dir/ubic");
