@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * fix typo in the path to freebsd ubic.cfg
 
 1.33_02 2011-09-20
         * comply to hier(7) on freebsd

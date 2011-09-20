@@ -68,7 +68,7 @@ sub _file_settings {
         push @files, "$ENV{HOME}/.ubic.cfg";
     }
     push @files, '/etc/ubic/ubic.cfg';
-    push @files, '/usr/lib/etc/ubic/ubic.cfg';
+    push @files, '/usr/local/etc/ubic/ubic.cfg';
     for my $file (@files) {
         next unless -e $file;
         return Ubic::Settings::ConfigFile->read($file);
