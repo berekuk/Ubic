@@ -1,6 +1,11 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * comply to hier(7) on freebsd
+        * ubic-daemon improvements:
+         - pod recommending to use proper configs in most cases
+         - --stop and --list features
+         - use Ubic::Settings instead of hard-coded pid_dir path
 
 1.33_01 2011-09-02
         * fix setup.t - don't fail if ubic is already installed
