@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.33_02 2011-09-20
         * comply to hier(7) on freebsd
         * ubic-daemon improvements:
          - pod advicing not to use this script
