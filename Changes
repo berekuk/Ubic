@@ -3,7 +3,7 @@ Revision history for Ubic
 {{$NEXT}}
         * comply to hier(7) on freebsd
         * ubic-daemon improvements:
-         - pod recommending to use proper configs in most cases
+         - pod advicing not to use this script
          - --stop and --list features
          - use Ubic::Settings instead of hard-coded pid_dir path
 
