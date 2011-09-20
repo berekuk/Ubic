@@ -9,35 +9,68 @@ use warnings;
 =head1 SYNOPSIS
 
     ubic-daemon --name=sleep 'sleep 1000'
+    ubic-daemon --stop --name=sleep
+    ubic-daemon --list
 
 =head1 DECSRIPTION
 
-This program can be used to easily daemonize any binary.
+This program can be used to start any binary in the background.
+
+Note that it doesn't create the proper service: binary won't be monitored by the watchdog and it won't be started on the system reboot.
+In other words, you usually will want to write the service config instead and not use this program.
 
 =cut
 
 use Getopt::Long 2.33;
 use Pod::Usage;
 
-use Ubic::Daemon qw(start_daemon);
+use Ubic::Daemon qw(:all);
+use Ubic::Settings;
 
 my $name;
-my $pid_dir = '/var/lib/ubic/ubic-daemon';
+my $pid_dir = Ubic::Settings->data_dir.'/ubic-daemon';
+my ($stop, $list);
 
 return 1 if caller();
 
 GetOptions(
     'name=s'    => \$name,
     'pid-dir=s' => \$pid_dir,
+    'stop'      => \$stop,
+    'list'      => \$list,
 ) or pod2usage(2);
-pod2usage(2) unless @ARGV == 1;
-pod2usage(2) unless defined $name;
 
-start_daemon({
-    name => $name,
-    pidfile => "$pid_dir/$name",
-    bin => shift(@ARGV),
-});
+if ($stop) {
+    pod2usage(2) unless @ARGV == 0;
+    unless (-e "$pid_dir/$name") {
+        die "$name not found";
+    }
+    # TODO - check owner
+    stop_daemon("$pid_dir/$name");
+    system("rm -rf $pid_dir/$name");
+}
+elsif ($list) {
+    pod2usage(2) unless @ARGV == 0;
+    for my $file (glob "$pid_dir/*") {
+        my $name = File::Spec->abs2rel($file, $pid_dir);
+        print "$name\t";
+        if (check_daemon($file)) {
+            print "running\n";
+        }
+        else {
+            print "dead\n";
+        }
+    }
+}
+else {
+    pod2usage(2) unless @ARGV == 1;
+    pod2usage(2) unless defined $name;
+    start_daemon({
+        name => $name,
+        pidfile => "$pid_dir/$name",
+        bin => shift(@ARGV),
+    });
+}
 
 =head1 SEE ALSO
 
