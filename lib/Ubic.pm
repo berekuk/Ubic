@@ -758,6 +758,18 @@ sub forked_call {
 
 =back
 
+=head1 CONTRIBUTORS
+
+Andrei Mishchenko <druxa@yandex-team.ru>
+
+Yury Zavarin <yury.zavarin@gmail.com>
+
+Dmitry Yashin
+
+Christian Walde <walde.christian@googlemail.com>
+
+Ivan Bessarabov <ivan@bessarabov.ru>
+
 =head1 SEE ALSO
 
 Most Ubic-related links are collected on github wiki: L<http://github.com/berekuk/Ubic/wiki>.
