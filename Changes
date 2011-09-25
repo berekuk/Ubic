@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.34    2011-09-25
         * example system paths in setup depend on os
         * contrubitors section in Ubic.pm
 
