@@ -27,11 +27,11 @@ use Pod::Usage;
 use Ubic::Daemon qw(:all);
 use Ubic::Settings;
 
+return 1 if caller();
+
 my $name;
 my $pid_dir = Ubic::Settings->data_dir.'/ubic-daemon';
 my ($stop, $list);
-
-return 1 if caller();
 
 GetOptions(
     'name=s'    => \$name,
