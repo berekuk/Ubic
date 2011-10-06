@@ -31,7 +31,7 @@ This process guards any daemon started with C<Ubic::Daemon> module.
 
 Optionally, ubic-guardian can write some information to its log, for example, the exit code or signal in case of service failure. Despite its name, ubic-guardian *does not* restart the service on failures. It's the job for the completely different program, ubic-watchdog.
 
-It also holds the lock on pidfile for a whole lifetime, which theoretically makes daemons more secure, but it's more of a historical nuance than the neccesity.
+It also holds the lock on pidfile for a whole lifetime, which theoretically makes daemons more secure, but it's more of a historical nuance than the necessity.
 
 It's probable that ubic-guardian will become optional in the future (i.e. it will only be created if service asks for ubic_log).
 Anyway, don't worry about it, it's completely harmless.
