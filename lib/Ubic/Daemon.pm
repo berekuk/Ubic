@@ -3,7 +3,7 @@ package Ubic::Daemon;
 use strict;
 use warnings;
 
-# ABSTRACT: toolkit for creating daemonized process
+# ABSTRACT: daemon management utilities
 
 =head1 SYNOPSIS
 
@@ -16,12 +16,12 @@ use warnings;
 
 =head1 DESCRIPTION
 
-This module can safely start and daemonize any binary or any perl coderef.
+This module provides functions which let you daemonize any binary or perl coderef.
 
 Main source of knowledge if daemon is still running is pidfile, which is locked all the time after daemon was created.
 
-Pidfile format is unreliable and can change in future releases (it's actually even not a file, it's a dir with several files inside it),
-so if you need to get daemon's pid, use check_daemon() result.
+Note that pidfile format is unreliable and can change in future releases (it's actually even not a file, it's a dir with several files inside it),
+so if you need to get daemon's pid, don't try to read pidfile directly, use C<check_daemon()> function.
 
 =over
 
