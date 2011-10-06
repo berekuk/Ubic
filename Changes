@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.35    2011-10-07
         * fix build - ubic-daemon doesn't fail compile test if ubic is not installed
 
 1.34    2011-09-25
