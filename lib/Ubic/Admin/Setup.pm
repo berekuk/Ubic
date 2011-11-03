@@ -219,6 +219,7 @@ sub setup {
         else {
             my $ok = prompt_bool("You are not root, install locally?", 1);
             return unless $ok; # non-root user can't install into system
+            $local = 1;
         }
     }
 
