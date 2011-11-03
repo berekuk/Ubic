@@ -179,7 +179,10 @@ sub setup {
     my $opt_crontab = 1;
     my $opt_local;
 
+    # These options are documented in ubic-admin script POD.
+    # Don't forget to update their description if you change them.
     GetOptions(
+        'local!' => \$opt_local,
         'batch-mode' => \$batch_mode,
         'quiet' => \$quiet,
         'reconfigure!' => \$opt_reconfigure,
@@ -190,7 +193,6 @@ sub setup {
         'sticky-777!' => \$opt_sticky_777,
         'install-services!' => \$opt_install_services,
         'crontab!' => \$opt_crontab,
-        'local!' => \$opt_local,
     ) or die "Getopt failed";
 
     die "Unexpected arguments '@ARGV'" if @ARGV;

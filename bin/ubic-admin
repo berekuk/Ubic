@@ -10,6 +10,81 @@ use warnings;
 
     ubic-admin setup [--batch-mode] [--quiet] [other options]
 
+=head1 DESCRIPTION
+
+This script can be used to perform ubic administration operations.
+
+There is only one command supported by now, I<setup>.
+
+The logic behind the separation of setup process to this script instead of
+implementing it as C<ubic setup> command is following: C<ubic> script always
+operates on services, each of its commands (C<ubic status>, C<ubic start>, etc.)
+can accept service names. C<ubic-admin>, on the other hand, performs installation-wide tasks.
+
+=head1 SETUP OPTIONS
+
+=over
+
+=item B<--local>
+
+Force local installation.
+
+=item B<--batch-mode>
+
+Enable batch mode: don't ask any questions, assume defaults.
+
+=item B<--quiet>
+
+Don't print verbose description before each question.
+
+=item B<--reconfigure>
+
+Force reconfiguration even if ubic is already configured.
+
+=item B<--service-dir=DIR>
+
+Override service dir (directory with descriptions of your services).
+
+=item B<--data-dir=DIR>
+
+Override data dir (directory into which ubic stores all of its data).
+
+=item B<--log-dir=DIR>
+
+Override log dir (directory into which C<ubic.watchdog> will write its logs).
+
+=item B<--default-user=USER>
+
+Override default user for services which don't specify the user themselves.
+
+This option is useful for system-wide installations only.
+
+=item B<--sticky-777>
+
+Enable 1777 grants for data dir.
+
+This option is useful for system-wide installations only.
+
+It is enabled by default, you can turn it off with B<--no-sticky-777>.
+
+=item B<--install-services>
+
+Install standard services: C<ubic.watchdog>, C<ubic.ping> and C<ubic.update>.
+
+C<ubic.watchdog> will be started automatically.
+
+This option is enabled by default, you can turn it off with
+B<--no-install-services>.
+
+=item B<--crontab>
+
+Install watchdog's watchdog to user's crontab.
+
+This option is enabled by default, you can turn it off with
+B<--no-crontab>.
+
+=back
+
 =cut
 
 use Pod::Usage;

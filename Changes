@@ -1,6 +1,9 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * ubic-admin:
+         - fix local installation mode
+         - document all command-line options
 
 1.35    2011-10-07
         * fix build - ubic-daemon doesn't fail compile test if ubic is not installed
