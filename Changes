@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.35_01 2011-11-04
         * ubic-admin:
          - fix local installation mode
          - document all command-line options
