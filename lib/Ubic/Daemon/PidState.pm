@@ -39,13 +39,11 @@ Check if pid dir doesn't exist yet.
 sub is_empty {
     my ($self) = validate_pos(@_, 1);
     my $dir = $self->{dir};
-    if (not -d $dir and not -s $dir) {
-        return 1; # empty, old-style pidfile
-    }
-    if (-d $dir and not -e "$dir/pid") {
-        return 1;
-    }
-    return;
+
+    return if not -d $dir and -s $dir; # old-style pidfile
+    return if -d $dir and -s "$dir/pid"; # non-empty new-style pidfile
+
+    return 1;
 }
 
 =item B<init()>
@@ -84,7 +82,16 @@ sub read {
             # new format
             return { pid => $1, guid => $2, daemon => $3, format => 'new' };
         }
+        elsif ($content eq '') {
+            # file is empty, probably lost after reboot - we didn't sync() pidfile to disk in old versions
+            return;
+        }
         else {
+            # We consider invalid pidfile content as the fatal, unrecoverable error.
+            # Please report all cases of invalid pidfile as critical issues.
+            #
+            # (This policy will be changed if ubic become popular enough for this to annoy enough people,
+            # but collecting bugreports about weird stuff happening is more important by now.)
             die "invalid pidfile content in pidfile $dir";
         }
     };
@@ -178,12 +185,11 @@ sub write {
     my ($pid, $guid) = @$params{qw/ pid guid /};
     my $self_pid = $$;
 
-    Ubic::AtomicFile::store(
+    my $content =
         "pid $self_pid\n".
         "guid $guid\n".
-        "daemon $pid\n"
-        => "$dir/pid"
-    );
+        "daemon $pid\n";
+    Ubic::AtomicFile::store( $content => "$dir/pid" );
 }
 
 =back
