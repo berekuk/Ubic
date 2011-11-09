@@ -490,6 +490,11 @@ sub set_cached_status($$$) {
     }
     my $lock = $self->lock($name);
 
+    if ($self->status_obj_ro($name)->{status} eq $status) {
+        # optimization - don't update status if nothing changed
+        return;
+    }
+
     my $status_obj = $self->status_obj($name);
     $status_obj->{status} = $status;
     $status_obj->commit;
