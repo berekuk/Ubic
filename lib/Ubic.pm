@@ -152,7 +152,7 @@ sub start($$) {
 
     $self->enable($name);
     my $result = $self->do_cmd($name, 'start');
-    $self->set_cached_status($name, $result->status);
+    $self->set_cached_status($name, $result);
     return $result;
 }
 
@@ -186,7 +186,7 @@ sub restart($$) {
     my $result = $self->do_cmd($name, 'stop');
     $result = $self->do_cmd($name, 'start');
 
-    $self->set_cached_status($name, $result->status);
+    $self->set_cached_status($name, $result);
     return result('restarted'); # FIXME - should return original status
 }
 
