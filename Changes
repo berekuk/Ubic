@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * always sync pidfiles and status files to disk
 
 1.35_01 2011-11-04
         * ubic-admin:
