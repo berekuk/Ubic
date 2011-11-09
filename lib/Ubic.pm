@@ -167,8 +167,12 @@ sub stop($$) {
     my $lock = $self->lock($name);
 
     $self->disable($name);
+
+    # FIXME - 'stop' command can fail, in this case daemon will keep running.
+    # This is bad.
+    # We probably need to implement the same logic as when starting:
+    # retry stop attempts until actual status matches desired status.
     my $result = $self->do_cmd($name, 'stop');
-    # we can't save result in status file - it doesn't exist when service is disabled...
     return $result;
 }
 
