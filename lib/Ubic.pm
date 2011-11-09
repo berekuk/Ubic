@@ -339,7 +339,7 @@ sub disable($$) {
 
 Get cached status of enabled service.
 
-Unlike other methods, it doesn't require user to be root.
+Unlike other methods, it can be invoked by any user.
 
 =cut
 sub cached_status($$) {
