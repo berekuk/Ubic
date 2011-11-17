@@ -222,7 +222,7 @@ sub check($) {
         Ubic->set_cached_status($name, $status); # if service's start implementation is invalid, ubic-watchdog will restart it every minute, so be careful
     }
     catch {
-        ERROR("Failed to check $name: $_");
+        ERROR("Failed to revive $name: $_");
     };
 
     INFO("$name checked") if $self->{verbose};
