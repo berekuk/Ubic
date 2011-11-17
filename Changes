@@ -1,6 +1,9 @@
 Revision history for Ubic
 
 {{$NEXT}}
+        * custom service loaders:
+         - ini-style syntax for configs with .ini extension
+         - extension-based polimorphism which will let us implement more config syntaxes in the future
         * always sync pidfiles and status files to disk
         * small doc and output message improvements
 

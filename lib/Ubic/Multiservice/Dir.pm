@@ -10,6 +10,7 @@ use Params::Validate qw(:all);
 use Carp;
 use File::Basename;
 use Scalar::Util qw(blessed);
+use Ubic::ServiceLoader;
 
 =head1 METHODS
 
@@ -20,61 +21,67 @@ use Scalar::Util qw(blessed);
 Constructor.
 
 =cut
-sub new($$) {
+sub new {
     my $class = shift;
     my ($dir) = validate_pos(@_, 1);
     return bless { service_dir => $dir } => $class;
 }
 
-sub has_simple_service($$) {
+sub has_simple_service {
     my $self = shift;
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
-    return(-e "$self->{service_dir}/$name");
+    if ($self->_name2file($name)) {
+        return 1;
+    }
+    else {
+        return;
+    }
 }
 
-my $eval_id = 1;
-sub simple_service($$) {
+sub _name2file {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $base = "$self->{service_dir}/$name";
+    my @files = glob "$base.*";
+    unshift @files, $base if -e $base;
+
+    unless (@files) {
+    }
+
+    if (@files > 1) {
+        for my $file (@files[1 .. $#files]) {
+            warn "Ignoring duplicate service config '$file', using '$files[0]' instead";
+        }
+    }
+    return shift @files;
+}
+
+sub simple_service {
     my $self = shift;
     my ($name) = validate_pos(@_, {type => SCALAR, regex => qr/^[\w.-]+$/});
 
-    my $file = "$self->{service_dir}/$name";
+    my $file = $self->_name2file($name);
+    unless (defined $file) {
+        croak "Service '$name' not found";
+    }
+
     if (-d $file) {
         # directory => multiservice
         my $service = Ubic::Multiservice::Dir->new($file);
         $service->name($name);
         return $service;
     }
-    elsif (-e $file) {
-        open my $fh, '<', $file or die "Can't open $file: $!";
-        my $content = do { local $/; <$fh> };
-        close $fh or die "Can't close $file: $!";
 
-        $content = "# line 1 $file\n$content";
-        $content = "package UbicService".($eval_id++).";\n# line 1 $file\n$content";
-        my $service = eval $content;
-        if ($@) {
-            die "Failed to eval '$file': $@";
-        }
-        unless (blessed $service) {
-            die "$file doesn't contain any service";
-        }
-        unless ($service->isa('Ubic::Service')) {
-            die "$file returned $service instead of Ubic::Service";
-        }
-        unless (defined $service->name) {
-            $service->name($name);
-        }
-        return $service;
-    }
-    else {
-        croak "Service '$name' not found";
-    }
+    my $service = Ubic::ServiceLoader->load($file);
+    $service->name($name);
+    return $service;
 }
 
-sub service_names($) {
+sub service_names {
     my $self = shift;
 
-    my @names;
+    my %names;
     for my $file (glob("$self->{service_dir}/*")) {
         next unless -f $file or -d $file;
         my $name = basename($file);
@@ -98,14 +105,15 @@ sub service_names($) {
             next; # skip silently
         }
 
-        if ($name !~ /^[\w-]+$/) {
+        my ($service_name, $ext) = Ubic::ServiceLoader->split_service_filename($name);
+        unless (defined $service_name) {
             warn "Invalid file $file - only alphanumerics, underscores and hyphens are allowed\n";
             next;
         }
 
-        push @names, $name;
+        $names{ $service_name }++;
     }
-    return @names;
+    return sort keys %names;
 }
 
 =back
@@ -119,4 +127,3 @@ L<Ubic> - main ubic module uses this class as root namespace of services.
 =cut
 
 1;
-
