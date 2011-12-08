@@ -1,3 +1,23 @@
+ubic (1.36) unstable; urgency=low
+
+  * ubic-daemon improvements:
+   - pod advicing not to use this script
+   - --stop and --list features
+   - use Ubic::Settings instead of hard-coded pid_dir path
+  * use pure perl for mkdir and chmod operations
+  * contrubitors section in Ubic.pm
+  * ubic-admin:
+   - fix local installation mode
+   - document all command-line options
+  * custom service loaders:
+   - ini-style syntax for configs with .ini extension
+   - extension-based polimorphism which will let us implement more config
+     syntaxes in the future
+  * always sync pidfiles and status files to disk
+  * small doc and output message improvements
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 08 Dec 2011 20:00:12 +0400
+
 ubic (1.33) unstable; urgency=low
 
   * Ubic::Daemon improvements:
