@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * Ubic::Multiservice::Dir: don't warn about configs with taboo extensions
 
 1.35_02 2011-11-17
         * custom service loaders:
