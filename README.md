@@ -41,3 +41,7 @@ This program is free software; you can redistribute it and/or modify it under th
 
 See <http://www.perl.com/perl/misc/Artistic.html>
 
+
+
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=berekuk&url=http://github.com/berekuk/Ubic&title=Ubic&language=en_GB&tags=github&category=software)
+
