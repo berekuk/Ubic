@@ -2,6 +2,48 @@
 
 Ubic is a flexible perl-based service manager.
 
+## 1 minute intro
+
+Put this code in file `/etc/ubic/service/example`:
+
+    use Ubic::Service::SimpleDaemon;
+    Ubic::Service::SimpleDaemon->new(
+      bin => 'sleep 1000',
+    );
+
+Start it:
+
+    $ ubic start example
+    Starting example... started (pid 41209)
+
+Check its status:
+
+    $ ubic status
+    example running (pid 41209)
+        ubic
+        ubic.ping   off
+        ubic.update off
+    ubic.watchdog   running (pid 93226)
+
+Or:
+
+    $ ubic status example
+    example running (pid 41209)
+
+Now let's see how watchdog works by killing the process (don't forget to change pid with the pid you got in status command above):
+
+    $ kill 41209
+
+    $ ubic status example
+    example not running
+
+    $ ubic-watchdog
+    [Thu May 26 20:20:54 2011]  example is broken, restarting
+
+You don't have to run ubic-watchdog manually; it will do its work in background in a minute.
+
+Read [Ubic::Manual::Intro](https://metacpan.org/module/Ubic::Manual::Intro) and [Ubic::Manual::Overview](https://metacpan.org/module/Ubic::Manual::Overview) for more.
+
 ## Installation
 
 Run 'cpan -i Ubic && ubic-admin setup' to install Ubic.
