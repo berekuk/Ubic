@@ -1,9 +1,8 @@
-Ubic
-===========================
+# Ubic
 
 Ubic is a flexible perl-based service manager.
 
-INSTALLATION
+## Installation
 
 Run 'cpan -i Ubic && ubic-admin setup' to install Ubic.
 
@@ -14,7 +13,7 @@ Debian package build can be reproduced with this command:
 
 If you'll write ebuilds for Gentoo or specs for RPM-based systems, please contribute them back :)
 
-DOCUMENTATION
+## Documentation
 
 After installing, you can find documentation for this module using perldoc
 and man commands.
@@ -25,15 +24,15 @@ and man commands.
 You can also look for information at:
 
 * [Github Wiki](http://github.com/berekuk/Ubic/wiki)
-* [Search CPAN](http://search.cpan.org/dist/Ubic/)
+* [CPAN](https://metacpan.org/release/Ubic)
 
-SUPPORT
+## Support
 
 Our mailing list is <ubic-perl@googlegroups.com>. Send an empty message to <ubic-perl+subscribe@googlegroups.com> to subscribe.
 
 These is also an IRC channel: <irc://irc.perl.org#ubic>.
 
-COPYRIGHT AND LICENCE
+## Copyright and licence
 
 Copyright (c) 2009-2011 Yandex LTD. All rights reserved.
 
@@ -41,7 +40,12 @@ This program is free software; you can redistribute it and/or modify it under th
 
 See <http://www.perl.com/perl/misc/Artistic.html>
 
+## Donate
 
+I don't actually need donations. I get paid at my $job for hacking on Ubic
+anyways.
+But I like Flattr's idea, so why not.
+
+You can also +1 Ubic on [MetaCPAN](https://metacpan.org/release/Ubic) if you like it.
 
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=berekuk&url=http://github.com/berekuk/Ubic&title=Ubic&language=en_GB&tags=github&category=software)
-
