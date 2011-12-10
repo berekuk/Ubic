@@ -28,9 +28,10 @@ You can also look for information at:
 
 ## Support
 
-Our mailing list is <ubic-perl@googlegroups.com>. Send an empty message to <ubic-perl+subscribe@googlegroups.com> to subscribe.
+Our IRC channel: <irc://irc.perl.org#ubic>.
 
-These is also an IRC channel: <irc://irc.perl.org#ubic>.
+There is also a low-volume mailing list is <ubic-perl@googlegroups.com>. Send an empty message to <ubic-perl+subscribe@googlegroups.com> to subscribe.
+
 
 ## Copyright and licence
 
