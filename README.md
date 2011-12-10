@@ -44,7 +44,7 @@ See <http://www.perl.com/perl/misc/Artistic.html>
 ## Donate
 
 I don't actually need donations. I get paid at my $job for hacking on Ubic
-anyways.
+anyway.
 But I like Flattr's idea, so why not.
 
 You can also +1 Ubic on [MetaCPAN](https://metacpan.org/release/Ubic) if you like it.
