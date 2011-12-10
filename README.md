@@ -20,10 +20,10 @@ Check its status:
 
     $ ubic status
     example running (pid 41209)
-        ubic
+    ubic
         ubic.ping   off
         ubic.update off
-    ubic.watchdog   running (pid 93226)
+        ubic.watchdog   running (pid 93226)
 
 Or:
 
