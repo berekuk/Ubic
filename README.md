@@ -47,6 +47,6 @@ I don't actually need donations. I get paid at my $job for hacking on Ubic
 anyway.
 But I like Flattr's idea, so why not.
 
-You can also +1 Ubic on [MetaCPAN](https://metacpan.org/release/Ubic) if you like it.
-
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=berekuk&url=http://github.com/berekuk/Ubic&title=Ubic&language=en_GB&tags=github&category=software)
+
+You can also +1 Ubic on [MetaCPAN](https://metacpan.org/release/Ubic) if you like it.
