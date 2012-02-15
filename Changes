@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.36_02 2012-02-15
     * ubic.ping improvements:
      - use Ubic::UA instead of LWP::UserAgent to reduce the number of dependencies
      - increase timeout options to avoid start failures on slow systems
