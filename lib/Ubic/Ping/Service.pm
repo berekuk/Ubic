@@ -30,7 +30,6 @@ Constructor.
 
 =cut
 sub new {
-    # ugly; waiting for druxa's Mopheus to save us all...
     my $port = $ENV{UBIC_SERVICE_PING_PORT} || 12345;
     my $pidfile = Ubic::Settings->data_dir."/ubic-ping.pid";
     my $log = $ENV{UBIC_SERVICE_PING_LOG} || '/dev/null';
