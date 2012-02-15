@@ -5,8 +5,6 @@ Revision history for Ubic
      - use Ubic::UA instead of LWP::UserAgent to reduce the number of dependencies
      - increase timeout options to avoid start failures on slow systems
 
-1.36_01 2012-02-15
-
 1.36    2011-12-09
     * Ubic::Multiservice::Dir: don't warn about configs with taboo extensions
 
