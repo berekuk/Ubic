@@ -32,7 +32,7 @@ sub get {
     my ($url) = @_;
 
     unless ($url) {
-        return {error => 'Not set url'};
+        return { error => 'Url not specified' };
     }
 
     my ($scheme, $authority, $path, $query, undef) = $url
