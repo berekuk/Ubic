@@ -2,6 +2,8 @@ Revision history for Ubic
 
 {{$NEXT}}
 
+1.36_01 2012-02-15
+
 1.36    2011-12-09
     * Ubic::Multiservice::Dir: don't warn about configs with taboo extensions
 
