@@ -2,6 +2,18 @@ package Ubic::UA;
 
 # ABSTRACT: tiny http client
 
+=head1 DESCRIPTION
+
+This module is a tiny http useragent implementetion.
+
+It's used by L<Ubic::Ping::Service> and it allows ubic to avoid dependency on LWP.
+
+=head1 INTERFACE SUPPORT
+
+This is considered to be a non-public class. Its interface is subject to change without notice.
+
+=cut
+
 use strict;
 use warnings;
 use IO::Socket;
