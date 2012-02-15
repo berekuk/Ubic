@@ -70,7 +70,7 @@ sub new {
             }
         },
         port => $port,
-        timeout_options => { start => { step => 0.1, trials => 3 }},
+        timeout_options => { start => { step => 0.1, trials => 8 }},
     });
 }
 
