@@ -62,7 +62,7 @@ sub new {
             if ($response->{error}) {
                 return result('broken', $response->{error});
             }
-            if ($response->{body} eq 'ok' and $response->{code} == 200) {
+            if ($response->{body} =~ /^ok$/ and $response->{code} == 200) {
                 return result('running', "pid ".$daemon->pid);
             }
             else {
