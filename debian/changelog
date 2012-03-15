@@ -1,3 +1,11 @@
+ubic (1.37-1) unstable; urgency=low
+
+  * ubic.ping improvements:
+   - use Ubic::UA instead of LWP::UserAgent to reduce the number of dependencies
+   - increase timeout options to avoid start failures on slow systems
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 15 Mar 2012 18:02:55 +0400
+
 ubic (1.36-1) unstable; urgency=low
 
   * libconfig-tiny-perl in depends and build-depends
