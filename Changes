@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.37    2012-03-15
     * Ubic::UA pod
     * prohibit building on Solaris
 
