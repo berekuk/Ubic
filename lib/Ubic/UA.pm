@@ -4,7 +4,7 @@ package Ubic::UA;
 
 =head1 DESCRIPTION
 
-This module is a tiny http useragent implementetion.
+This module is a tiny and horribly incomplete http useragent implementetion.
 
 It's used by L<Ubic::Ping::Service> and it allows ubic to avoid dependency on LWP.
 
@@ -12,12 +12,21 @@ It's used by L<Ubic::Ping::Service> and it allows ubic to avoid dependency on LW
 
 This is considered to be a non-public class. Its interface is subject to change without notice.
 
+=head1 METHODS
+
+=over
+
 =cut
 
 use strict;
 use warnings;
 use IO::Socket;
 
+=item B<< new(timeout => $timeout) >>
+
+Construct new useragent.
+
+=cut
 sub new {
     my $class = shift;
     my %arg   = @_;
@@ -27,6 +36,13 @@ sub new {
     return bless $self => $class;
 }
 
+=item B<< get($url) >>
+
+Fetch a given url.
+
+Returns a hashref with I<body>, I<status> and some others and some other fields.
+
+=cut
 sub get {
     my $self = shift;
     my ($url) = @_;
@@ -71,5 +87,9 @@ sub get {
         return { error => 'Invalid http response' };
     }
 }
+
+=back
+
+=cut
 
 1;
