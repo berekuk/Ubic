@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * Ubic::UA pod
+    * prohibit building on Solaris
 
 1.36_02 2012-02-15
     * ubic.ping improvements:
