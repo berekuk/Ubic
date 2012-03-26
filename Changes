@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * Ubic::Daemon::OS::Linux: fix guid calculating code
 
 1.37    2012-03-15
     * Ubic::UA pod

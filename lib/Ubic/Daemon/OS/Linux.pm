@@ -34,8 +34,12 @@ sub pid2guid {
         die "Open /proc/$pid/stat failed: $!";
     }
     my $line = <$fh>;
+    # cut first two fields (pid and process name)
+    # since process name can contain spaces, we can't just split line by \s+
+    $line =~ s/^\d+\s+\([^)]*\)\s+//;
+
     my @fields = split /\s+/, $line;
-    my $guid = $fields[21];
+    my $guid = $fields[19];
     return $guid;
 }
 
