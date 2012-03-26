@@ -3,12 +3,17 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More;
 
 use lib 'lib';
 
-use Test::TCP;
-use LWP::UserAgent;
+eval "use LWP::UserAgent";
+plan skip_all => "LWP::UserAgent required for testing ping" if $@;
+eval "use Test::TCP";
+plan skip_all => "Test::TCP required for testing ping" if $@;
+
+plan tests => 24;
+
 use Ubic;
 use Ubic::PortMap;
 use Cwd;
