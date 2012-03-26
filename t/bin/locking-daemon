@@ -6,5 +6,5 @@ use warnings;
 use Fcntl qw(:flock);
 
 open my $fh, '>>', 'tfiles/locking-daemon' or die "Can't open lock file: $!";
-flock $fh, LOCK_EX | LOCK_NB;
+flock $fh, LOCK_EX | LOCK_NB or die "lock failed";
 sleep 100;
