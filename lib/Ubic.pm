@@ -602,7 +602,7 @@ sub set_service_dir($$) {
 
 =head1 INTERNAL METHODS
 
-You shouldn't call these from code which doesn't belong to core Ubic distribution
+You shouldn't call these from a code which doesn't belong to core Ubic distribution.
 
 These methods can be changed or removed without further notice.
 
