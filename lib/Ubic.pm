@@ -123,7 +123,6 @@ sub new {
     $self->{lock_dir} = "$self->{data_dir}/lock";
     $self->{tmp_dir} = "$self->{data_dir}/tmp";
 
-    $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
     $self->{service_cache} = {};
     return bless $self => $class;
 }
@@ -305,7 +304,7 @@ sub is_enabled($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, $validate_service);
 
-    die "Service '$name' not found" unless $self->{root}->has_service($name);
+    die "Service '$name' not found" unless $self->root_service->has_service($name);
     return unless -e $self->status_file($name);
 
     my $status_obj = $self->status_obj_ro($name);
@@ -387,7 +386,7 @@ sub service($$) {
     unless ($self->{service_cache}{$name}) {
         # Service construction is a memory-leaking operation (because of package name randomization in Ubic::Multiservice::Dir),
         # so we need to cache each service which we create.
-        $self->{service_cache}{$name} = $self->{root}->service($name);
+        $self->{service_cache}{$name} = $self->root_service->service($name);
     }
     return $self->{service_cache}{$name};
 }
@@ -402,7 +401,7 @@ sub has_service($$) {
     my ($name) = validate_pos(@_, $validate_service);
     # TODO - it would be safer to do this check without actual service construction
     # but it would require cron-based script which maintains list of all services
-    return $self->{root}->has_service($name);
+    return $self->root_service->has_service($name);
 }
 
 =item B<services()>
@@ -412,7 +411,7 @@ Get list of all services.
 =cut
 sub services($) {
     my $self = _obj(shift);
-    return $self->{root}->services();
+    return $self->root_service->services();
 }
 
 =item B<service_names()>
@@ -422,7 +421,7 @@ Get list of names of all services.
 =cut
 sub service_names($) {
     my $self = _obj(shift);
-    return $self->{root}->service_names();
+    return $self->root_service->service_names();
 }
 
 =item B<root_service()>
@@ -434,6 +433,9 @@ Root service doesn't have a name and returns all top-level services with C<servi
 =cut
 sub root_service($) {
     my $self = _obj(shift);
+    unless (defined $self->{root}) {
+        $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir}, { protected => 1 });
+    }
     return $self->{root};
 }
 
@@ -592,7 +594,7 @@ sub set_service_dir($$) {
     Ubic::Settings->service_dir($dir);
     if ($SINGLETON) {
         $SINGLETON->{service_dir} = $dir;
-        $SINGLETON->{root} = Ubic::Multiservice::Dir->new($dir);
+        undef $SINGLETON->{root}; # force lazy regeneration
     }
 }
 

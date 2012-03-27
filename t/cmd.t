@@ -14,7 +14,7 @@ rebuild_tfiles();
 
 use Ubic;
 
-local_ubic;
+local_ubic( service_dirs => [qw( t/service/freaks t/service/common )] );
 
 my $out = '';
 open my $fh, '>', \$out;

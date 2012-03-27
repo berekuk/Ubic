@@ -23,8 +23,15 @@ Constructor.
 =cut
 sub new {
     my $class = shift;
-    my ($dir) = validate_pos(@_, 1);
-    return bless { service_dir => $dir } => $class;
+    my ($dir, @options) = validate_pos(@_, 1, 0);
+
+    my $options = {};
+    if (@options) {
+        $options = validate(@options, {
+            protected => 0,
+        });
+    }
+    return bless { service_dir => $dir, %$options } => $class;
 }
 
 sub has_simple_service {
@@ -130,6 +137,11 @@ sub service_names {
         $names{ $service_name }++;
     }
     return sort keys %names;
+}
+
+sub multiop {
+    my $self = shift;
+    $self->{protected} ? 'protected' : 'allowed';
 }
 
 =back

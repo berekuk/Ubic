@@ -423,11 +423,12 @@ sub _check_multiop {
     }
     elsif ($multiop eq 'protected') {
         unless ($force) {
-            die "$screen_name is protected multiservice, specify --force if you know what you're doing\n";
+            die "Use --force option if you want to $command all "
+            .($service->name ? $service->name.' ' : '')."services\n";
         }
     }
     elsif ($multiop ne 'allowed') {
-        die "$screen_name has strange multiop value '$multiop'\n";
+        die "$screen_name has invalid multiop value '$multiop'\n";
     }
 }
 

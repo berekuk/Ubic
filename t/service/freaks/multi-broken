@@ -12,12 +12,22 @@ sub new {
 my $eval_id = 1;
 sub simple_service {
     my ($self, $name) = @_;
-    if ($name eq 'abc' or $name eq 'def') {
+    if ($name eq 'abc') {
         return Ubic::Service::Common->new({
             start => sub { die },
             stop => sub { die },
             status => sub { die },
         });
+    }
+    elsif ($name eq 'broken') {
+        my $content = "package UbicService".($eval_id++).";
+        sub f () {
+            return 123;
+        }
+        die 'compilation failed';
+        ";
+        eval $content;
+        die "failed";
     }
 }
 
@@ -28,7 +38,7 @@ sub has_simple_service {
 
 sub service_names {
     my ($self) = @_;
-    return qw/ abc def /;
+    return qw/ abc broken /;
 }
 
 sub multiop {
