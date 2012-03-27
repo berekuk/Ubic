@@ -82,7 +82,7 @@ sub filter_glob :Test {
 
 sub filter_complex_glob :Test {
     xsystem("$perl bin/ubic-watchdog -v '*ulti*' >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is_deeply(_services_from_log(), [qw( multi-impl.abc multi.sleep1 multi.sleep2 )], 'more complex glob');
+    is_deeply(_services_from_log(), [qw( multi-impl.abc multi-impl.def multi.sleep1 multi.sleep2 )], 'more complex glob');
 }
 
 sub filter_subservice_glob :Test {
@@ -103,7 +103,7 @@ sub check_timeout :Test {
 
 sub compile_timeout :Test(3) {
     rebuild_tfiles;
-    local_ubic( service_dirs => [qw( t/service/slow-compile )] );
+    local_ubic( service_dirs => [qw( t/service/freaks )] );
 
     my $time = time;
     system("$perl bin/ubic-watchdog --compile-timeout=2 >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");

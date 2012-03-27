@@ -17,7 +17,7 @@ rebuild_tfiles();
 
 use Ubic;
 
-local_ubic;
+local_ubic( service_dirs => [qw( t/service/freaks )] );
 
 # These tests check that ubic-ping don't waste memory in long runs.
 # Ubic compiles service descriptions on-the-fly, every time with new package name, so memory leaks are possible.
@@ -32,7 +32,7 @@ sub mem_usage {
 
 {
     my $check_status = sub {
-        my $status = Ubic->cached_status('multi-impl.abc');
+        my $status = Ubic->cached_status('multi-broken.abc');
     };
 
     $check_status->();
@@ -46,7 +46,7 @@ sub mem_usage {
 {
     my $check_status = sub {
         eval {
-            my $status = Ubic->cached_status('multi-impl.broken.blah');
+            my $status = Ubic->cached_status('multi-broken.broken.blah');
         };
     };
 
