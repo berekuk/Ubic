@@ -3,7 +3,7 @@ package Ubic;
 use strict;
 use warnings;
 
-# ABSTRACT: flexible perl-based service manager
+# ABSTRACT: polymorphic service manager
 
 =head1 SYNOPSIS
 
@@ -15,7 +15,7 @@ use warnings;
 
 =head1 INTRODUCTION
 
-Ubic is a flexible perl-based service manager.
+Ubic is a polymorphic service manager.
 
 This module is a perl frontend to ubic services.
 

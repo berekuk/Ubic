@@ -1,6 +1,6 @@
 # Ubic
 
-Ubic is a flexible perl-based service manager.
+Ubic is a polymorphic service manager.
 
 ## 1 minute intro
 
