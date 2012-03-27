@@ -175,10 +175,11 @@ Get multiop operation mode of a multiservice. There are three possible values wh
 =item I<allowed>
 
 C<start>, C<stop>, C<restart> actions for this module start/stop/restart all subservices.
+This is the default.
 
 =item I<protected>
 
-I<-f> flag in L<ubic(1)> binary is required to call any action. This is a default.
+I<-f> flag in L<ubic(1)> binary is required to call any action.
 
 =item I<forbidden>
 
@@ -188,7 +189,7 @@ L<ubic(1)> binary will refuse to start/stop/restart this multiservice.
 
 =cut
 sub multiop($) {
-    return 'protected';
+    return 'allowed';
 }
 
 =back

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use lib 'lib';
-use Test::More tests => 10;
+use Test::More tests => 12;
 
 use t::Utils;
 
@@ -72,3 +72,5 @@ ok
     like $warn, qr/Ignoring duplicate service config/, 'print warning about duplicate configs';
 }
 
+is $root->multiop, 'protected', 'root requires --force';
+is $bar->multiop, 'allowed', "other dir multiservices don't require --force";

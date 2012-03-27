@@ -434,7 +434,7 @@ Root service doesn't have a name and returns all top-level services with C<servi
 sub root_service($) {
     my $self = _obj(shift);
     unless (defined $self->{root}) {
-        $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir});
+        $self->{root} = Ubic::Multiservice::Dir->new($self->{service_dir}, { protected => 1 });
     }
     return $self->{root};
 }
