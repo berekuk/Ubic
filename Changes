@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.37_02 2012-03-28
     * non-root dir multiservices allow operations without --force
     * minor docs improvements, including replacing "flexible perl-based" with "polymorphic" everywhere
 
