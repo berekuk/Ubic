@@ -4,27 +4,40 @@ package Ubic::Manual::Intro;
 
 =head1 DESCRIPTION
 
-Ubic is a perl-based service manager.
+Ubic is a polymorphic service manager.
 
-Ubic can run any program as a service and provides frontend script C<ubic> to manage services.
+It can run any program as a service and provides frontend script C<ubic> to manage services.
 
-Ubic includes centralized watchdog process which checks every service periodically and brings them back online if necessary.
+C<Polymorphic> means that ubic can use various pluggable backends for managing services, for configuring services and even for describing a list of all services.
+Don't panic, it offers easy-to-use default solutions for the common tasks out-of-the-box too!
+
+Ubic includes a centralized watchdog process which checks every service periodically and brings them back online if necessary.
 
 =head1 INSTALLATION
 
-Installing C<Ubic> is easy.
+Installing ubic is easy.
 
-First, install the module using your favorite CPAN client, for example, C<< cpanm Ubic >>.
+First, install the module using your favorite CPAN client:
 
-Second, invoke ubic-admin script to perform initial configuration: C<< ubic-admin setup >>.
+    cpanm Ubic
 
-If you don't like that setup process asks too many questions, you can invoke it with batch-mode option: C<< ubic-admin setup --batch-mode >>.
+Second, invoke ubic-admin script to perform initial configuration:
 
-Alternatively, if you're using Debian or Ubuntu, you can install ubic .deb package from official launchpad PPA repository: https://launchpad.net/~berekuk/+archive/ubic.
+    ubic-admin setup
+
+If you don't want to answer too many questions, you can invoke it with batch-mode option:
+
+    ubic-admin setup --batch-mode
+
+Alternatively, if you're using Debian or Ubuntu, you can install ubic .deb package from the official launchpad PPA repository:
+
+    apt-add-repository ppa:berekuk/ubic
+    apt-get update
+    apt-get install ubic
 
 =head1 WRITE YOUR FIRST SERVICE
 
-Put this code in your service dir, i.e. in file I</etc/ubic/service/example> (or if you opted for home-dir installation, in I<~/ubic/service/example>):
+Put this code in your service dir, i.e. in the file I</etc/ubic/service/example> (or if you opted for a home-dir installation, in the I<~/ubic/service/example>):
 
     use Ubic::Service::SimpleDaemon;
     Ubic::Service::SimpleDaemon->new(
@@ -50,7 +63,7 @@ Or:
     $ ubic status example
     example running (pid 41209)
 
-Now let's see how watchdog works by killing the process (don't forget to change pid with the pid you got in status command above):
+Now let's see how the watchdog works by killing the process (replace the pid value with the pid you got from the status command above):
 
     $ kill 41209
 
@@ -60,7 +73,7 @@ Now let's see how watchdog works by killing the process (don't forget to change 
     $ ubic-watchdog
     [Thu May 26 20:20:54 2011]  example is broken, restarting
 
-You don't have to run ubic-watchdog manually; it will do its work in background in a minute.
+You don't have to run C<ubic-watchdog> manually; it will do its work in background in a minute.
 
 =head1 SEE ALSO
 
@@ -68,6 +81,6 @@ L<Ubic::Service::SimpleDaemon> allows you to tune other service aspects other th
 
 L<< Series of blog posts written as tutorials|http://blogs.perl.org/mt/mt-search.fcgi?blog_id=310&tag=tutorial&limit=20 >>
 
-Don't forget to read L<Ubic::Manual::Overview>, it explains everything else that ubic has to offer.
+Now go and read L<Ubic::Manual::Overview>, it explains everything else that ubic has to offer.
 
 =cut
