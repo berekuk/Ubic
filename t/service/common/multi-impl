@@ -41,4 +41,8 @@ sub service_names {
     return qw/ abc broken /;
 }
 
+sub multiop {
+    return 'protected';
+}
+
 __PACKAGE__->new;
