@@ -2,6 +2,7 @@ Revision history for Ubic
 
 {{$NEXT}}
     * non-root dir multiservices allow operations without --force
+    * minor docs improvements, including replacing "flexible perl-based" with "polymorphic" everywhere
 
 1.37_01 2012-03-27
     * Ubic::Daemon::OS::Linux: fix guid calculating code
