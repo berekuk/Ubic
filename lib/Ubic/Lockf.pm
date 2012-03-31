@@ -1,6 +1,7 @@
 package Ubic::Lockf;
 
 use strict;
+use warnings;
 
 # ABSTRACT: file locker with an automatic out-of-scope unlocking mechanism
 
