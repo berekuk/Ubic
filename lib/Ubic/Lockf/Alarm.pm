@@ -1,5 +1,8 @@
 package Ubic::Lockf::Alarm;
 
+use strict;
+use warnings;
+
 # ABSTRACT: alarm guard
 
 =head1 DESCRIPTION
