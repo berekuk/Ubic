@@ -1,4 +1,5 @@
 verbose
 recurse
 src = src
+lib = lib
 dest = .

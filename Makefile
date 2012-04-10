@@ -1,2 +1,2 @@
 build:
-	TTREERC=.ttreerc ttree
+	TTREERC=.ttreerc ttree -a
