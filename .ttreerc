@@ -1,0 +1,4 @@
+verbose
+recurse
+src = src
+dest = .
