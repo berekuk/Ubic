@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <head>
+<head>
+[% IF base %]
+    <base href="[% base %]"/>
+[% ELSE %]
+    <base href="http://berekuk.github.com/Ubic/"/>
+[% END %]
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title>Ubic · flexible perl-based service manager</title>
     <link href="css/bootstrap.css" rel="stylesheet">
@@ -15,8 +20,8 @@
                 <ul class="nav">
 
                     <li class="active"><a href="#">Home</a></li>
-                    <li><a href="./features">Features</a></li>
-                    <li><a href="./more">More</a></li>
+                    <li><a href="features/">Features</a></li>
+                    <li><a href="more/">More</a></li>
                 </ul>
             </div>
         </div>

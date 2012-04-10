@@ -1,5 +1,7 @@
-Steps to rebuild ubic website:
+Steps to patch and rebuild ubic website:
 
-1. hack-hack-hack on templates in src/
-2. make     # regenerate html
+1. hack on templates in src/
+2. make local; open index.html in browser
+3. goto 1 until done
+2. make     # regenerate html with correct <base> tag
 3. git push
