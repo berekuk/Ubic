@@ -78,7 +78,7 @@ There is also a low-volume mailing list is <ubic-perl@googlegroups.com>. Send an
 
 ## Copyright and licence
 
-Copyright (c) 2009-2011 Yandex LTD. All rights reserved.
+Copyright (c) 2009-2012 Yandex LTD. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
