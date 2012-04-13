@@ -16,7 +16,7 @@ Depends: ${perl:Depends},
 Provides: yandex-ubic
 Replaces: yandex-ubic (<< 1.00)
 Conflicts: yandex-ubic (<< 1.00)
-Description: flexible perl-based service manager
+Description: polymorphic service manager
  Each ubic service is represented by perl object, so code reuse is trivial.
- Watchdog, neat color output and SysV-style LSB conformant init scripts are
- supported.
+ Watchdog, neat color output and SysV-style LSB conformant init scripts support
+ is included.
