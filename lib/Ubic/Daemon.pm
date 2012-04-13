@@ -79,6 +79,32 @@ sub _log {
     print {$fh} '[', scalar(localtime), "]\t$$\t", @_, "\n";
 }
 
+sub _log_exit_code {
+    my ($fh, $code, $pid) = @_;
+    if ($code == 0) {
+        _log($fh, "daemon $pid exited");
+        return;
+    }
+
+    my $msg = "daemon $pid failed with \$? = $?";
+    if (my $signal = $? & 127) {
+        my $signame = _signame($signal);
+        if (defined $signame) {
+            $msg = "daemon $pid failed with signal $signame ($signal)";
+        }
+        else {
+            $msg = "daemon $pid failed with signal $signal";
+        }
+    }
+    elsif ($? & 128) {
+        $msg = "daemon $pid failed, core dumped";
+    }
+    elsif (my $code = $? >> 8) {
+        $msg = "daemon $pid failed, exit code $code";
+    }
+    _log($fh, $msg);
+}
+
 =item B<stop_daemon($pidfile)>
 
 =item B<stop_daemon($pidfile, $options)>
@@ -361,34 +387,14 @@ sub start_daemon($) {
 
                 $? = 0;
                 waitpid($child, 0);
-                if ($? > 0) {
-                    my $msg = "daemon $child failed with \$? = $?";
-                    if (my $signal = $? & 127) {
-                        if ($sigterm_sent && $signal == &POSIX::SIGTERM) {
-                            # it's ok, we probably sent this signal ourselves
-                            _log($ubic_fh, "daemon $child exited by sigterm");
-                            $pid_state->remove;
-                            $instant_exit->();
-                        }
-                        my $signame = _signame($signal);
-                        if (defined $signame) {
-                            $msg = "daemon $child failed with signal $signame ($signal)";
-                        }
-                        else {
-                            $msg = "daemon $child failed with signal $signal";
-                        }
-                    }
-                    elsif ($? & 128) {
-                        $msg = "daemon $child failed, core dumped";
-                    }
-                    elsif (my $code = $? >> 8) {
-                        $msg = "daemon $child failed, exit code $code";
-                    }
-                    _log($ubic_fh, $msg);
-                    $pid_state->remove;
-                    $instant_exit->();
+                my $code = $?;
+                if ($sigterm_sent and ($code & 127) == &POSIX::SIGTERM) {
+                    # it's ok, we probably sent this signal ourselves
+                    _log($ubic_fh, "daemon $child exited by sigterm");
                 }
-                _log($ubic_fh, "daemon $child exited");
+                else {
+                    _log_exit_code($ubic_fh, $code, $child);
+                }
                 $pid_state->remove;
                 $instant_exit->();
             }
