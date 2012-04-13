@@ -263,12 +263,11 @@ sub start_daemon($) {
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
-            my $status = shift; # nobody cares for this status anyway...
             close($ubic_fh) if $ubic_fh;
             STDOUT->flush;
             STDERR->flush;
             undef $lock;
-            POSIX::_exit($status); # don't allow any cleanup to happen - this process was forked from unknown environment, don't want to run unknown destructors
+            POSIX::_exit(0); # don't allow any cleanup to happen - this process was forked from unknown environment, don't want to run unknown destructors
         };
 
         eval {
@@ -341,7 +340,7 @@ sub start_daemon($) {
                     kill -9 => $child;
                     _log($ubic_fh, "daemon $child probably killed by SIGKILL");
                     $pid_state->remove();
-                    $instant_exit->(0);
+                    $instant_exit->();
                 };
 
                 my $sigterm_sent;
@@ -369,7 +368,7 @@ sub start_daemon($) {
                             # it's ok, we probably sent this signal ourselves
                             _log($ubic_fh, "daemon $child exited by sigterm");
                             $pid_state->remove;
-                            $instant_exit->(0);
+                            $instant_exit->();
                         }
                         my $signame = _signame($signal);
                         if (defined $signame) {
@@ -387,11 +386,11 @@ sub start_daemon($) {
                     }
                     _log($ubic_fh, $msg);
                     $pid_state->remove;
-                    $instant_exit->(1);
+                    $instant_exit->();
                 }
                 _log($ubic_fh, "daemon $child exited");
                 $pid_state->remove;
-                $instant_exit->(0);
+                $instant_exit->();
             }
             else {
                 # daemon
@@ -431,7 +430,7 @@ sub start_daemon($) {
             print {$write_pipe} "Error: $@\n";
             $write_pipe->flush;
         }
-        $instant_exit->(1);
+        $instant_exit->();
     }
     waitpid($child, 0); # child should've exited immediately
     close($write_pipe) or die "Can't close write_pipe: $!";
