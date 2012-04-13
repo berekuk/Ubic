@@ -28,7 +28,7 @@ so if you need to get daemon's pid, don't try to read pidfile directly, use C<ch
 =cut
 
 use IO::Handle;
-use POSIX qw(setsid);
+use POSIX qw(setsid :sys_wait_h);
 use Time::HiRes qw(sleep);
 use Params::Validate qw(:all);
 use Carp;
@@ -350,13 +350,24 @@ sub start_daemon($) {
             if ($child = fork) {
                 # guardian
 
-                my $child_guid = $OS->pid2guid($child);
-                die "Can't detect guid" unless $child_guid;
-                _log($ubic_fh, "child guid: $child_guid");
-                $pid_state->write({ pid => $child, guid => $child_guid });
-
                 _log($ubic_fh, "guardian pid: $$");
                 _log($ubic_fh, "daemon pid: $child");
+
+                my $child_guid = $OS->pid2guid($child);
+                unless ($child_guid) {
+                    if ($OS->pid_exists($child)) {
+                        die "Can't detect guid";
+                    }
+                    $? = 0;
+                    unless (waitpid($child, WNOHANG) == $child) {
+                        die "No pid $child but waitpid didn't collect $child status";
+                    }
+                    _log_exit_code($ubic_fh, $?, $child);
+                    $pid_state->remove();
+                    die "daemon exited immediately";
+                }
+                _log($ubic_fh, "child guid: $child_guid");
+                $pid_state->write({ pid => $child, guid => $child_guid });
 
                 my $kill_sub = sub {
                     if ($term_timeout) {
@@ -396,7 +407,6 @@ sub start_daemon($) {
                     _log_exit_code($ubic_fh, $code, $child);
                 }
                 $pid_state->remove;
-                $instant_exit->();
             }
             else {
                 # daemon
