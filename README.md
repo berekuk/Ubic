@@ -2,6 +2,9 @@
 
 Ubic is a polymorphic service manager.
 
+"Polymorphic" means that Ubic can use various pluggable backends for managing services, for configuring services and even for describing a list of all services.
+Don't panic, it offers easy-to-use default solutions for the common tasks out-of-the-box too!
+
 ## 1 minute intro
 
 Put this code in file `/etc/ubic/service/example`:
