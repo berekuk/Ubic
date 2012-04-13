@@ -395,6 +395,7 @@ sub start_daemon($) {
                 };
                 print {$write_pipe} "pidfile written\n" or die "Can't write to pipe: $!";
                 close $write_pipe or die "Can't close pipe: $!";
+                undef $write_pipe;
 
                 $? = 0;
                 waitpid($child, 0);
@@ -429,6 +430,7 @@ sub start_daemon($) {
 
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";
+                undef $write_pipe;
 
                 # finally, run underlying binary
                 if (ref $bin) {
