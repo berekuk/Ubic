@@ -7,12 +7,10 @@ Don't panic, it offers easy-to-use default solutions for the common tasks out-of
 
 ## 1 minute intro
 
-Put this code in file `/etc/ubic/service/example`:
+Put this code in file `/etc/ubic/service/example.ini`:
 
-    use Ubic::Service::SimpleDaemon;
-    Ubic::Service::SimpleDaemon->new(
-      bin => 'sleep 1000',
-    );
+    [options]
+    bin = sleep 100
 
 Start it:
 
