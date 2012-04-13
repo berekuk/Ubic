@@ -2,6 +2,9 @@ Revision history for Ubic
 
 {{$NEXT}}
 
+1.37_03 2012-04-13
+    * log early exiting daemons correctly; fix tests
+
 1.37_02 2012-03-28
     * non-root dir multiservices allow operations without --force
     * minor docs improvements, including replacing "flexible perl-based" with "polymorphic" everywhere

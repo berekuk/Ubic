@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 28;
+use Test::More tests => 29;
 use Test::Exception;
 
 use lib 'lib';
@@ -271,13 +271,35 @@ qr{\QError: Can't write to 'tfiles/non-existent/forbidden.log'\E},
     {
         rebuild_tfiles; local_ubic;
         start_daemon({
-            bin => ['perl', '-e', 'exit 3'],
+            bin => ['perl', '-e', 'sleep 1; exit 3'],
             pidfile => "tfiles/pid",
             ubic_log => 'tfiles/ubic.log',
         });
-        sleep 1;
+        sleep 2;
         my $log = slurp('tfiles/ubic.log');
         like($log, qr/daemon \d+ failed, exit code 3$/m, 'exit with non-zero code');
+    }
+
+    {
+        rebuild_tfiles; local_ubic;
+        # there are two options:
+        # 1) daemon exits before ubic-guardian finishes its initialization; in this case, start_daemon will throw an exception
+        # 2) ubic-guardian finishes its initialization and then daemon exits; in this case, we check for ubic.log
+        eval {
+            start_daemon({
+                bin => ['perl', '-e', 'exit 3'],
+                pidfile => "tfiles/pid",
+                ubic_log => 'tfiles/ubic.log',
+            });
+        };
+        if ($@) {
+            like($@, qr/daemon exited immediately/, 'daemon exits immediately, before guardian initialization');
+        }
+        else {
+            sleep 1;
+            my $log = slurp('tfiles/ubic.log');
+            like($log, qr/daemon \d+ failed, exit code 3$/m, 'daemon exits immediately, after guardian initialization');
+        }
     }
 
     {

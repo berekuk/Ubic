@@ -2,14 +2,15 @@
 
 Ubic is a polymorphic service manager.
 
+"Polymorphic" means that Ubic can use various pluggable backends for managing services, for configuring services and even for describing a list of all services.
+Don't panic, it offers easy-to-use default solutions for the common tasks out-of-the-box too!
+
 ## 1 minute intro
 
-Put this code in file `/etc/ubic/service/example`:
+Put this code in file `/etc/ubic/service/example.ini`:
 
-    use Ubic::Service::SimpleDaemon;
-    Ubic::Service::SimpleDaemon->new(
-      bin => 'sleep 1000',
-    );
+    [options]
+    bin = sleep 100
 
 Start it:
 
@@ -77,7 +78,7 @@ There is also a low-volume mailing list is <ubic-perl@googlegroups.com>. Send an
 
 ## Copyright and licence
 
-Copyright (c) 2009-2011 Yandex LTD. All rights reserved.
+Copyright (c) 2009-2012 Yandex LTD. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
