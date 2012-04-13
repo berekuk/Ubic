@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * log early exiting daemons correctly; fix tests
 
 1.37_02 2012-03-28
     * non-root dir multiservices allow operations without --force

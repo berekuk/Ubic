@@ -28,7 +28,7 @@ so if you need to get daemon's pid, don't try to read pidfile directly, use C<ch
 =cut
 
 use IO::Handle;
-use POSIX qw(setsid);
+use POSIX qw(setsid :sys_wait_h);
 use Time::HiRes qw(sleep);
 use Params::Validate qw(:all);
 use Carp;
@@ -77,6 +77,32 @@ sub _log {
     my $fh = shift;
     return unless defined $fh;
     print {$fh} '[', scalar(localtime), "]\t$$\t", @_, "\n";
+}
+
+sub _log_exit_code {
+    my ($fh, $code, $pid) = @_;
+    if ($code == 0) {
+        _log($fh, "daemon $pid exited");
+        return;
+    }
+
+    my $msg = "daemon $pid failed with \$? = $?";
+    if (my $signal = $? & 127) {
+        my $signame = _signame($signal);
+        if (defined $signame) {
+            $msg = "daemon $pid failed with signal $signame ($signal)";
+        }
+        else {
+            $msg = "daemon $pid failed with signal $signal";
+        }
+    }
+    elsif ($? & 128) {
+        $msg = "daemon $pid failed, core dumped";
+    }
+    elsif (my $code = $? >> 8) {
+        $msg = "daemon $pid failed, exit code $code";
+    }
+    _log($fh, $msg);
 }
 
 =item B<stop_daemon($pidfile)>
@@ -263,12 +289,11 @@ sub start_daemon($) {
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
-            my $status = shift; # nobody cares for this status anyway...
             close($ubic_fh) if $ubic_fh;
             STDOUT->flush;
             STDERR->flush;
             undef $lock;
-            POSIX::_exit($status); # don't allow any cleanup to happen - this process was forked from unknown environment, don't want to run unknown destructors
+            POSIX::_exit(0); # don't allow any cleanup to happen - this process was forked from unknown environment, don't want to run unknown destructors
         };
 
         eval {
@@ -325,13 +350,24 @@ sub start_daemon($) {
             if ($child = fork) {
                 # guardian
 
-                my $child_guid = $OS->pid2guid($child);
-                die "Can't detect guid" unless $child_guid;
-                _log($ubic_fh, "child guid: $child_guid");
-                $pid_state->write({ pid => $child, guid => $child_guid });
-
                 _log($ubic_fh, "guardian pid: $$");
                 _log($ubic_fh, "daemon pid: $child");
+
+                my $child_guid = $OS->pid2guid($child);
+                unless ($child_guid) {
+                    if ($OS->pid_exists($child)) {
+                        die "Can't detect guid";
+                    }
+                    $? = 0;
+                    unless (waitpid($child, WNOHANG) == $child) {
+                        die "No pid $child but waitpid didn't collect $child status";
+                    }
+                    _log_exit_code($ubic_fh, $?, $child);
+                    $pid_state->remove();
+                    die "daemon exited immediately";
+                }
+                _log($ubic_fh, "child guid: $child_guid");
+                $pid_state->write({ pid => $child, guid => $child_guid });
 
                 my $kill_sub = sub {
                     if ($term_timeout) {
@@ -341,7 +377,7 @@ sub start_daemon($) {
                     kill -9 => $child;
                     _log($ubic_fh, "daemon $child probably killed by SIGKILL");
                     $pid_state->remove();
-                    $instant_exit->(0);
+                    $instant_exit->();
                 };
 
                 my $sigterm_sent;
@@ -359,39 +395,19 @@ sub start_daemon($) {
                 };
                 print {$write_pipe} "pidfile written\n" or die "Can't write to pipe: $!";
                 close $write_pipe or die "Can't close pipe: $!";
+                undef $write_pipe;
 
                 $? = 0;
                 waitpid($child, 0);
-                if ($? > 0) {
-                    my $msg = "daemon $child failed with \$? = $?";
-                    if (my $signal = $? & 127) {
-                        if ($sigterm_sent && $signal == &POSIX::SIGTERM) {
-                            # it's ok, we probably sent this signal ourselves
-                            _log($ubic_fh, "daemon $child exited by sigterm");
-                            $pid_state->remove;
-                            $instant_exit->(0);
-                        }
-                        my $signame = _signame($signal);
-                        if (defined $signame) {
-                            $msg = "daemon $child failed with signal $signame ($signal)";
-                        }
-                        else {
-                            $msg = "daemon $child failed with signal $signal";
-                        }
-                    }
-                    elsif ($? & 128) {
-                        $msg = "daemon $child failed, core dumped";
-                    }
-                    elsif (my $code = $? >> 8) {
-                        $msg = "daemon $child failed, exit code $code";
-                    }
-                    _log($ubic_fh, $msg);
-                    $pid_state->remove;
-                    $instant_exit->(1);
+                my $code = $?;
+                if ($sigterm_sent and ($code & 127) == &POSIX::SIGTERM) {
+                    # it's ok, we probably sent this signal ourselves
+                    _log($ubic_fh, "daemon $child exited by sigterm");
                 }
-                _log($ubic_fh, "daemon $child exited");
+                else {
+                    _log_exit_code($ubic_fh, $code, $child);
+                }
                 $pid_state->remove;
-                $instant_exit->(0);
             }
             else {
                 # daemon
@@ -414,6 +430,7 @@ sub start_daemon($) {
 
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";
+                undef $write_pipe;
 
                 # finally, run underlying binary
                 if (ref $bin) {
@@ -431,7 +448,7 @@ sub start_daemon($) {
             print {$write_pipe} "Error: $@\n";
             $write_pipe->flush;
         }
-        $instant_exit->(1);
+        $instant_exit->();
     }
     waitpid($child, 0); # child should've exited immediately
     close($write_pipe) or die "Can't close write_pipe: $!";
