@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * stable release
 
 1.37_03 2012-04-13
     * log early exiting daemons correctly; fix tests
