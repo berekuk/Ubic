@@ -272,15 +272,15 @@ sub eq {
 
 sub set {
     my ($self) = @_;
-    my @real_gid = $self->real_group_id;
-    $( = $real_gid[0];
-    unless ($self->_groups_equal($(, "@real_gid")) {
-        die "Failed to set real gid to @real_gid: $!";
-    }
     my @effective_gid = $self->effective_group_id;
     $) = "@effective_gid";
     unless ($self->_groups_equal($), "@effective_gid")) {
         die "Failed to set effective gid to @effective_gid: $!";
+    }
+    my @real_gid = $self->real_group_id;
+    $( = $real_gid[0];
+    unless ($self->_groups_equal($(, "@real_gid")) {
+        die "Failed to set real gid to @real_gid: $! (\$( = $(, real_gid = @real_gid)";
     }
     my $new_ruid = $self->real_user_id;
     $< = $new_ruid;
