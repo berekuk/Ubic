@@ -17,6 +17,14 @@ Dot is a reserved symbol, it separates service name parts in service tree (like 
 
 By the way, this behavior is consistent with many classic unix programs, such as cron and logrotate.
 
+=head2 Why ubic creates a new daemon every minute in an endless loop if my binary daemonizes itself?
+
+Ubic can't distinguish self-daemonizing binary from program which instantly exits, so C<ubic.watchdog> thinks that service has failed and tries to respawn it every minute.
+
+You can either fix the daemon (hint: many daemons have C<--foreground> option), or implement your own service class.
+
+See L<Ubic::Service>, L<Ubic::Service::Skeleton>, L<Ubic::Service::Common> and L<Ubic::Manual::Overview/"Common service classes"> for more details on writing custom service classes.
+
 =head2 Why did ubic edit my crontab?
 
 Ubic uses cron as the way to bootstrap all its services. This crontab entry will bring the C<ubic.watchdog> up if it ever goes down, and it will then start all other services as necessary.
