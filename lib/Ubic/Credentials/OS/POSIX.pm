@@ -280,17 +280,17 @@ sub set {
     my @real_gid = $self->real_group_id;
     $( = $real_gid[0];
     unless ($self->_groups_equal($(, "@real_gid")) {
-        die "Failed to set real gid to @real_gid: $!";
-    }
-    my $new_euid = $self->effective_user_id;
-    $> = $new_euid;
-    unless ($> == $new_euid) {
-        die "Failed to set effective uid to $new_euid: $!";
+        die "Failed to set real gid to @real_gid: $! (\$( = $(, real_gid = @real_gid)";
     }
     my $new_ruid = $self->real_user_id;
     $< = $new_ruid;
     unless ($< == $new_ruid) {
         die "Failed to set real uid to $new_ruid: $!";
+    }
+    my $new_euid = $self->effective_user_id;
+    $> = $new_euid;
+    unless ($> == $new_euid) {
+        die "Failed to set effective uid to $new_euid: $!";
     }
 }
 
