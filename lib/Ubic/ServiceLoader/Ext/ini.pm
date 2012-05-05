@@ -4,7 +4,7 @@ package Ubic::ServiceLoader::Ext::ini;
 
 =head1 SYNOPSIS
 
-    # in /etc/ubic/service/my.foo file:
+    # in /etc/ubic/service/my.ini file:
     module = Ubic::Service::SimpleDaemon
     [options]
     bin = sleep 100
