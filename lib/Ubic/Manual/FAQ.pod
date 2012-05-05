@@ -46,7 +46,7 @@ Anyway, don't worry about it, it's completely harmless.
 
 =head2 What does ubic.update service do?
 
-C<ubic.update> service (and ubic-update script) updates portmap - local C<{ port => service-name }> mapping.
+C<ubic.update> service (and ubic-update script) updates portmap - local C<< { port => service-name } >> mapping.
 It makes possible to check a service status via C<ubic.ping> using service port instead of its name:
 
     $ wget -q -O - 'http://localhost:12345/status/port/12345'
