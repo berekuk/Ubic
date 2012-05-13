@@ -21,6 +21,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
       </a>
       <a class="brand" href="#">Ubic</a>
       <div class="nav-collapse">
@@ -28,6 +29,7 @@
           <li[%- ' class="active"' IF page == 'index'-%]><a href="#">Home</a></li>
           <li[%- ' class="active"' IF page == 'features'-%]><a href="features/">Features</a></li>
           <li[%- ' class="active"' IF page == 'documentation'-%]><a href="documentation/">Documentation</a></li>
+          <li><a href="https://github.com/berekuk/Ubic">GitHub</a></li>
         </ul>
       </div>
     </div>

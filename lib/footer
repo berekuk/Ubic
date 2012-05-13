@@ -29,6 +29,9 @@
 <noscript><div><img src="//mc.yandex.ru/watch/13833286" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
 
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+
 </footer>
 </div>
 </body>
