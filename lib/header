@@ -2,30 +2,30 @@
 <html>
 <head>
 [% IF base %]
-    <base href="[% base %]"/>
+  <base href="[% base %]"/>
 [% ELSE %]
-    <base href="http://berekuk.github.com/Ubic/"/>
+  <base href="http://berekuk.github.com/Ubic/"/>
 [% END %]
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ubic · polymorphic service manager</title>
-    <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="css/ubic.css" rel="stylesheet">
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ubic · polymorphic service manager</title>
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <link href="css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="css/ubic.css" rel="stylesheet">
 </head>
 <body>
 <div class="navbar">
-    <div class="navbar-inner">
-        <div class="container">
-            <a class="brand" href="#">Ubic</a>
-            <div class="nav-collapse">
-                <ul class="nav">
-                    <li[%- ' class="active"' IF page == 'index'-%]><a href="#">Home</a></li>
-                    <li[%- ' class="active"' IF page == 'features'-%]><a href="features/">Features</a></li>
-                    <li[%- ' class="active"' IF page == 'documentation'-%]><a href="documentation/">Documentation</a></li>
-                </ul>
-            </div>
-        </div>
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">Ubic</a>
+      <div class="nav-collapse">
+        <ul class="nav">
+          <li[%- ' class="active"' IF page == 'index'-%]><a href="#">Home</a></li>
+          <li[%- ' class="active"' IF page == 'features'-%]><a href="features/">Features</a></li>
+          <li[%- ' class="active"' IF page == 'documentation'-%]><a href="documentation/">Documentation</a></li>
+        </ul>
+      </div>
     </div>
+  </div>
 </div>
 <div class="container">
