@@ -4,41 +4,43 @@
 -->
 <h1>Features</h1>
 
-<div class="row">
-  <div class="span4">
-    <h3>Built-in watchdog</h3>
-    Ubic includes <code>ubic.watchdog</code> service out of the box.
-  </div>
+<div class="features">
+  <div class="row">
+    <div class="span4">
+      <h3>Built-in watchdog</h3>
+      Ubic includes <code>ubic.watchdog</code> service out of the box.
+    </div>
 
-  <div class="span4">
-    <h3>Global service tree</h3>
-    All services are accessible with a single command.
-    For example, <code>ubic status</code> will show the statuses of every service.
-  </div>
+    <div class="span4">
+      <h3>Global service tree</h3>
+      All services are accessible with a single command.
+      For example, <code>ubic status</code> will show the statuses of every service.
+    </div>
 
-  <div class="span4">
-    <h3>Custom status checks</h3>
-    Running process is not necessarily a working process.
-    Write custom code for additional status checks.
+    <div class="span4">
+      <h3>Custom status checks</h3>
+      Running process is not necessarily a working process.
+      Write custom code for additional status checks.
+    </div>
   </div>
-</div>
-<div class="row">
-  <div class="span4">
-    <h3>Polymorphic service classes</h3>
-    Encapsulate your service-specific code in class and reuse it everywhere.
-    Anything that looks like service can be started with ubic (example: init scripts).
-    And then you can benefit from ubic's common infrastucture: pretty command-line frontend, watchdog, http status check server, etc.
-  </div>
+  <div class="row">
+    <div class="span4">
+      <h3>Polymorphic service classes</h3>
+      Encapsulate your service-specific code in class and reuse it everywhere.
+      Anything that looks like service can be started with ubic (example: init scripts).
+      And then you can benefit from ubic's common infrastucture: pretty command-line frontend, watchdog, http status check server, etc.
+    </div>
 
-  <div class="span4">
-    <h3>Code reuse</h3>
-    Don't repeat yourself! Encapsulate your service-specific code and project policies in a base class and reuse it.
-  </div>
+    <div class="span4">
+      <h3>Code reuse</h3>
+      Don't repeat yourself! Encapsulate your service-specific code and project policies in a base class and reuse it.
+    </div>
 
-  <div class="span4">
-    <h3>Populate service tree dynamically</h3>
-    If you need to run many services, you don't have to write separate config file for each one.
-    Instead, you can describe all of them at once with multiservice.
+    <div class="span4">
+      <h3>Populate service tree dynamically</h3>
+      If you need to run many services, you don't have to write separate config file for each one.
+      Instead, you can describe all of them at once with multiservice.
+    </div>
   </div>
 </div>
 [% INCLUDE footer %]

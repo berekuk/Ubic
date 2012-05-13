@@ -20,10 +20,9 @@
             <a class="brand" href="#">Ubic</a>
             <div class="nav-collapse">
                 <ul class="nav">
-
                     <li[%- ' class="active"' IF page == 'index'-%]><a href="#">Home</a></li>
                     <li[%- ' class="active"' IF page == 'features'-%]><a href="features/">Features</a></li>
-                    <li[%- ' class="active"' IF page == 'more'-%]><a href="more/">More</a></li>
+                    <li[%- ' class="active"' IF page == 'documentation'-%]><a href="documentation/">Documentation</a></li>
                 </ul>
             </div>
         </div>

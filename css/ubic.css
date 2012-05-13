@@ -1,3 +1,7 @@
 footer {
     color: #777;
 }
+
+.features .row {
+    margin-bottom: 15px;
+}
