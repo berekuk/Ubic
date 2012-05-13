@@ -1,0 +1,25 @@
+[% INCLUDE header page='install' %]
+<!--
+# vim: ft=html tabstop=2 shiftwidth=2 softtabstop=2
+-->
+<h1>Installation</h1>
+<div id="install-deb">
+  <h4>Debian/Ubuntu</h5>
+  Install from
+  <a href="https://launchpad.net/~berekuk/+archive/ubic">PPA</a>:
+<pre>
+apt-add-repository ppa:berekuk/ubic
+apt-get update
+apt-get install ubic
+</pre>
+</div>
+<div id="install-cpan">
+  <h4>Any POSIX-compatible system</h4>
+  Install from <a href="https://metacpan.org/release/Ubic">CPAN</a>:
+<pre>
+cpan Ubic
+ubic-admin setup
+</pre>
+</div>
+
+[% INCLUDE footer %]
