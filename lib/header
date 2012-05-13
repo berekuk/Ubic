@@ -20,9 +20,9 @@
             <div class="nav-collapse">
                 <ul class="nav">
 
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="features/">Features</a></li>
-                    <li><a href="more/">More</a></li>
+                    <li[%- ' class="active"' IF page == 'index'-%]><a href="#">Home</a></li>
+                    <li[%- ' class="active"' IF page == 'features'-%]><a href="features/">Features</a></li>
+                    <li[%- ' class="active"' IF page == 'more'-%]><a href="more/">More</a></li>
                 </ul>
             </div>
         </div>
