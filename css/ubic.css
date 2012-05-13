@@ -1,5 +1,26 @@
+/*
+Ryan Fait's sticky footer
+See:
+    https://github.com/twitter/bootstrap/issues/306,
+    http://ryanfait.com/resources/footer-stick-to-bottom-of-page/
+for details.
+*/
+html, body {
+    height: 100%;
+}
 footer {
+    padding: 17px 0 18px 0;
+    border-top: 1px solid #eee;
     color: #777;
+}
+.wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -63px;
+}
+.push {
+    height: 63px;
 }
 
 .features .row {
