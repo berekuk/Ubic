@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 17;
+use Test::More tests => 23;
 
 use lib 'lib';
 
@@ -101,4 +101,48 @@ use Ubic::Service::SimpleDaemon;
     is($lines[0], "FOO: 5", 'FOO set in service');
     is($lines[1], "BAR: 6", 'BAR overridden in service');
     is($lines[2], "XXX: 666", 'XXX unaffected in service');
+}
+
+# reload
+{
+    rebuild_tfiles;
+    local_ubic;
+
+    my $result;
+
+    my $reloadless_service = Ubic::Service::SimpleDaemon->new({
+        name => 'simple1',
+        bin => ['perl', '-e', 'sleep 100'],
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+    });
+
+    $result = $reloadless_service->reload;
+    is($result->msg, 'not implemented');
+
+    my $service = Ubic::Service::SimpleDaemon->new({
+        name => 'simple1',
+        bin => ['perl', '-e', 'use IO::Handle; STDOUT->autoflush(1); $SIG{HUP} = sub { print "hup\n" }; sleep 100 for 1..10'],
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        reload_signal => 'HUP',
+    });
+
+    $result = $service->reload;
+    is($result->status, 'not running', 'reload while not running');
+
+    $service->start;
+
+    $result = $service->reload;
+    is($result->action, 'reloaded', 'reload successful');
+    like($result->msg, qr/^sent HUP to \d+$/, 'reload result message');
+
+    sleep 1;
+
+    $result = $service->reload;
+    is($result->action, 'reloaded', 'reload successful one more time');
+
+    $service->stop;
+
+    is(slurp('tfiles/stdout'), "hup\nhup\n", 'two sighups sent');
 }

@@ -93,6 +93,14 @@ Change working directory before starting a daemon. Optional.
 
 Modify environment before starting a daemon. Optional. Must be a plain hashref if specified.
 
+=item I<reload_signal>
+
+Send given signal to the daemon on C<reload> command.
+
+Can take either integer value or signal name (i.e., I<HUP>).
+
+Note that this signal won't reopen I<stdout>, I<stderr> or I<ubic_log> logs. Sorry.
+
 =item I<name>
 
 Service's name.
@@ -114,6 +122,7 @@ sub new {
         ubic_log => { type => SCALAR, optional => 1 },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
+        reload_signal => { type => SCALAR, optional => 1 },
     });
 
     return bless {%$params} => $class;
@@ -170,6 +179,24 @@ sub status_impl {
     else {
         return result('not running');
     }
+}
+
+sub reload {
+    my $self = shift;
+    unless (defined $self->{reload_signal}) {
+        return result('unknown', 'not implemented');
+    }
+    my $daemon = check_daemon($self->pidfile);
+    unless ($daemon) {
+        return result('not running');
+    }
+
+    my $pid = $daemon->pid;
+    # TODO - should we send signal to guardian instead?
+    # reload doesn't reopen ubic_log/stdout/stderr by now.
+    kill $self->{reload_signal} => $pid;
+
+    return result('reloaded', "sent $self->{reload_signal} to $pid");
 }
 
 =back
