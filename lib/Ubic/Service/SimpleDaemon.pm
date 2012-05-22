@@ -3,7 +3,7 @@ package Ubic::Service::SimpleDaemon;
 use strict;
 use warnings;
 
-# ABSTRACT: declarative service for daemonizing any binary
+# ABSTRACT: service module for daemonizing any binary
 
 =head1 SYNOPSIS
 
@@ -18,7 +18,7 @@ use warnings;
 
 =head1 DESCRIPTION
 
-Use this class to daemonize any binary.
+Use this class to turn any binary into ubic service.
 
 This module uses L<Ubic::Daemon> module for process daemonization. All pidfiles are stored in ubic data dir, with their names based on service names.
 
@@ -63,35 +63,47 @@ Parameters:
 
 Daemon binary.
 
+Can be a plain string (i.e., C<sleep 10000>), or arrayref with separate arguments (i.e., C<['sleep', '1000']>).
+
+This is the only mandatory parameter, everything else is optional.
+
 =item I<user>
 
-User under which daemon will be started. Optional, default is C<root>.
+User under which daemon will be started.
+
+Default user depends on the configuration chosen at C<ubic-admin setup> stage. See L<Ubic::Settings> for more defails.
 
 =item I<group>
 
-Group under which daemon will be started. Optional, default is all user groups.
+Group under which daemon will be started.
 
-Value can be scalar or arrayref.
+Value can be either scalar or arrayref.
+
+Defaults to all groups of service's user.
 
 =item I<stdout>
 
-File into which daemon's stdout will be redirected. Default is C</dev/null>.
+File into which daemon's stdout will be redirected.  None by default.
 
 =item I<stderr>
 
-File into which daemon's stderr will be redirected. Default is C</dev/null>.
+File into which daemon's stderr will be redirected. None by default.
 
 =item I<ubic_log>
 
 Optional filename of ubic log. Log will contain some technical information about running daemon.
 
+None by default.
+
 =item I<cwd>
 
-Change working directory before starting a daemon. Optional.
+Change working directory before starting a daemon.
 
 =item I<env>
 
-Modify environment before starting a daemon. Optional. Must be a plain hashref if specified.
+Modify environment before starting a daemon.
+
+Must be a plain hashref if specified.
 
 =item I<reload_signal>
 
@@ -105,7 +117,7 @@ Note that this signal won't reopen I<stdout>, I<stderr> or I<ubic_log> logs. Sor
 
 Service's name.
 
-Optional, will usually be set by upper-level multiservice. Don't set it unless you know what you're doing.
+Name will usually be set by upper-level multiservice. Don't set it unless you know what you're doing.
 
 =back
 
@@ -203,7 +215,7 @@ sub reload {
 
 =head1 SEE ALSO
 
-L<Ubic::Daemon> - module to daemonize any binary
+L<Ubic::Daemon> - module for daemonizing any binary.
 
 =cut
 
