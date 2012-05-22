@@ -248,13 +248,12 @@ sub start_daemon($) {
         stdout => { type => SCALAR, default => '/dev/null' },
         stderr => { type => SCALAR, default => '/dev/null' },
         ubic_log => { type => SCALAR, optional => 1 },
-        user => { type => SCALAR, optional => 1 },
         term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user, $term_timeout, $cwd, $env)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user   term_timeout   cwd   env /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -337,14 +336,6 @@ sub start_daemon($) {
 
             $pid_state->remove;
             _log($ubic_fh, "got lock");
-
-            if (defined $user) {
-                my $id = getpwnam($user);
-                unless (defined $id) {
-                    die "User '$user' not found";
-                }
-                POSIX::setuid($id);
-            }
 
             my $child;
             if ($child = fork) {
