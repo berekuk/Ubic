@@ -98,6 +98,16 @@ sub set {
     croak 'not implemented';
 }
 
+=item B<< as_string() >>
+
+Returns human-readable string representation.
+
+=cut
+sub as_string {
+    my $self = shift;
+    return "$self"; # ugly default stringification; please override in subclasses
+}
+
 =back
 
 =cut
