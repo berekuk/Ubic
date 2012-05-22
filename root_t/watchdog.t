@@ -6,13 +6,13 @@ use warnings;
 use parent qw(Test::Class);
 use Test::More;
 
+use lib 'lib';
+
 use Config;
 my $perl = $Config{perlpath};
 
 use t::Utils;
 use Ubic::Daemon qw(:all);
-
-use lib 'lib';
 
 sub setup :Test(setup) {
     rebuild_tfiles();
