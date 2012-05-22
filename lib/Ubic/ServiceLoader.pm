@@ -46,9 +46,10 @@ sub ext2loader {
     my ($ext) = validate_pos(@_, { type => SCALAR, regex => qr/^\w+$/ });
 
     return $ext2loader{$ext} if $ext2loader{$ext};
-    require "Ubic/ServiceLoader/Ext/$ext.pm";
+    require "Ubic/ServiceLoader/Ext/$ext.pm"; # TODO - improve error message if ext.pm doesn't exist
     my $loader_class = "Ubic::ServiceLoader::Ext::$ext";
     return $loader_class->new;
+    # FIXME - cache loader_class!
 }
 
 =item B<split_service_filename($filename)>
