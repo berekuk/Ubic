@@ -69,13 +69,13 @@ This is the only mandatory parameter, everything else is optional.
 
 =item I<user>
 
-User under which daemon will be started.
+User under which the service will operate.
 
 Default user depends on the configuration chosen at C<ubic-admin setup> stage. See L<Ubic::Settings> for more defails.
 
 =item I<group>
 
-Group under which daemon will be started.
+Group under which the service will operate.
 
 Value can be either scalar or arrayref.
 
@@ -113,6 +113,14 @@ Can take either integer value or signal name (i.e., I<HUP>).
 
 Note that this signal won't reopen I<stdout>, I<stderr> or I<ubic_log> logs. Sorry.
 
+=item I<daemon_user>
+
+=item I<daemon_group>
+
+Change credentials to the given user and group before execing into daemon.
+
+The difference between these options and I<user>/I<group> options is that for I<daemon_*> options, credentials will be set just before before starting the actual daemon. All other service operations will be done using default user. Refer to L<Ubic::Manual::Overview/"Permissions and security"> for the further explanations.
+
 =item I<name>
 
 Service's name.
@@ -128,6 +136,8 @@ sub new {
         bin => { type => SCALAR | ARRAYREF },
         user => { type => SCALAR, optional => 1 },
         group => { type => SCALAR | ARRAYREF, optional => 1 },
+        daemon_user => { type => SCALAR, optional => 1 },
+        daemon_group => { type => SCALAR | ARRAYREF, optional => 1 },
         name => { type => SCALAR, optional => 1 },
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
@@ -160,6 +170,12 @@ sub start_impl {
     };
     for (qw/ env cwd stdout stderr ubic_log /) {
         $start_params->{$_} = $self->{$_} if defined $self->{$_};
+    }
+    if (defined $self->{daemon_user}) {
+        $start_params->{credentials} = Ubic::Credentials->new(
+            user => $self->{daemon_user},
+            group => $self->{daemon_group},
+        );
     }
     start_daemon($start_params);
 }

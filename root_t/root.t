@@ -30,25 +30,33 @@ sub setup :Test(setup) {
     xsystem('chmod -R 777 tfiles');
 }
 
-sub test_grants :Tests(6) {
+sub test_grants :Tests(8) {
     my $self = shift;
     my $name = $self->{name};
-    my $expected_user = $self->{user};
-    my $expected_group = $self->{group};
+    my $user = $self->{user};
+    my $group = $self->{group};
+    my $result_user = $self->{result_user} || $user;
+    my $result_group = $self->{result_group} || $group;
 
     Ubic->start($name);
     sleep 0.1;
     Ubic->stop($name);
 
-    for my $file ( "tfiles/$name.result", "tfiles/ubic/status/$name", "tfiles/ubic/lock/$name" ) {
+    my $check_file = sub {
+        my ($file, $user, $group) = @_;
         my @stat = stat($file);
-        is($stat[4], scalar(getpwnam($expected_user)), "$file belongs to $expected_user");
-        is($stat[5], scalar(getgrnam($expected_group)), "$file group is $expected_group");
-    }
+        is($stat[4], scalar(getpwnam($user)), "$file belongs to $user");
+        is($stat[5], scalar(getgrnam($group)), "$file group is $group");
+    };
+    $check_file->("tfiles/$name.result", $result_user, $result_group);
+    $check_file->("tfiles/$name.ubic.log", $user, $group);
+    $check_file->("tfiles/ubic/status/$name", $user, $group);
+    $check_file->("tfiles/ubic/lock/$name", $user, $group);
 }
 
 Test::Class->runtests(
     __PACKAGE__->new({ name => 'daemongroup-daemon', user => 'nobody', group => 'daemon' }),
     __PACKAGE__->new({ name => 'nobody-daemon', user => 'nobody', group => 'nogroup' }),
     __PACKAGE__->new({ name => 'root-daemon', user => 'root', group => 'root' }),
+    __PACKAGE__->new({ name => 'daemon_user', user => 'root', group => 'root', result_user => 'nobody', result_group => 'daemon' }),
 );
