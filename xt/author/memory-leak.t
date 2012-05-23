@@ -40,7 +40,7 @@ sub mem_usage {
     my $mem = mem_usage;
     $check_status->() for 1..10_000;
 
-    cmp_ok(mem_usage() - $mem, '<', 10);
+    cmp_ok(mem_usage() - $mem, '<', 50);
 }
 
 {
@@ -55,5 +55,5 @@ sub mem_usage {
     my $mem = mem_usage;
     $check_status->() for 1..10_000;
 
-    cmp_ok(mem_usage() - $mem, '<', 10);
+    cmp_ok(mem_usage() - $mem, '<', 50);
 }
