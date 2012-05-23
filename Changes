@@ -1,6 +1,11 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * new SimpleDaemon options:
+     - reload_signal
+     - daemon_user/daemon_group
+    * 'credentials' option in start_daemon()
+    * various doc improvements
 
 1.38_01 2012-04-23
     * freebsd credentials fix - set real uid first and effective uid after that
