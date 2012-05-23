@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.39    2012-05-23
     * new SimpleDaemon options:
      - reload_signal
      - daemon_user/daemon_group
