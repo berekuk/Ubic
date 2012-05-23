@@ -35,6 +35,7 @@ use Carp;
 use Config;
 
 use Ubic::Lockf;
+use Ubic::AccessGuard;
 use Ubic::Daemon::Status;
 use Ubic::Daemon::PidState;
 
@@ -251,9 +252,10 @@ sub start_daemon($) {
         term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
+        credentials => { isa => 'Ubic::Credentials', optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -314,8 +316,12 @@ sub start_daemon($) {
                 $OS->close_all_fh($write_pipe_fd_num); # except pipe
             }
 
-            open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
-            open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+            {
+                my $guard;
+                $guard = Ubic::AccessGuard->new($credentials) if $credentials;
+                open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
+                open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+            }
             open STDIN, "<", $stdin or die "Can't read from '$stdin': $!";
             if (defined $ubic_log) {
                 open $ubic_fh, ">>", $ubic_log or die "Can't write to '$ubic_log': $!";
@@ -418,6 +424,7 @@ sub start_daemon($) {
                         $ENV{$key} = $env->{$key};
                     }
                 }
+                $credentials->set() if $credentials;
 
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";
