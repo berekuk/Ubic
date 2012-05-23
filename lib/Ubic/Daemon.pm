@@ -284,9 +284,8 @@ sub start_daemon($) {
     my $child;
 
     unless ($child = fork) {
-        unless (defined $child) {
-            die "fork failed";
-        }
+        die "fork failed" unless defined $child;
+
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
@@ -303,9 +302,7 @@ sub start_daemon($) {
 
             {
                 my $tmp_pid = fork() and POSIX::_exit(0); # detach from parent process
-                unless (defined $tmp_pid) {
-                    die "fork failed";
-                }
+                die "fork failed" unless defined $tmp_pid;
             }
 
             # Close all inherited filehandles except $write_pipe (it will be closed explicitly).
@@ -408,9 +405,8 @@ sub start_daemon($) {
             }
             else {
                 # daemon
-                unless (defined $child) {
-                    die "fork failed";
-                }
+
+                die "fork failed" unless defined $child;
 
                 # start new process group - become immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
