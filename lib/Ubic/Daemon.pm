@@ -422,6 +422,9 @@ sub start_daemon($) {
                 }
                 $credentials->set() if $credentials;
 
+                close($ubic_fh) if defined $ubic_fh;
+                $lock->dissolve;
+
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";
                 undef $write_pipe;
