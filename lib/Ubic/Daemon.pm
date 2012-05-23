@@ -229,6 +229,10 @@ Change working directory before starting a daemon. Optional.
 
 Modify environment before starting a daemon. Optional. Must be a plain hashref if specified.
 
+=item I<credentials>
+
+Set given credentials before execing into a daemon. Optional, must be an C<Ubic::Credentials> object.
+
 =item I<term_timeout>
 
 Can contain integer number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to daemon.
