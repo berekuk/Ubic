@@ -294,6 +294,13 @@ sub set {
     }
 }
 
+sub as_string {
+    my $self = shift;
+    my $user = $self->user;
+    my ($group) = $self->group; # ignore complementary groups for the sake of readability
+    return "$user:$group";
+}
+
 =back
 
 =head1 BUGS AND CAVEATS

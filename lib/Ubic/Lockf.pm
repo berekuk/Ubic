@@ -40,7 +40,7 @@ sub DESTROY ($) {
     my ($self) = @_;
     local $@;
     my $fh = $self->{_fh};
-    return unless defined $fh; # already released
+    return unless defined $fh; # already released or dissolved
     flock $fh, LOCK_UN;
     delete $self->{_fh}; # closes the file if opened by us
 }
@@ -157,8 +157,20 @@ Gives the name of the file, as it was when the lock was taken.
 =cut
 sub name($)
 {
-    my $self = shift();
+    my $self = shift;
     return $self->{_fname};
+}
+
+=item B<dissolve()>
+
+Destroy lock object without unlocking.
+
+This is useful in forking code, if you have one lock object in several processes and want to close locked fh in one process without unlocking in the other.
+
+=cut
+sub dissolve {
+    my $self = shift;
+    undef $self->{_fh};
 }
 
 1;

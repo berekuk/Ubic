@@ -651,7 +651,9 @@ Get access guard (L<Ubic::AccessGuard> object) for given service.
 sub access_guard($$) {
     my $self = _obj(shift);
     my ($name) = validate_pos(@_, $validate_service);
-    return Ubic::AccessGuard->new($self->service($name));
+    return Ubic::AccessGuard->new(
+        Ubic::Credentials->new(service => $self->service($name))
+    );
 }
 
 =item B<lock($name)>

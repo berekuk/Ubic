@@ -35,6 +35,7 @@ use Carp;
 use Config;
 
 use Ubic::Lockf;
+use Ubic::AccessGuard;
 use Ubic::Daemon::Status;
 use Ubic::Daemon::PidState;
 
@@ -248,13 +249,13 @@ sub start_daemon($) {
         stdout => { type => SCALAR, default => '/dev/null' },
         stderr => { type => SCALAR, default => '/dev/null' },
         ubic_log => { type => SCALAR, optional => 1 },
-        user => { type => SCALAR, optional => 1 },
         term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
+        credentials => { isa => 'Ubic::Credentials', optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $user, $term_timeout, $cwd, $env)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   user   term_timeout   cwd   env /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -283,9 +284,8 @@ sub start_daemon($) {
     my $child;
 
     unless ($child = fork) {
-        unless (defined $child) {
-            die "fork failed";
-        }
+        die "fork failed" unless defined $child;
+
         my $ubic_fh;
         my $lock;
         my $instant_exit = sub {
@@ -302,9 +302,7 @@ sub start_daemon($) {
 
             {
                 my $tmp_pid = fork() and POSIX::_exit(0); # detach from parent process
-                unless (defined $tmp_pid) {
-                    die "fork failed";
-                }
+                die "fork failed" unless defined $tmp_pid;
             }
 
             # Close all inherited filehandles except $write_pipe (it will be closed explicitly).
@@ -315,8 +313,12 @@ sub start_daemon($) {
                 $OS->close_all_fh($write_pipe_fd_num); # except pipe
             }
 
-            open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
-            open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+            {
+                my $guard;
+                $guard = Ubic::AccessGuard->new($credentials) if $credentials;
+                open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
+                open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+            }
             open STDIN, "<", $stdin or die "Can't read from '$stdin': $!";
             if (defined $ubic_log) {
                 open $ubic_fh, ">>", $ubic_log or die "Can't write to '$ubic_log': $!";
@@ -337,14 +339,6 @@ sub start_daemon($) {
 
             $pid_state->remove;
             _log($ubic_fh, "got lock");
-
-            if (defined $user) {
-                my $id = getpwnam($user);
-                unless (defined $id) {
-                    die "User '$user' not found";
-                }
-                POSIX::setuid($id);
-            }
 
             my $child;
             if ($child = fork) {
@@ -411,9 +405,8 @@ sub start_daemon($) {
             }
             else {
                 # daemon
-                unless (defined $child) {
-                    die "fork failed";
-                }
+
+                die "fork failed" unless defined $child;
 
                 # start new process group - become immune to kills at parent group and at the same time be able to kill all processes below
                 setpgrp;
@@ -427,6 +420,10 @@ sub start_daemon($) {
                         $ENV{$key} = $env->{$key};
                     }
                 }
+                $credentials->set() if $credentials;
+
+                close($ubic_fh) if defined $ubic_fh;
+                $lock->dissolve;
 
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";

@@ -15,8 +15,7 @@ use Ubic;
 
 sub setup :Test(setup) {
     rebuild_tfiles();
-    Ubic->set_service_dir('root_t/service');
-    Ubic->set_data_dir('tfiles');
+    local_ubic( service_dirs => ['root_t/service'] );
     xsystem('chmod -R 1777 tfiles');
 }
 
