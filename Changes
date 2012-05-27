@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * improve tests stability
 
 1.39    2012-05-23
     * new SimpleDaemon options:
