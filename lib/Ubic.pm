@@ -787,11 +787,17 @@ Ivan Bessarabov <ivan@bessarabov.ru>
 
 Most Ubic-related links are collected on github wiki: L<http://github.com/berekuk/Ubic/wiki>.
 
+L<Daemon::Control> lets you write init scripts in perl.
+
+L<ControlFreak>, L<Server::Control> and L<Proc::Launcher> are similar to Ubic in being "apachectl-style" managers.
+
+There are also L<App::Daemon>, L<App::Control> and L<Supervisor>.
+
 =head1 SUPPORT
 
-Our mailing list is ubic-perl@googlegroups.com. Send an empty message to ubic-perl+subscribe@googlegroups.com to subscribe.
+Our IRC channel is irc://irc.perl.org#ubic.
 
-These is also an IRC channel: irc://irc.perl.org#ubic.
+There's also a mailing list at ubic-perl@googlegroups.com. Send an empty message to ubic-perl+subscribe@googlegroups.com to subscribe.
 
 =cut
 
