@@ -7,33 +7,42 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    Ubic->start("my-service");
+    Configure ubic:
+    $ ubic-admin setup
 
-    Ubic->stop("my-service");
+    Write the service config:
+    $ cat >/etc/ubic/service/foo.ini
+    [options]
+    bin = /usr/bin/foo.pl
 
-    $status = Ubic->status("my-service");
+    Start your service:
+    $ ubic start foo
+
+    Enjoy your daemonized, monitored service.
 
 =head1 INTRODUCTION
 
 Ubic is a polymorphic service manager.
 
-This module is a perl frontend to ubic services.
-
 Further directions:
 
 if you are looking for a general introduction to Ubic, see L<Ubic::Manual::Intro>;
 
-if you want to use ubic from command line, see L<ubic>;
+if you want to use ubic from the command line, see L<ubic>;
 
-if you want to manage ubic services from perl scripts, read this POD;
+if you want to manage ubic services from the perl scripts, read this POD;
 
 if you want to write your own service, see L<Ubic::Service> and other C<Ubic::Service::*> modules.
 
 =head1 DESCRIPTION
 
-This module is a singleton OOP class.
+This module is a perl frontend to ubic services.
 
-All of its methods can be invoked as class methods or object methods.
+It is a singleton OOP class. All of its methods should be invoked as class methods:
+
+    Ubic->start('foo');
+    Ubic->stop('foo');
+    my $status = Ubic->status('foo');
 
 =cut
 
@@ -133,15 +142,15 @@ sub new {
 
 See L<LSB documentation|http://refspecs.freestandards.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html> for init-script method specifications.
 
-Following functions are trying to conform, except that all dashes in method names are replaced with underscores.
+Following methods are trying to conform, except that all dashes in method names are replaced with underscores.
 
-Unlike C<Ubic::Service> methods, these methods are guaranteed to return blessed versions of result, i.e. C<Ubic::Result::Class> objects.
+These methods return the result objects, i.e., instances of the C<Ubic::Result::Class> class.
 
 =over
 
 =item B<start($name)>
 
-Start service.
+Start the service.
 
 =cut
 sub start($$) {
@@ -157,7 +166,7 @@ sub start($$) {
 
 =item B<stop($name)>
 
-Stop service.
+Stop the service.
 
 =cut
 sub stop($$) {
@@ -177,7 +186,7 @@ sub stop($$) {
 
 =item B<restart($name)>
 
-Restart service; start it if it's not running.
+Restart the service; start it if it's not running.
 
 =cut
 sub restart($$) {
@@ -195,7 +204,7 @@ sub restart($$) {
 
 =item B<try_restart($name)>
 
-Restart service if it is enabled.
+Restart the service if it is enabled.
 
 =cut
 sub try_restart($$) {
@@ -213,7 +222,9 @@ sub try_restart($$) {
 
 =item B<reload($name)>
 
-Reloads service if reloading is implemented; throw exception otherwise.
+Reload the service.
+
+This method will do reloading if the service implements C<reload()>; it will throw an exception otherwise.
 
 =cut
 sub reload($$) {
@@ -236,7 +247,7 @@ sub reload($$) {
 
 =item B<force_reload($name)>
 
-Reloads service if reloading is implemented, otherwise restarts it.
+Reload the service if reloading is implemented, otherwise restart it.
 
 Does nothing if service is disabled.
 
@@ -258,7 +269,7 @@ sub force_reload($$) {
 
 =item B<status($name)>
 
-Get service status.
+Get the service status.
 
 =cut
 sub status($$) {
@@ -277,9 +288,11 @@ sub status($$) {
 
 =item B<enable($name)>
 
-Enable service.
+Enable the service.
 
-Enabled service means that service *should* be running. It will be checked by status and marked as broken if it's enabled but not running.
+Enabled service means that service B<should> be running.
+
+Watchdog will periodically check its status, attempt to restart it and mark it as I<broken> if it won't succeed.
 
 =cut
 sub enable($$) {
@@ -297,7 +310,9 @@ sub enable($$) {
 
 =item B<is_enabled($name)>
 
-Returns true value if service is enabled, false otherwise.
+Check whether the service is enabled.
+
+Returns true or false.
 
 =cut
 sub is_enabled($$) {
@@ -316,9 +331,11 @@ sub is_enabled($$) {
 
 =item B<disable($name)>
 
-Disable service.
+Disable the service.
 
-Disabled service means that service is ignored by ubic. It's state will no longer be checked by watchdog, and pings will answer that service is not running, even if it's not true.
+Disabled service means that the service is ignored by ubic.
+
+Its state will no longer be checked by the watchdog, and C<ubic status> will report that the service is I<down>.
 
 =cut
 sub disable($$) {
@@ -336,7 +353,7 @@ sub disable($$) {
 
 =item B<cached_status($name)>
 
-Get cached status of enabled service.
+Get cached status of the service.
 
 Unlike other methods, it can be invoked by any user.
 
@@ -357,7 +374,7 @@ sub cached_status($$) {
 
 =item B<do_custom_command($name, $command)>
 
-Execute custom command C<$command> for given service.
+Execute the custom command C<$command> for the given service.
 
 =cut
 sub do_custom_command($$) {
@@ -393,7 +410,7 @@ sub service($$) {
 
 =item B<< has_service($name) >>
 
-Check whether service C<$name> exists.
+Check whether the service named C<$name> exists.
 
 =cut
 sub has_service($$) {
@@ -406,7 +423,7 @@ sub has_service($$) {
 
 =item B<services()>
 
-Get list of all services.
+Get the list of all services.
 
 =cut
 sub services($) {
@@ -416,7 +433,7 @@ sub services($) {
 
 =item B<service_names()>
 
-Get list of names of all services.
+Get the list of all service names.
 
 =cut
 sub service_names($) {
@@ -426,7 +443,7 @@ sub service_names($) {
 
 =item B<root_service()>
 
-Get root service.
+Get the root multiservice object.
 
 Root service doesn't have a name and returns all top-level services with C<services()> method. You can use it to traverse the whole service tree.
 
@@ -441,7 +458,7 @@ sub root_service($) {
 
 =item B<compl_services($line)>
 
-Return list of autocompletion variants for given service prefix.
+Get the list of autocompletion variants for a given service prefix.
 
 =cut
 sub compl_services($$) {
@@ -478,7 +495,7 @@ sub compl_services($$) {
 
 =item B<set_cached_status($name, $status)>
 
-Write new status into service's status file.
+Write the new status into the service's status file.
 
 =cut
 sub set_cached_status($$$) {
@@ -504,7 +521,7 @@ sub set_cached_status($$$) {
 
 =item B<< get_data_dir() >>
 
-Get data dir.
+Get the data dir.
 
 =cut
 sub get_data_dir($) {
@@ -515,11 +532,11 @@ sub get_data_dir($) {
 
 =item B<< set_data_dir($dir) >>
 
-Set data dir, creating it if necessary.
+Set the data dir, creating it if necessary.
 
-Data dir is a directory with service statuses and locks. (See C<Ubic::Settings> for more details on how it's calculated).
+Data dir is a directory with service statuses and locks. (See C<Ubic::Settings> for more details on how it's chosen).
 
-This setting will be propagated into subprocesses using environment, so following code works:
+This setting will be propagated into subprocesses using environment, so the following code works:
 
     Ubic->set_data_dir('tfiles/ubic');
     Ubic->set_service_dir('etc/ubic/service');
@@ -575,7 +592,7 @@ sub set_default_user($$) {
 
 =item B<< get_service_dir() >>
 
-Get ubic services dir.
+Get the ubic services dir.
 
 =cut
 sub get_service_dir($) {
@@ -586,7 +603,7 @@ sub get_service_dir($) {
 
 =item B<< set_service_dir($dir) >>
 
-Set ubic services dir.
+Set the ubic services dir.
 
 =cut
 sub set_service_dir($$) {
@@ -610,7 +627,7 @@ These methods can be changed or removed without further notice.
 
 =item B<status_file($name)>
 
-Get status file name by service's name.
+Get the status file name by a service's name.
 
 =cut
 sub status_file($$) {
@@ -621,7 +638,7 @@ sub status_file($$) {
 
 =item B<status_obj($name)>
 
-Get status persistent object by service's name.
+Get the status persistent object by a service's name.
 
 It's a bad idea to call this from any other class than C<Ubic>, but if you'll ever want to do this, at least don't forget to create C<Ubic::AccessGuard> first.
 
@@ -634,7 +651,7 @@ sub status_obj($$) {
 
 =item B<status_obj_ro($name)>
 
-Get readonly, nonlocked status persistent object by service's name.
+Get the readonly, nonlocked status persistent object (see L<Ubic::Persistent>) by a service's name.
 
 =cut
 sub status_obj_ro($$) {
@@ -645,7 +662,7 @@ sub status_obj_ro($$) {
 
 =item B<access_guard($name)>
 
-Get access guard (L<Ubic::AccessGuard> object) for given service.
+Get an access guard (L<Ubic::AccessGuard> object) for the given service.
 
 =cut
 sub access_guard($$) {
@@ -676,7 +693,7 @@ sub lock($$) {
 
 =item B<< do_sub($code) >>
 
-Run any code and wrap result into C<Ubic::Result::Class> object.
+Run any code and wrap any result or exception into a result object.
 
 =cut
 sub do_sub($$) {
@@ -691,7 +708,7 @@ sub do_sub($$) {
 
 =item B<< do_cmd($name, $cmd) >>
 
-Run C<$cmd> method from service C<$name> and wrap any result or exception into C<Ubic::Result::Class> object.
+Run C<$cmd> method from the service named C<$name> and wrap any result or exception in a result object.
 
 =cut
 sub do_cmd($$$) {
@@ -719,9 +736,9 @@ sub do_cmd($$$) {
 
 =item B<< forked_call($callback) >>
 
-Run C<$callback> inside fork and return its return value.
+Run a C<$callback> in a subprocess and return its return value.
 
-Interaction happens through temporary file in C<$ubic->{tmp_dir}> dir.
+Interaction happens through a temporary file in C<< $ubic->{tmp_dir} >> dir.
 
 =cut
 sub forked_call {
