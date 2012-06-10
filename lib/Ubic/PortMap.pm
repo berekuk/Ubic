@@ -12,6 +12,10 @@ use warnings;
     Ubic::PortMap::update();
     print Ubic::PortMap::port2name(12345); # ubic.ping
 
+=head1 INTERFACE SUPPORT
+
+This is considered to be a non-public class. Its interface is subject to change without notice.
+
 =head1 METHODS
 
 =over

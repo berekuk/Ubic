@@ -24,7 +24,11 @@ use Params::Validate qw(:all);
 
 =head1 DESCRIPTION
 
-This class controls output of service actions.
+This class controls the output of service actions.
+
+=head1 INTERFACE SUPPORT
+
+This is considered to be a non-public class. Its interface is subject to change without notice.
 
 =head1 METHODS
 

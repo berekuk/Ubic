@@ -5,6 +5,10 @@ use warnings;
 
 # ABSTRACT: internal object representing process info stored on disk
 
+=head1 INTERFACE SUPPORT
+
+This is considered to be a non-public class. Its interface is subject to change without notice.
+
 =head1 METHODS
 
 =over
