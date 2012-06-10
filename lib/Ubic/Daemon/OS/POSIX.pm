@@ -25,7 +25,8 @@ sub pid2cmd {
     $result =~ s/^.*\n//; # drop first line
     my ($ps_pid, $ps_command) = $result =~ /^\s*(\d+)\s+(.*)$/;
     unless ($ps_pid) {
-        die "Daemon $pid not found";
+        warn "Daemon $pid not found";
+        return 'unknown';
     }
     unless ($ps_pid == $pid) {
         die "Internal error, expected pid $pid, got pid $ps_pid";

@@ -46,7 +46,12 @@ sub pid2guid {
 sub pid2cmd {
     my ($self, $pid) = @_;
 
-    open my $daemon_cmd_fh, '<', "/proc/$pid/cmdline" or die "Can't open daemon's cmdline: $!";
+    my $daemon_cmd_fh;
+    unless (open $daemon_cmd_fh, '<', "/proc/$pid/cmdline") {
+        # this can happen if pid got reused and now it belongs to the kernel process, e.g., [kthreadd]
+        warn "Can't open daemon's cmdline: $!";
+        return 'unknown';
+    }
     my $daemon_cmd = <$daemon_cmd_fh>;
     unless ($daemon_cmd) {
         # strange, open succeeded but file is empty
