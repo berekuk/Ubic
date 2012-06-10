@@ -41,10 +41,6 @@ If none of these settings are set, it will fail and advice to run C<ubic-admin s
 
 =back
 
-=head1 INTERFACE SUPPORT
-
-This is considered to be a public class. Any changes to its interface will go through a deprecation cycle.
-
 =head1 METHODS
 
 If any of setting methods is called with new value, this value will be applied for current process only.
