@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.41    2012-06-11
     * pid2cmd doesn't die on errors
     * Ubic::Run supports the explicit service names
     * lots of minor POD spelling fixes and improvements
