@@ -10,4 +10,4 @@
 # Description:       ubic.watchdog brings other ubic services to their expected state
 ### END INIT INFO
 
-use Ubic::Run;
+use Ubic::Run qw(ubic.watchdog);
