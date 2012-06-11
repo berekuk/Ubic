@@ -7,8 +7,12 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    # in your init script:
-    use Ubic::Run; # that's all!
+    # /etc/init.d/foo:
+    use Ubic::Run; # proxy to 'foo' ubic service
+
+    # Or, if you want to rename the service or bind the service containing dots in its name:
+    # /etc/init.d/foo-bar:
+    use Ubic::Run qw(foo.bar); # proxy to 'foo.bar' ubic service
 
 =head1 DESCRIPTION
 
@@ -25,18 +29,21 @@ use Getopt::Long;
 use Pod::Usage;
 
 sub import {
-    my $name;
-    if ( $0 =~ m{^/etc/init\.d/(.+)$} ) {
-        $name = $1;
-    }
-    elsif ( $0 =~ m{^/etc/rc\d\.d/(?:K|S)\d+(.+)$} ) {
-        $name = $1;
-    }
-    elsif ( $0 =~ m{^/etc/rc\.d/init\.d/(.+)$} ) {
-        $name = $1;
-    }
-    else {
-        die "Strange \$0: $0";
+    my $class = shift;
+    my ($name) = @_;
+    unless (defined $name) {
+        if ( $0 =~ m{^/etc/init\.d/(.+)$} ) {
+            $name = $1;
+        }
+        elsif ( $0 =~ m{^/etc/rc\d\.d/(?:K|S)\d+(.+)$} ) {
+            $name = $1;
+        }
+        elsif ( $0 =~ m{^/etc/rc\.d/init\.d/(.+)$} ) {
+            $name = $1;
+        }
+        else {
+            die "Strange \$0: $0";
+        }
     }
 
     my $force;
@@ -61,9 +68,15 @@ sub import {
 
 =head1 BUGS AND CAVEATS
 
-*nix distributions can use different places for init scripts. If your system doesn't conform to cases listed in description, this module will have to be patched.
+*nix distributions can use different places for init scripts.
 
-Note that you usually don't want to use SysV-style rcX.d runlevel symlinks, because Ubic remembers if service should be running by other means (by storing status files in C</var/lib/ubic/status/>), L<ubic-watchdog> brings all enabled services up in one minute after reboot, and usually it's all you need anyway. If this bothers you, please remind me about it - I know a way to fix it (by adding additional abstraction layer which stores statuses), but I don't think I'll do this before anyone will actually care.
+If your system doesn't conform to cases listed in description, you'll have to set the service name in import parameters.
+
+Note that you usually don't want to use SysV-style rcX.d runlevel symlinks, because Ubic remembers if service should be running by other means (by storing status files in C</var/lib/ubic/status/>), B<ubic.watchdog> brings all enabled services up in one minute after reboot, and usually it's all you need anyway. See L<Ubic::Manual::FAQ/"How is ubic compatible with SysV-style /etc/rcX.d/ symlinks?"> for more details in this topic.
+
+=head1 SEE ALSO
+
+L<Ubic::Service::InitScriptWrapper> solves the reverse task: represent any init script as ubic service.
 
 =cut
 

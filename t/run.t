@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 20;
 
 use lib 'lib';
 
@@ -22,7 +22,7 @@ local_ubic;
     my $result;
 
     for (qw(/etc/init.d/sleeping-daemon /etc/rc.d/init.d/sleeping-daemon /etc/rc3.d/S98sleeping-daemon)) {
-        $ENV{INIT_SCRIPT_NAME} = $_;
+        local $ENV{INIT_SCRIPT_NAME} = $_;
 
         $result = qx($perl t/bin/any-init start);
         like($result, qr/^\QStarting sleeping-daemon... started (pid \E\d+\)$/);
@@ -43,7 +43,7 @@ local_ubic;
 
 # invalid filename (1)
 {
-    $ENV{INIT_SCRIPT_NAME} = '/usr/bin/sleeping-daemon';
+    local $ENV{INIT_SCRIPT_NAME} = '/usr/bin/sleeping-daemon';
     my $result = qx($perl t/bin/any-init start 2>&1 >/dev/null);
     like($result, qr{^Strange \$0: /usr/bin/sleeping-daemon}, 'Ubic::Run throws exception when script name is unknown');
 }
@@ -59,3 +59,13 @@ local_ubic;
     /msx, 'status works for multiservice');
 }
 
+# explicit service name (2)
+{
+    my $result = qx($perl t/bin/explicit-init start);
+    like($result, qr/^\QStarting sleeping-daemon... started (pid \E\d+\)$/, 'start init script with explicit service name');
+
+    $result = qx($perl t/bin/explicit-init stop);
+
+    $result = qx($perl t/bin/explicit-init status);
+    like($result, qr/sleeping-daemon \s+ off/x, 'status of init script with explicit service name');
+}
