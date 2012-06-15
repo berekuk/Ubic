@@ -7,6 +7,10 @@ use parent qw(Test::Class);
 use Test::More;
 use Time::HiRes qw(sleep);
 
+if ($^O eq 'darwin') {
+    plan skip_all => 'Group tests are broken on MacOSX';
+}
+
 use lib 'lib';
 use lib '.';
 
