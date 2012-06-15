@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.42    2012-06-15
     * critical bugfix: fix credentials application order
     (all non-root services were broken when operated from root, 1.39-1.41 releases were affected)
 
