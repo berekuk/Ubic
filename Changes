@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * critical bugfix: fix credentials application order
+    (all non-root services were broken when operated from root, 1.39-1.41 releases were affected)
 
 1.41    2012-06-11
     * pid2cmd doesn't die on errors
