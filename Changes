@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * actually merge the fix
 
 1.42    2012-06-15
     * critical bugfix: fix credentials application order
