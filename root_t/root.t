@@ -30,7 +30,7 @@ sub setup :Test(setup) {
     xsystem('chmod -R 777 tfiles');
 }
 
-sub test_grants :Tests(8) {
+sub test_grants :Tests {
     my $self = shift;
     my $name = $self->{name};
     my $user = $self->{user};
@@ -46,7 +46,7 @@ sub test_grants :Tests(8) {
         my ($file, $user, $group) = @_;
         my @stat = stat($file);
         is($stat[4], scalar(getpwnam($user)), "$file belongs to $user");
-        is($stat[5], scalar(getgrnam($group)), "$file group is $group");
+        is($stat[5], scalar(getgrnam($group)), "$file group is $group") unless $^O eq 'darwin';
     };
     $check_file->("tfiles/$name.result", $result_user, $result_group);
     $check_file->("tfiles/$name.ubic.log", $user, $group);

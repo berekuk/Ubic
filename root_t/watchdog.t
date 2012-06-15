@@ -34,7 +34,7 @@ sub watchdog :Tests(2) {
     my @stat = stat("tfiles/ubic/status/daemongroup-daemon");
 
     is($stat[4], scalar(getpwnam('nobody')), 'status file owner is correct after watchdog');
-    is($stat[5], scalar(getgrnam('daemon')), 'status file group is correct after watchdog');
+    is($stat[5], scalar(getgrnam('daemon')), 'status file group is correct after watchdog') unless $^O eq 'darwin';
 }
 
 __PACKAGE__->new->runtests;
