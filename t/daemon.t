@@ -14,9 +14,12 @@ my $perl = $Config{perlpath};
 
 use t::Utils;
 use IO::Handle;
-rebuild_tfiles();
 
 use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
+
+sub setup :Tests(setup) {
+    rebuild_tfiles;
+}
 
 sub basic :Tests(8) {
     start_daemon({
@@ -225,7 +228,8 @@ sub stop_daemon_options :Tests(4) {
 
     $start->();
 
-    my $error = exception {
+    my $error;
+    $error = exception {
         stop_daemon('tfiles/pid', { timeout => 1 });
     };
     like $error, qr/failed to stop daemon/, 'stop with small timeout fails';
@@ -235,7 +239,7 @@ sub stop_daemon_options :Tests(4) {
         'stopped',
         'start and stop with large enough timeout is ok';
 
-    my $error = exception {
+    $error = exception {
         stop_daemon('tfiles/pid', { timeout => 'abc' });
     };
     like $error, qr/did not pass regex check/, 'stop with invalid timeout fails parameters validation';
@@ -255,98 +259,91 @@ sub stop_daemon_params_validation :Tests(2) {
         'calling stop_daemon with invalid parameters is wrong';
 }
 
-sub ubic_log :Tests(6) {
-    {
-        rebuild_tfiles; local_ubic;
-        start_daemon({
-            bin => "sleep 10",
-            pidfile => "tfiles/pid",
-            ubic_log => 'tfiles/ubic.log',
-        });
-        stop_daemon('tfiles/pid');
-        my $log = slurp('tfiles/ubic.log');
-        like($log, qr/daemon \d+ exited by sigterm$/m, 'exit via sigterm');
-    }
+sub log_sigterm :Test {
+    start_daemon({
+        bin => "sleep 10",
+        pidfile => "tfiles/pid",
+        ubic_log => 'tfiles/ubic.log',
+    });
+    stop_daemon('tfiles/pid');
+    my $log = slurp('tfiles/ubic.log');
+    like($log, qr/daemon \d+ exited by sigterm$/m);
+}
 
-    {
-        rebuild_tfiles; local_ubic;
+sub log_code_zero :Test {
+    start_daemon({
+        bin => ['perl', '-le', '$SIG{TERM} = sub { print "term"; exit }; sleep 10'],
+        pidfile => "tfiles/pid",
+        stdout => 'tfiles/log',
+        stderr => 'tfiles/err.log',
+        ubic_log => 'tfiles/ubic.log',
+    });
+    sleep 1;
+    stop_daemon('tfiles/pid');
+    my $log = slurp('tfiles/ubic.log');
+    like($log, qr/daemon \d+ exited$/m, 'exit voluntarily');
+}
+
+sub log_code_nonzero :Test {
+    start_daemon({
+        bin => ['perl', '-e', 'sleep 1; exit 3'],
+        pidfile => "tfiles/pid",
+        ubic_log => 'tfiles/ubic.log',
+    });
+    sleep 2;
+    my $log = slurp('tfiles/ubic.log');
+    like($log, qr/daemon \d+ failed, exit code 3$/m, 'exit with non-zero code');
+}
+
+sub log_exit_immediately :Test {
+    # there are two options:
+    # 1) daemon exits before ubic-guardian finishes its initialization; in this case, start_daemon will throw an exception
+    # 2) ubic-guardian finishes its initialization and then daemon exits; in this case, we check for ubic.log
+    my $error = exception {
         start_daemon({
-            bin => ['perl', '-le', '$SIG{TERM} = sub { print "term"; exit }; sleep 10'],
+            bin => ['perl', '-e', 'exit 3'],
             pidfile => "tfiles/pid",
-            stdout => 'tfiles/log',
-            stderr => 'tfiles/err.log',
             ubic_log => 'tfiles/ubic.log',
         });
+    };
+    if ($error) {
+        like($error, qr/daemon exited immediately/, 'daemon exits immediately, before guardian initialization');
+    }
+    else {
         sleep 1;
-        stop_daemon('tfiles/pid');
         my $log = slurp('tfiles/ubic.log');
-        like($log, qr/daemon \d+ exited$/m, 'exit voluntarily');
+        like($log, qr/daemon \d+ failed, exit code 3$/m, 'daemon exits immediately, after guardian initialization');
     }
+}
 
-    {
-        rebuild_tfiles; local_ubic;
-        start_daemon({
-            bin => ['perl', '-e', 'sleep 1; exit 3'],
-            pidfile => "tfiles/pid",
-            ubic_log => 'tfiles/ubic.log',
-        });
-        sleep 2;
-        my $log = slurp('tfiles/ubic.log');
-        like($log, qr/daemon \d+ failed, exit code 3$/m, 'exit with non-zero code');
-    }
+sub log_sigkill :Test {
+    start_daemon({
+        bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
+        pidfile => "tfiles/pid",
+        ubic_log => 'tfiles/ubic.log',
+        term_timeout => 1,
+    });
+    sleep 1;
+    stop_daemon('tfiles/pid');
+    my $log = slurp('tfiles/ubic.log');
+    like($log, qr/daemon \d+ probably killed by SIGKILL$/m, 'exit via sigkill');
+}
 
-    {
-        rebuild_tfiles; local_ubic;
-        # there are two options:
-        # 1) daemon exits before ubic-guardian finishes its initialization; in this case, start_daemon will throw an exception
-        # 2) ubic-guardian finishes its initialization and then daemon exits; in this case, we check for ubic.log
-        my $error = exception {
-            start_daemon({
-                bin => ['perl', '-e', 'exit 3'],
-                pidfile => "tfiles/pid",
-                ubic_log => 'tfiles/ubic.log',
-            });
-        };
-        if ($error) {
-            like($error, qr/daemon exited immediately/, 'daemon exits immediately, before guardian initialization');
-        }
-        else {
-            sleep 1;
-            my $log = slurp('tfiles/ubic.log');
-            like($log, qr/daemon \d+ failed, exit code 3$/m, 'daemon exits immediately, after guardian initialization');
-        }
-    }
-
-    {
-        rebuild_tfiles; local_ubic;
-        start_daemon({
-            bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
-            pidfile => "tfiles/pid",
-            ubic_log => 'tfiles/ubic.log',
-            term_timeout => 1,
-        });
-        sleep 1;
-        stop_daemon('tfiles/pid');
-        my $log = slurp('tfiles/ubic.log');
-        like($log, qr/daemon \d+ probably killed by SIGKILL$/m, 'exit via sigkill');
-    }
-
-    {
-        rebuild_tfiles; local_ubic;
-        start_daemon({
-            bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
-            pidfile => "tfiles/pid",
-            ubic_log => 'tfiles/ubic.log',
-            term_timeout => 1,
-        });
-        sleep 1;
-        my $status = check_daemon('tfiles/pid');
-        kill 9 => $status->pid;
-        sleep 1;
-        stop_daemon('tfiles/pid');
-        my $log = slurp('tfiles/ubic.log');
-        like($log, qr/daemon \d+ failed with signal KILL \(9\)$/m, 'exit via signal to daemon');
-    }
+sub log_external_signal :Test {
+    rebuild_tfiles;
+    start_daemon({
+        bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
+        pidfile => "tfiles/pid",
+        ubic_log => 'tfiles/ubic.log',
+        term_timeout => 1,
+    });
+    sleep 1;
+    my $status = check_daemon('tfiles/pid');
+    kill 9 => $status->pid;
+    sleep 1;
+    stop_daemon('tfiles/pid');
+    my $log = slurp('tfiles/ubic.log');
+    like($log, qr/daemon \d+ failed with signal KILL \(9\)$/m, 'exit via signal to daemon');
 }
 
 __PACKAGE__->new->runtests;
