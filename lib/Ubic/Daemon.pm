@@ -239,7 +239,7 @@ Optional callback that will be executed before execing into a daemon.
 
 This option is a generalization of I<cwd> and I<env> options. One useful application of it is setting ulimits: they won't affect your main process, since this hook will be executed in the context of double-forked process.
 
-Note that hook is called *before* the credentials are set.
+Note that hook is called *before* the credentials are set. Raising the ulimits won't work otherwise.
 
 =item I<term_timeout>
 

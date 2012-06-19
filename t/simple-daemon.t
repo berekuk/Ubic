@@ -5,6 +5,7 @@ use warnings;
 
 use parent qw(Test::Class);
 use Test::More;
+use Test::Fatal;
 
 use lib 'lib';
 
@@ -141,6 +142,41 @@ sub reload :Tests(6) {
     $service->stop;
 
     is(slurp('tfiles/stdout'), "hup\nhup\n", 'two sighups sent');
+}
+
+sub ulimit :Tests(4) {
+    use BSD::Resource; # TODO - test only if BSD::Resource is installed?
+    my $service = Ubic::Service::SimpleDaemon->new({
+        name => 'limited_service',
+        bin => ['perl', '-e', 'system(q{bash -c "ulimit -n"}); sleep 5'],
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ulimit => {
+            RLIMIT_NOFILE => 100,
+        },
+    });
+
+    $service->start;
+    is $service->status->status, 'running', 'started successfully';
+
+    sleep 1;
+    my $out = slurp('tfiles/stdout');
+    is $out, "100\n";
+
+    $service->stop;
+    is $service->status->status, 'not running', 'stopped successfully';
+
+    my $invalid_service = Ubic::Service::SimpleDaemon->new({
+        name => 'limited_service',
+        bin => ['perl', '-e', 'sleep 100'],
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ulimit => {
+            BLAH => 100,
+        },
+    });
+    my $exception = exception { $invalid_service->start };
+    like $exception, qr/Failed to create daemon: 'Error: setrlimit: Unknown limit 'BLAH'/, 'start with invalid ulimit fails';
 }
 
 __PACKAGE__->new->runtests;
