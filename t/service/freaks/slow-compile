@@ -34,10 +34,6 @@ sub status_impl {
     }
 }
 
-sub user {
-    return $ENV{LOGNAME};
-}
-
 sub check_timeout {
     return 1;
 }

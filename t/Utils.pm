@@ -67,7 +67,7 @@ sub local_ubic {
         service_dirs => { type => ARRAYREF, default => ['t/service/common', 'etc/ubic/service'] },
         default_user => {
             type => SCALAR,
-            default => $ENV{LOGNAME} || $ENV{USERNAME} || getpwuid($>),
+            default => $ENV{LOGNAME} || $ENV{USERNAME} || scalar getpwuid($>),
         },
     });
 
