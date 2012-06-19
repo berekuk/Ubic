@@ -23,6 +23,14 @@ use parent qw( Ubic::ServiceLoader::Base );
 
 use JSON;
 
+{
+    # support the compatibility with JSON.pm v1 just because we can
+    # see also: Ubic::Persistent
+    no strict;
+    no warnings;
+    sub jsonToObj; *jsonToObj = (*{JSON::from_json}{CODE}) ? \&JSON::from_json : \&JSON::jsonToObj;
+}
+
 sub new {
     my $class = shift;
     return bless {} => $class;
@@ -36,7 +44,7 @@ sub load {
     my $content = do { local $/; <$fh> };
     close $fh or die "Can't close $file: $!";
 
-    my $config = eval { decode_json $content };
+    my $config = eval { jsonToObj $content };
     unless ($config) {
         die "Failed to parse $file: $@";
     }

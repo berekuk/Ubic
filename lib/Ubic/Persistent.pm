@@ -25,9 +25,8 @@ use Ubic::Lockf;
 use Ubic::AtomicFile;
 
 {
-    # JSON.pm v2 incompatibility with v1 is really, really annoying.
-    # Any JSON::Any don't help much too.
-    # So this code is here to stay, at least until Ubuntu Hardy support period will be over.
+    # support the compatibility with JSON.pm v1 just because we can
+    # see also: Ubic::ServiceLoader::Ext::json
     no strict;
     no warnings;
     sub jsonToObj; *jsonToObj = (*{JSON::from_json}{CODE}) ? \&JSON::from_json : \&JSON::jsonToObj;
