@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More tests => 20;
+use Test::Fatal;
 
 use lib 'lib';
 
@@ -30,9 +31,10 @@ local_ubic;
         $result = qx($perl t/bin/any-init status);
         like($result, qr/sleeping-daemon \s+ running/x, 'Ubic::Run works, sleeping-daemon is running');
 
-        use Test::Exception;
-        dies_ok(sub { xsystem("$perl t/bin/any-init blah 2>>tfiles/blah.stderr") }, "Ubic::Run dies encountering an unknown command");
-        lives_ok(sub { xsystem("$perl t/bin/any-init logrotate") }, "logrotate command implemented"); #FIXME: better fix logrotate configs!
+        my $error = exception { xsystem("$perl t/bin/any-init blah 2>>tfiles/blah.stderr") };
+        ok $error, "Ubic::Run dies encountering an unknown command";
+
+        ok not(exception { xsystem("$perl t/bin/any-init logrotate") }), "logrotate command implemented"; #FIXME: logrotate command should be deprecated and removed from ubic core
 
         $result = qx($perl t/bin/any-init stop);
 

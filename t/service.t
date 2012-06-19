@@ -3,17 +3,20 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use parent qw(Test::Class);
+use Test::More;
 
 use lib 'lib';
 
 use t::Utils;
-rebuild_tfiles();
 
 use Ubic::Service::Common;
 
-# common service with methods as callbacks (7)
-{
+sub setup :Test(setup) {
+    rebuild_tfiles();
+}
+
+sub common_service :Tests(7) {
     my $running;
     my $service = Ubic::Service::Common->new({
         start => sub {
@@ -44,8 +47,7 @@ use Ubic::Service::Common;
     is($service->stop, 'not running', 'double stop');
 }
 
-# another service which callbacks returns specific result objects (7)
-{
+sub common_service_result_objects :Tests(7) {
     my $running;
     use Ubic::Result qw(result);
     my $service = Ubic::Service::Common->new({
@@ -79,8 +81,7 @@ use Ubic::Service::Common;
     is($service->stop, 'not running', 'double stop');
 }
 
-# custom_commands (2)
-{
+sub custom_commands :Tests(2) {
     my $running;
     my $service = Ubic::Service::Common->new({
         start => sub {
@@ -106,3 +107,4 @@ use Ubic::Service::Common;
     is_deeply(scalar($service->do_custom_command('preved')), 'medved', 'do_custom_command method works');
 }
 
+__PACKAGE__->new->runtests;

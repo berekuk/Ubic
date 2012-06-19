@@ -5,7 +5,7 @@ use warnings;
 
 use lib 'lib';
 use Test::More tests => 6;
-use Test::Exception;
+use Test::Fatal;
 
 use t::Utils;
 
@@ -28,27 +28,18 @@ my $loader = Ubic::ServiceLoader::Ext::ini->new;
     ok $service->isa('Ubic::Service::SimpleDaemon'), 'SimpleDaemon is a default module for ini configs';
 }
 
-throws_ok(
-    sub {
-        $loader->load(Ubic::Settings->service_dir.'/invalid.ini')
-    },
-    qr/Unknown section/,
-    "attempt to load config with unknown section fails"
-);
+my $error;
+$error = exception {
+    $loader->load(Ubic::Settings->service_dir.'/invalid.ini')
+};
+like $error, qr/Unknown section/, "attempt to load config with unknown section fails";
 
-throws_ok(
-    sub {
-        $loader->load(Ubic::Settings->service_dir.'/invalid2.ini')
-    },
-    qr/Unknown option/,
-    "attempt to load config with unknown root-level option"
-);
+$error = exception {
+    $loader->load(Ubic::Settings->service_dir.'/invalid2.ini')
+};
+like $error, qr/Unknown option/, "attempt to load config with unknown root-level option";
 
-throws_ok(
-    sub {
-        $loader->load(Ubic::Settings->service_dir.'/invalid3.ini')
-    },
-    qr/Syntax error at line 4/,
-    "attempt to load config with syntax error"
-);
-
+$error = exception {
+    $loader->load(Ubic::Settings->service_dir.'/invalid3.ini')
+};
+like $error, qr/Syntax error at line 4/, "attempt to load config with syntax error";

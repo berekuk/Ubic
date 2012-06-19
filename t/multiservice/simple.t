@@ -5,7 +5,7 @@ use warnings;
 
 use parent qw(Test::Class);
 use Test::More;
-use Test::Exception;
+use Test::Fatal;
 
 use lib 'lib';
 
@@ -33,12 +33,13 @@ sub generic : Test(8) {
     is(scalar $ms->service('s2')->name, 's2', 'multiservice assigns names to services');
     is(scalar $ms->service('s1')->name, 'sleep', '...unless they are already named');
 
-    dies_ok(sub {
+    my $error = exception {
         Ubic::Multiservice::Simple->new({
             s1 => $s1,
             s2 => 'non-service',
         });
-    }, 'new fails when non-service is specified as value');
+    };
+    ok $error, 'new fails when non-service is specified as value';
 }
 
 sub nested : Test(4) {
@@ -49,10 +50,10 @@ sub nested : Test(4) {
         }),
     });
     # testing has_service for nested unexistent services
-    lives_ok(sub { scalar $ms->has_service('s1.blah') });
-    lives_ok(sub { scalar $ms->has_service('s1.blah.blah') });
-    lives_ok(sub { scalar $ms->has_service('m1.blah.blah') });
-    lives_ok(sub { scalar $ms->has_service('m1.s2.blah') });
+    ok not exception { scalar $ms->has_service('s1.blah') };
+    ok not exception { scalar $ms->has_service('s1.blah.blah') };
+    ok not exception { scalar $ms->has_service('m1.blah.blah') };
+    ok not exception { scalar $ms->has_service('m1.s2.blah') };
 }
 
 __PACKAGE__->new->runtests;
