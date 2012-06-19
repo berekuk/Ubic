@@ -239,6 +239,8 @@ Optional callback that will be executed before execing into a daemon.
 
 This option is a generalization of I<cwd> and I<env> options. One useful application of it is setting ulimits: they won't affect your main process, since this hook will be executed in the context of double-forked process.
 
+Note that hook is called *before* the credentials are set.
+
 =item I<term_timeout>
 
 Can contain integer number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to daemon.
@@ -431,8 +433,8 @@ sub start_daemon($) {
                         $ENV{$key} = $env->{$key};
                     }
                 }
-                $credentials->set() if $credentials;
                 $start_hook->() if $start_hook;
+                $credentials->set() if $credentials;
 
                 close($ubic_fh) if defined $ubic_fh;
                 $lock->dissolve;
