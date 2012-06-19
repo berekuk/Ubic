@@ -161,7 +161,11 @@ sub new {
     });
 
     if ($params->{ulimit}) {
-        require BSD::Resource; # fast fail if BSD::Resource is not installed
+        # load BSD::Resource lazily, but fail fast if we're asked for it
+        eval "require BSD::Resource";
+        if ($@) {
+            die "BSD::Resource is not installed";
+        }
     }
 
     return bless {%$params} => $class;

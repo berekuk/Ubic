@@ -145,7 +145,10 @@ sub reload :Tests(6) {
 }
 
 sub ulimit :Tests(4) {
-    use BSD::Resource; # TODO - test only if BSD::Resource is installed?
+    eval "require BSD::Resource"; # TODO - test only if BSD::Resource is installed?
+    if ($@) {
+        return 'BSD::Resource is not installed, skip ulimit tests';
+    }
     my $service = Ubic::Service::SimpleDaemon->new({
         name => 'limited_service',
         bin => ['perl', '-e', 'system(q{bash -c "ulimit -n"}); sleep 5'],
