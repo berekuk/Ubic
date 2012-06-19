@@ -233,6 +233,12 @@ Modify environment before starting a daemon. Optional. Must be a plain hashref i
 
 Set given credentials before execing into a daemon. Optional, must be an C<Ubic::Credentials> object.
 
+=item I<start_hook>
+
+Optional callback that will be executed before execing into a daemon.
+
+This option is a generalization of I<cwd> and I<env> options. One useful application of it is setting ulimits: they won't affect your main process, since this hook will be executed in the context of double-forked process.
+
 =item I<term_timeout>
 
 Can contain integer number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to daemon.
