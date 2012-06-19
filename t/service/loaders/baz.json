@@ -1,0 +1,6 @@
+{
+  "module": "Ubic::Service::SimpleDaemon",
+  "options": {
+    "bin": "sleep 200"
+  }
+}

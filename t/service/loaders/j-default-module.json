@@ -1,0 +1,5 @@
+{
+  "options": {
+    "bin": "sleep 300"
+  }
+}
