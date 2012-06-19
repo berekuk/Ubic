@@ -257,9 +257,10 @@ sub start_daemon($) {
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
         credentials => { isa => 'Ubic::Credentials', optional => 1 },
+        start_hook => { type => CODEREF, optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials, $start_hook)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials   start_hook /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -425,6 +426,7 @@ sub start_daemon($) {
                     }
                 }
                 $credentials->set() if $credentials;
+                $start_hook->() if $start_hook;
 
                 close($ubic_fh) if defined $ubic_fh;
                 $lock->dissolve;

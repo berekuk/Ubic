@@ -330,7 +330,6 @@ sub log_sigkill :Test {
 }
 
 sub log_external_signal :Test {
-    rebuild_tfiles;
     start_daemon({
         bin => ['perl', '-e', '$SIG{TERM} = "IGNORE"; sleep 30'],
         pidfile => "tfiles/pid",
@@ -344,6 +343,22 @@ sub log_external_signal :Test {
     stop_daemon('tfiles/pid');
     my $log = slurp('tfiles/ubic.log');
     like($log, qr/daemon \d+ failed with signal KILL \(9\)$/m, 'exit via signal to daemon');
+}
+
+sub start_hook :Tests(2) {
+    start_daemon({
+        bin => ['perl', '-e', 'use IO::Handle; print "foo=$ENV{FOO}\n"; STDOUT->flush; sleep 3' ],
+        pidfile => "tfiles/pid",
+        stdout => 'tfiles/log',
+        start_hook => sub {
+            $ENV{FOO} = 5;
+        },
+    });
+    sleep 1;
+    stop_daemon('tfiles/pid');
+
+    like slurp('tfiles/log'), qr/foo=5/;
+    is $ENV{FOO}, undef, 'start_hook executed after the fork';
 }
 
 __PACKAGE__->new->runtests;
