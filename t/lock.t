@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More tests => 5;
-use Test::Exception;
+use Test::Fatal;
 
 use lib 'lib';
 
@@ -15,8 +15,8 @@ use Ubic;
 
 local_ubic;
 
-lives_ok(sub { my $lock = Ubic->lock('sleeping-daemon'); }, 'lock acuquired');
-lives_ok(sub { my $lock = Ubic->lock('sleeping-daemon'); }, 'lock acuquired again');
+ok not(exception { my $lock = Ubic->lock('sleeping-daemon') }), 'lock acuquired';
+ok not(exception { my $lock = Ubic->lock('sleeping-daemon') }), 'lock acuquired again';
 
 {
     local $SIG{ALRM} = sub { die "alarm" };

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Exception;
+use Test::Fatal;
 
 if ($^O =~ /MSWin|cygwin|solaris/i) {
     BAIL_OUT("OS unsupported");
@@ -31,6 +31,8 @@ for (@modules) {
 }
 
 for my $file (@files) {
-    lives_ok(sub { require $file }, "require($file) lives");
+    ok
+        not(exception { require $file }),
+        "require($file) lives";
 }
 
