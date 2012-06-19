@@ -1,6 +1,9 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * ulimit support in SimpleDaemon
+    * json-style configs
+    * 'start_hook' option in start_daemon()
 
 1.43    2012-06-16
     * actually merge the fix
