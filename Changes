@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * fix SimpleDaemon to work on perl <5.14
 
 1.43_03 2012-06-20
     * fix tests for systems which don't set LOGNAME or USERNAME

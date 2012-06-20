@@ -200,7 +200,7 @@ sub start_impl {
     }
     if (defined $self->{ulimit}) {
         $start_params->{start_hook} = sub {
-            for my $name (keys $self->{ulimit}) {
+            for my $name (keys %{$self->{ulimit}}) {
                 my $value = $self->{ulimit}{$name};
                 my $result = BSD::Resource::setrlimit($name, $value, $value);
                 unless ($result) {
