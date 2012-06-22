@@ -1,3 +1,12 @@
+ubic (1.44-1) unstable; urgency=low
+
+  * critical bugfix: fix credentials application order (broken since 1.38_01)
+  * ulimit support in SimpleDaemon
+  * json-style configs
+  * 'start_hook' option in start_daemon()
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 22 Jun 2012 19:50:34 +0400
+
 ubic (1.41-1) unstable; urgency=low
 
   * non-root dir multiservices allow operations without --force
