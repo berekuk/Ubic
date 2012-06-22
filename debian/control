@@ -5,14 +5,15 @@ Priority: optional
 Standards-Version: 3.8.0
 Build-Depends: debhelper (>= 5), perl,
  libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl,
- libtry-tiny-perl, libjson-perl, libparent-perl, libconfig-tiny-perl,
- libtest-exception-perl, libtest-pod-coverage-perl, libtest-pod-perl, libtest-simple-perl, libtest-class-perl, libtest-tcp-perl
+ libtry-tiny-perl, libjson-perl, libparent-perl, libconfig-tiny-perl, libbsd-resource-perl,
+ libtest-fatal-perl, libtest-pod-coverage-perl, libtest-pod-perl, libtest-simple-perl, libtest-class-perl, libtest-tcp-perl
 
 Package: ubic
 Architecture: all
 Depends: ${perl:Depends},
  libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl,
  libtry-tiny-perl, libjson-perl, libparent-perl, libconfig-tiny-perl
+Recommends: libbsd-resource-perl
 Provides: yandex-ubic
 Replaces: yandex-ubic (<< 1.00)
 Conflicts: yandex-ubic (<< 1.00)

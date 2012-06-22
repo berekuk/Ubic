@@ -1,3 +1,9 @@
+ubic (1.44-2) unstable; urgency=low
+
+  * fix depends and build-depends, recommend libbsd-resource-perl
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Fri, 22 Jun 2012 20:26:41 +0400
+
 ubic (1.44-1) unstable; urgency=low
 
   * critical bugfix: fix credentials application order (broken since 1.38_01)
