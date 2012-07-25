@@ -804,9 +804,11 @@ Ivan Bessarabov <ivan@bessarabov.ru>
 
 Most Ubic-related links are collected on github wiki: L<http://github.com/berekuk/Ubic/wiki>.
 
-L<Daemon::Control> lets you write init scripts in perl.
+L<Daemon::Control> and L<Proc::Launcher> provide the start/stop/status style mechanisms for init scripts and apachectl-style commands.
 
-L<ControlFreak>, L<Server::Control> and L<Proc::Launcher> are similar to Ubic in being "apachectl-style" managers.
+L<Server::Control> is an apachectl-style, heavyweight subclassable module for handling network daemons.
+
+L<ControlFreak> - process supervisor, similar to Ubic in its command-line interface.
 
 There are also L<App::Daemon>, L<App::Control> and L<Supervisor>.
 
