@@ -13,6 +13,7 @@ rebuild_tfiles();
 use Config;
 my $perl = $Config{perlpath};
 
+local $ENV{ORIGINAL_HOME} = $ENV{HOME};
 local $ENV{HOME} = 'tfiles';
 
 xsystem("$perl ./bin/ubic-admin setup --batch-mode --no-install-services --no-crontab --local --reconfigure");

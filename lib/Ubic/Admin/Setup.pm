@@ -317,6 +317,40 @@ sub setup {
         $enable_crontab = prompt_bool("Install watchdog's watchdog as a cron job?", $opt_crontab);
     }
 
+    my $crontab_env_fix = '';
+    {
+        my @path = split /:/, $ENV{PATH};
+        my @perls = grep { -x $_ } map { "$_/perl" } @path;
+        if ($perls[0] =~ /perlbrew/) {
+            print_tty "\nYou're using perlbrew.\n";
+
+            my $HOME = $ENV{ORIGINAL_HOME} || $ENV{HOME}; # ORIGINAL_HOME is set in ubic tests
+            unless ($HOME) {
+                die "HOME env variable not defined";
+            }
+            my $perlbrew_config = "$HOME/perl5/perlbrew/etc/bashrc";
+            if (not -e $perlbrew_config) {
+                die "Can't find perlbrew config (assumed $perlbrew_config)";
+            }
+            print_tty "I'll source your perlbrew config in ubic crontab entry to start the watchdog in the correct environment.\n";
+            $crontab_env_fix .= "source $perlbrew_config && ";
+        }
+        elsif (@perls > 1) {
+            print_tty "\nYou're using custom perl and it's not from perlbrew.\n";
+            print_tty "I'll add your current PATH to ubic crontab entry.\n";
+
+            # TODO - what if PATH contains " quotes? hopefully nobody is that crazy...
+            $crontab_env_fix .= qq[PATH="$ENV{PATH}" && ];
+        }
+
+        if ($ENV{PERL5LIB}) {
+            print_tty "\nYou're using custom PERL5LIB.\n";
+            print_tty "I'll add your current PERL5LIB to ubic crontab entry.\n";
+            print_tty "Feel free to edit your crontab manually after installation if necessary.\n";
+            $crontab_env_fix .= qq[PERL5LIB="$ENV{PERL5LIB}" && ];
+        }
+    }
+
     my $config_file = (
         defined($local_dir)
         ?  "$local_dir/.ubic.cfg"
@@ -397,7 +431,7 @@ sub setup {
                 print {$fh} @_ or die "Can't write to pipe: $!";
             };
             $printc->($old_crontab."\n");
-            $printc->("* * * * * ubic-watchdog ubic.watchdog    >>/dev/null 2>>/dev/null\n");
+            $printc->("* * * * * ${crontab_env_fix}ubic-watchdog ubic.watchdog    >$log_dir/watchdog.log 2>$log_dir.watchdog.err.log\n");
             close $fh or die "Can't close pipe: $!";
         }
     }
