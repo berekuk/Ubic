@@ -340,14 +340,14 @@ sub setup {
             print_tty "I'll add your current PATH to ubic crontab entry.\n";
 
             # TODO - what if PATH contains " quotes? hopefully nobody is that crazy...
-            $crontab_env_fix .= qq[PATH="$ENV{PATH}" && ];
+            $crontab_env_fix .= qq[PATH="$ENV{PATH}" ];
         }
 
         if ($ENV{PERL5LIB}) {
             print_tty "\nYou're using custom PERL5LIB.\n";
             print_tty "I'll add your current PERL5LIB to ubic crontab entry.\n";
             print_tty "Feel free to edit your crontab manually after installation if necessary.\n";
-            $crontab_env_fix .= qq[PERL5LIB="$ENV{PERL5LIB}" && ];
+            $crontab_env_fix .= qq[PERL5LIB="$ENV{PERL5LIB}" ];
         }
     }
 
