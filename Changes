@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.44_02 2012-10-30
     * Solaris compatibility (thanks to Martin Schultheis!)
 
 1.44_01 2012-08-02
