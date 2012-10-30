@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * more robust t/simple-daemon.t
 
 1.44_02 2012-10-30
     * Solaris compatibility (thanks to Martin Schultheis!)

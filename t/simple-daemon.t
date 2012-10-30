@@ -179,7 +179,7 @@ sub ulimit :Tests(4) {
         },
     });
     my $exception = exception { $invalid_service->start };
-    like $exception, qr/Failed to create daemon: 'Error: setrlimit: Unknown limit 'BLAH'/, 'start with invalid ulimit fails';
+    like $exception, qr/Failed to create daemon: '.*Error: setrlimit: Unknown limit 'BLAH'/s, 'start with invalid ulimit fails';
 }
 
 __PACKAGE__->new->runtests;
