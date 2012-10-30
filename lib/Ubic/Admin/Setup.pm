@@ -249,7 +249,7 @@ sub setup {
     $default_service_dir = $opt_service_dir if defined $opt_service_dir;
     my $service_dir = prompt_str("Service dir?", $default_service_dir);
 
-    print_tty "\nData dir is a directory into which ubic stores all of its data: locks,\n";
+    print_tty "\nData dir is where ubic stores all of its data: locks,\n";
     print_tty "status files, tmp files.\n";
     my $default_data_dir = (
         defined($local_dir)
@@ -259,7 +259,7 @@ sub setup {
     $default_data_dir = $opt_data_dir if defined $opt_data_dir;
     my $data_dir = prompt_str("Data dir?", $default_data_dir);
 
-    print_tty "\nLog dir is a directory into which ubic.watchdog will write its logs.\n";
+    print_tty "\nLog dir is where ubic.watchdog will write its logs.\n";
     print_tty "(Your own services are free to write logs wherever they want.)\n";
     my $default_log_dir = (
         defined($local_dir)
