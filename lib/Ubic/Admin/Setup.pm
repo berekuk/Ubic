@@ -209,6 +209,10 @@ sub setup {
     print_tty "Ubic can be installed either in your home dir or into standard system paths ($defaults{example}).\n";
     print_tty "You need to be root to install it into system.\n";
 
+    unless ($batch_mode) {
+        $batch_mode = prompt_bool("Would you like to configure as much as possible automatically?", 1);
+    }
+
     # ideally, we want is_root option and local option to be orthogonal
     # it's not completely true by now, though
     my $is_root = ( $> ? 0 : 1 );
