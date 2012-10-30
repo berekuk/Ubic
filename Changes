@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * setup process now offers auto-configuration
     * typo fix in crontab code (thanks to Anton Ukolov)
 
 1.44_02 2012-10-30
