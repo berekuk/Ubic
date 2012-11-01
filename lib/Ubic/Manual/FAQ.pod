@@ -93,9 +93,12 @@ In other words, if you don't use C<ubic.ping>, you can stop both C<ubic.update> 
 
 =head2 Why is it called "ubic", anyway?
 
-It's called after "Ubik" - science fiction novel by Philip K. Dick. I spelled it incorrectly in early releases, because "c" and "k" are indistinguishable in Russian language, and now it's too late to fix this stupid typo (and I'll be very thankful to anyone who'll invent appropriate backronym).
+It's called after "Ubik" - science fiction novel by Philip K. Dick. I spelled it incorrectly in early releases, because "c" and "k" are indistinguishable in Russian language, and now it's too late to fix this.
 
 Why is it called after "Ubik"? Well, these two quotes can hint to some suggestions:
 
   "This substance, whose name is derived from the word "ubiquity", has the property of preserving people who are in half-life."
   "Ubik is a metaphor for God. Ubik is all-powerful and all-knowing, and Ubik is everywhere."
+
+Alternatively, one possible backronym is "Ubic Because I Can" :)
+(Thanks to Christopher Paulicka for suggesting it!)

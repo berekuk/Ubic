@@ -21,7 +21,8 @@ sub pid2guid {
 sub pid2cmd {
     my ($self, $pid) = validate_pos(@_, 1, { type => SCALAR, regex => qr/^\d+$/ });
 
-    my $result = qx(ps -p $pid -o pid,command 2>/dev/null);
+    # see POSIX specification - http://pubs.opengroup.org/onlinepubs/009696799/utilities/ps.html
+    my $result = qx(ps -p $pid -o pid,comm 2>/dev/null);
     $result =~ s/^.*\n//; # drop first line
     my ($ps_pid, $ps_command) = $result =~ /^\s*(\d+)\s+(.*)$/;
     unless ($ps_pid) {
