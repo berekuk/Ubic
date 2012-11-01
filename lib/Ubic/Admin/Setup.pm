@@ -209,6 +209,10 @@ sub setup {
     print_tty "Ubic can be installed either in your home dir or into standard system paths ($defaults{example}).\n";
     print_tty "You need to be root to install it into system.\n";
 
+    unless ($batch_mode) {
+        $batch_mode = prompt_bool("Would you like to configure as much as possible automatically?", 1);
+    }
+
     # ideally, we want is_root option and local option to be orthogonal
     # it's not completely true by now, though
     my $is_root = ( $> ? 0 : 1 );
@@ -245,7 +249,7 @@ sub setup {
     $default_service_dir = $opt_service_dir if defined $opt_service_dir;
     my $service_dir = prompt_str("Service dir?", $default_service_dir);
 
-    print_tty "\nData dir is a directory into which ubic stores all of its data: locks,\n";
+    print_tty "\nData dir is where ubic stores all of its data: locks,\n";
     print_tty "status files, tmp files.\n";
     my $default_data_dir = (
         defined($local_dir)
@@ -255,7 +259,7 @@ sub setup {
     $default_data_dir = $opt_data_dir if defined $opt_data_dir;
     my $data_dir = prompt_str("Data dir?", $default_data_dir);
 
-    print_tty "\nLog dir is a directory into which ubic.watchdog will write its logs.\n";
+    print_tty "\nLog dir is where ubic.watchdog will write its logs.\n";
     print_tty "(Your own services are free to write logs wherever they want.)\n";
     my $default_log_dir = (
         defined($local_dir)
@@ -431,7 +435,7 @@ sub setup {
                 print {$fh} @_ or die "Can't write to pipe: $!";
             };
             $printc->($old_crontab."\n");
-            $printc->("* * * * * ${crontab_env_fix}ubic-watchdog ubic.watchdog    >$log_dir/watchdog.log 2>$log_dir.watchdog.err.log\n");
+            $printc->("* * * * * ${crontab_env_fix}ubic-watchdog ubic.watchdog    >$log_dir/watchdog.log 2>$log_dir/watchdog.err.log\n");
             close $fh or die "Can't close pipe: $!";
         }
     }
