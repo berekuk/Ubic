@@ -11,7 +11,8 @@ Build-Depends: debhelper (>= 5), perl,
 Package: ubic
 Architecture: all
 Depends: ${perl:Depends},
- libclass-accessor-perl, libhttp-server-simple-perl, liblist-moreutils-perl, libparams-validate-perl,
+ libclass-accessor-perl, liblist-moreutils-perl, libparams-validate-perl,
+ libhttp-server-simple-perl, libhttp-server-simple-perl (>= 0.42) | liburi-perl,
  libtry-tiny-perl, libjson-perl, libparent-perl, libconfig-tiny-perl
 Recommends: libbsd-resource-perl
 Provides: yandex-ubic
