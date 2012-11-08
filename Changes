@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.46    2012-11-08
     * require modern BSD::Resource version
       (see https://github.com/berekuk/Ubic/issues/43)
     * relax timing conditions in t/watchdog.t
