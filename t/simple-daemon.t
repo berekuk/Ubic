@@ -149,6 +149,9 @@ sub ulimit :Tests(4) {
     if ($@) {
         return 'BSD::Resource is not installed, skip ulimit tests';
     }
+    if (BSD::Resource->VERSION < 1.29) {
+        return "BSD::Resource is too old to work with Ubic, but it's an optional dependency, so we'll just skip ulimit tests";
+    }
     my $service = Ubic::Service::SimpleDaemon->new({
         name => 'limited_service',
         bin => ['perl', '-e', 'system(q{bash -c "ulimit -n"}); sleep 5'],
