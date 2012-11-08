@@ -107,8 +107,11 @@ sub compile_timeout :Test(3) {
 
     my $time = time;
     system("$perl bin/ubic-watchdog --compile-timeout=2 >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    ok(time - $time < 4, 'ubic-watchdog compile-timeout happened');
-    ok(time - $time >= 2, 'ubic-watchdog compile-timeout happened');
+
+    # 3-4 seconds is usually enough, 7 seconds is a precaution against slow systems
+    ok(time - $time <= 7, 'ubic-watchdog compile-timeout happened early');
+    ok(time - $time >= 2, 'ubic-watchdog compile-timeout happened after 2 seconds');
+
     like(slurp('tfiles/watchdog.err.log'), qr/Couldn't compile Ubic::Multiservice::Dir.* services in 2 seconds/);
 }
 
