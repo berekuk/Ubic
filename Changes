@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * require modern BSD::Resource version
+      (see https://github.com/berekuk/Ubic/issues/43)
 
 1.45    2012-11-01
     * more robust t/simple-daemon.t
