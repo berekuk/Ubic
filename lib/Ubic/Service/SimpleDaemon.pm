@@ -166,6 +166,10 @@ sub new {
         if ($@) {
             die "BSD::Resource is not installed";
         }
+        if (BSD::Resource->VERSION < 1.29) {
+            # 1.29 supports string names for resources
+            die "BSD::Resource >= 1.29 required";
+        }
     }
 
     return bless {%$params} => $class;
