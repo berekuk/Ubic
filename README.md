@@ -93,3 +93,5 @@ But I like Flattr's concept, so why not.
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=berekuk&url=http://github.com/berekuk/Ubic&title=Ubic&language=en_GB&tags=github&category=software)
 
 You can also +1 Ubic on [MetaCPAN](https://metacpan.org/release/Ubic) if you like it.
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/799a7f93ca5a43d864a4743b54ff2402 "githalytics.com")](http://githalytics.com/berekuk/Ubic)
