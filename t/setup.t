@@ -24,6 +24,6 @@ ok(-d 'tfiles/ubic/service', 'ubic service dir created');
 ok(-e 'tfiles/.ubic.cfg', 'ubic config created');
 
 my @config = split /\n/, slurp 'tfiles/.ubic.cfg';
-like($config[0], qr{^default_user = \S+$}, 'default user config line');
-like($config[1], qr{^service_dir = .*tfiles/ubic/service$}, 'services dir config line');
-like($config[2], qr{^data_dir = .*tfiles/ubic/data$}, 'services dir config line');
+like($config[0], qr{^data_dir = .*tfiles/ubic/data$}, 'services dir config line');
+like($config[1], qr{^default_user = \S+$}, 'default user config line');
+like($config[2], qr{^service_dir = .*tfiles/ubic/service$}, 'services dir config line');

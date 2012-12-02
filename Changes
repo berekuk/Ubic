@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * compatibility with perl 5.17 hash randomization
+     (see https://github.com/berekuk/Ubic/issues/45)
 
 1.46    2012-11-08
     * require modern BSD::Resource version

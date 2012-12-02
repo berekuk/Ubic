@@ -66,7 +66,7 @@ sub write {
 
     my $content = "";
 
-    for my $key (keys %$config) {
+    for my $key (sort keys %$config) {
         my $value = $config->{$key};
         if ($value =~ /\n/) {
             die "Invalid config line  '$key = $value', values can't contain line breaks";
