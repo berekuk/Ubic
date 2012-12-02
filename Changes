@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.47    2012-12-03
     * compatibility with perl 5.17 hash randomization
      (see https://github.com/berekuk/Ubic/issues/45)
     * append watchdog logs in crontab (instead of rewriting)
