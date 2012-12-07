@@ -2,6 +2,7 @@ Revision history for Ubic
 
 {{$NEXT}}
     * detect ubic-watchdog location and put its full path to the crontab on setup
+    * 'ubic help' command (see https://github.com/berekuk/Ubic/issues/31)
 
 1.47    2012-12-03
     * compatibility with perl 5.17 hash randomization

@@ -72,7 +72,10 @@ GetOptions(
     'f|force' => \$force,
 ) or pod2usage(2);
 
-unless (@ARGV) {
+if (
+    not @ARGV
+    or @ARGV == 1 and $ARGV[0] eq 'help'
+) {
     pod2usage(2);
 }
 
