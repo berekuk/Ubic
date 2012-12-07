@@ -242,7 +242,7 @@ WARNING: exits on invocation!
 sub usage {
     my $self = _obj(shift);
     my $command = shift;
-    print STDERR "Unknown command '$command'\n";
+    print STDERR "Unknown command '$command'. See 'ubic help'.\n";
     exit(2); # or exit(3)? see LSB for details
 }
 
