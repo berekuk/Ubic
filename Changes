@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * detect ubic-watchdog location and put its full path to the crontab on setup
 
 1.47    2012-12-03
     * compatibility with perl 5.17 hash randomization
