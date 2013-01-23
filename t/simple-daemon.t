@@ -126,7 +126,7 @@ sub reload :Tests(6) {
 
     $service->start;
 
-    sleep 1; # let the code load and set sighub handler
+    sleep 1; # let the code load and set sighup handler
 
     $result = $service->reload;
     is($result->action, 'reloaded', 'reload successful');
