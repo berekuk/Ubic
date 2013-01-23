@@ -26,7 +26,7 @@ This module uses L<Ubic::Daemon> module for process daemonization. All pidfiles 
 
 use parent qw(Ubic::Service::Skeleton);
 
-use Ubic::Daemon qw(start_daemon stop_daemon check_daemon);
+use Ubic::Daemon qw(start_daemon stop_daemon check_daemon get_daemon_guardian);
 use Ubic::Result qw(result);
 use Ubic::Settings;
 
@@ -257,8 +257,10 @@ sub reload {
 
     my $pid = $daemon->pid;
     # TODO - should we send signal to guardian instead?
-    # reload doesn't reopen ubic_log/stdout/stderr by now.
     kill $self->{reload_signal} => $pid;
+
+    my $guardian_pid = get_daemon_guardian($self->pidfile);
+    kill HUP => $guardian_pid;
 
     return result('reloaded', "sent $self->{reload_signal} to $pid");
 }

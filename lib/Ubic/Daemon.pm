@@ -28,6 +28,7 @@ so if you need to get daemon's pid, don't try to read pidfile directly, use C<ch
 =cut
 
 use IO::Handle;
+use IO::Select;
 use POSIX qw(setsid :sys_wait_h);
 use Time::HiRes qw(sleep);
 use Params::Validate qw(:all);
@@ -40,7 +41,7 @@ use Ubic::Daemon::Status;
 use Ubic::Daemon::PidState;
 
 use parent qw(Exporter);
-our @EXPORT_OK = qw(start_daemon stop_daemon check_daemon);
+our @EXPORT_OK = qw(start_daemon stop_daemon check_daemon get_daemon_guardian);
 our %EXPORT_TAGS = (
     all => \@EXPORT_OK,
 );
@@ -353,6 +354,11 @@ sub start_daemon($) {
             $pid_state->remove;
             _log($ubic_fh, "got lock");
 
+            my %daemon_pipes;
+            for my $handle (qw/stdout stderr/) {
+                pipe my ($read, $write) or die "pipe for daemon $handle failed";
+                $daemon_pipes{$handle} = {read => $read, write => $write};
+            }
             my $child;
             if ($child = fork) {
                 # guardian
@@ -400,9 +406,37 @@ sub start_daemon($) {
                         $kill_sub->();
                     }
                 };
+                $SIG{HUP} = sub {
+                    open STDOUT, ">>", $stdout or die "Can't reopen '$stdout': $!";
+                    open STDERR, ">>", $stderr or die "Can't reopen '$stderr': $!";
+                };
                 print {$write_pipe} "pidfile written\n" or die "Can't write to pipe: $!";
                 close $write_pipe or die "Can't close pipe: $!";
                 undef $write_pipe;
+
+                close($daemon_pipes{$_}{write}) or die "Can't close $_ write: $!" for qw/stdout stderr/;
+                my $sel = IO::Select->new();
+                $sel->add($daemon_pipes{stdout}{read}, $daemon_pipes{stderr}{read});
+                my $BUFF_SIZE = 4096;
+                READ:
+                while ($OS->pid_exists($child)) { # this loop is needed because of timeout in can_read
+                    while (my @ready = $sel->can_read(1)) {
+                        my $exhausted = 0;
+                        for my $handle (@ready) {
+                            my $data;
+                            my $bytes_read = sysread($handle, $data, $BUFF_SIZE);
+                            die "Can't poll $handle: $!" unless defined $bytes_read; # handle EWOULDBLOCK?
+                            $exhausted += 1 if $bytes_read == 0;
+                            if (fileno $handle == fileno $daemon_pipes{stdout}{read}) {
+                                print STDOUT $data;
+                            }
+                            if (fileno $handle == fileno $daemon_pipes{stderr}{read}) {
+                                print STDERR $data;
+                            }
+                        }
+                        last READ if $exhausted == @ready;
+                    }
+                }
 
                 $? = 0;
                 waitpid($child, 0);
@@ -442,6 +476,11 @@ sub start_daemon($) {
                 print {$write_pipe} "execing into daemon\n" or die "Can't write to pipe: $!";
                 close($write_pipe) or die "Can't close pipe: $!";
                 undef $write_pipe;
+
+                # redirecting standard streams to pipes
+                close($daemon_pipes{$_}{read}) or die "Can't close $_ read: $!" for qw/stdout stderr/;
+                open STDOUT, '>&=', $daemon_pipes{stdout}{write} or die "Can't open stdout write: $!";
+                open STDERR, '>&=', $daemon_pipes{stderr}{write} or die "Can't open stderr write: $!";
 
                 # finally, run underlying binary
                 if (ref $bin) {
@@ -542,6 +581,29 @@ sub check_daemon {
     $print->("removing pidfile $pidfile");
     $pid_state->remove;
     return undef;
+}
+
+=item B<get_daemon_guardian($pidfile)>
+
+Returns pid of ubic-guardian
+
+=cut
+sub get_daemon_guardian {
+    my $pidfile = shift;
+
+    my $pid_state = Ubic::Daemon::PidState->new($pidfile);
+    return undef if $pid_state->is_empty;
+
+    my $lock = $pid_state->lock;
+    my $piddata = $pid_state->read;
+    unless ($lock) {
+        # locked => daemon is alive
+        return $piddata->{pid};
+    }
+
+    unless ($piddata) {
+        return undef;
+    }
 }
 
 =back
