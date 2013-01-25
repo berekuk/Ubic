@@ -193,7 +193,7 @@ sub start_impl {
         pidfile => $self->pidfile,
         bin => $self->{bin},
     };
-    for (qw/ env cwd stdout stderr ubic_log /) {
+    for (qw/ env cwd stdout stderr ubic_log reload_signal /) {
         $start_params->{$_} = $self->{$_} if defined $self->{$_};
     }
     if (defined $self->{daemon_user}) {
@@ -256,11 +256,12 @@ sub reload {
     }
 
     my $pid = $daemon->pid;
-    # TODO - should we send signal to guardian instead?
-    # reload doesn't reopen ubic_log/stdout/stderr by now.
     kill $self->{reload_signal} => $pid;
 
-    return result('reloaded', "sent $self->{reload_signal} to $pid");
+    my $guardian_pid = $daemon->guardian_pid;
+    kill HUP => $guardian_pid;
+
+    return result('reloaded', "sent $self->{reload_signal} to $pid, sent HUP to $guardian_pid");
 }
 
 =back

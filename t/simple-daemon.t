@@ -130,7 +130,7 @@ sub reload :Tests(6) {
 
     $result = $service->reload;
     is($result->action, 'reloaded', 'reload successful');
-    like($result->msg, qr/^sent HUP to \d+$/, 'reload result message');
+    like($result->msg, qr/^sent HUP to \d+, sent HUP to \d+$/, 'reload result message');
 
     sleep 1; # wait while code handles the first exception
 
