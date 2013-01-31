@@ -800,6 +800,8 @@ Christian Walde <walde.christian@googlemail.com>
 
 Ivan Bessarabov <ivan@bessarabov.ru>
 
+Oleg Komarov <komarov@cpan.org>
+
 =head1 SEE ALSO
 
 Most Ubic-related links are collected on github wiki: L<http://github.com/berekuk/Ubic/wiki>.
