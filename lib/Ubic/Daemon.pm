@@ -436,7 +436,7 @@ sub start_daemon($) {
                             $kill_sub->();
                         }
                         else {
-                            _log($ubic_fh, "reopened stdout/stderr successfully");
+                            _log($ubic_fh, "reopened stdout/stderr");
                         }
                     };
 
