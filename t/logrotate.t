@@ -40,8 +40,8 @@ sub logrotate :Tests(2) {
     $service->reload;
     sleep 2;
     $service->stop;
-    ok((-e 'tfiles/stdout' and -e 'tfiles/stdout2'), 'stdout was reopened');
-    ok((-e 'tfiles/stderr' and -e 'tfiles/stderr2'), 'stderr was reopened');
+    ok((-s 'tfiles/stdout' and -s 'tfiles/stdout2'), 'stdout was reopened');
+    ok((-s 'tfiles/stderr' and -s 'tfiles/stderr2'), 'stderr was reopened');
 }
 
 __PACKAGE__->new->runtests;
