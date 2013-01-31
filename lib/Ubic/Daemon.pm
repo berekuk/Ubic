@@ -230,6 +230,20 @@ Change working directory before starting a daemon. Optional.
 
 Modify environment before starting a daemon. Optional. Must be a plain hashref if specified.
 
+=item I<proxy_logs>
+
+Boolean flag.
+
+If enabled, C<ubic-guardian> will replace daemon's stdout and stderr filehandles with pipes, proxy all data to the log files, and reopen them on I<SIGHUP>.
+
+There're two reasons why this is not the default:
+
+1) It's a bit slower than allowing the daemon to write its logs itself;
+
+2) The code is new and more complex than the simple "spawn the daemon and wait for it to finish".
+
+On the other hand, using this feature allows you to reopen all logs without restarting the service.
+
 =item I<credentials>
 
 Set given credentials before execing into a daemon. Optional, must be an C<Ubic::Credentials> object.
@@ -265,12 +279,12 @@ sub start_daemon($) {
         term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
-        reload_signal => { type => SCALAR, optional => 1 },
+        proxy_logs => { type => SCALAR, optional => 1 },
         credentials => { isa => 'Ubic::Credentials', optional => 1 },
         start_hook => { type => CODEREF, optional => 1 },
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials, $start_hook, $reload_signal)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials   start_hook   reload_signal /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials, $start_hook, $proxy_logs)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials   start_hook   proxy_logs /};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -357,7 +371,7 @@ sub start_daemon($) {
             _log($ubic_fh, "got lock");
 
             my %daemon_pipes;
-            if (defined $reload_signal) {
+            if (defined $proxy_logs) {
                 for my $handle (qw/stdout stderr/) {
                     pipe my ($read, $write) or die "pipe for daemon $handle failed";
                     $daemon_pipes{$handle} = {read => $read, write => $write};
@@ -414,7 +428,7 @@ sub start_daemon($) {
                 close $write_pipe or die "Can't close pipe: $!";
                 undef $write_pipe;
 
-                if (defined $reload_signal) {
+                if (defined $proxy_logs) {
                     $SIG{HUP} = sub {
                         eval { $open_handles_sub->() };
                         if ($@) {
@@ -495,7 +509,7 @@ sub start_daemon($) {
                 close($write_pipe) or die "Can't close pipe: $!";
                 undef $write_pipe;
 
-                if (defined $reload_signal) {
+                if (defined $proxy_logs) {
                     # redirecting standard streams to pipes
                     close($daemon_pipes{$_}{read}) or die "Can't close $_ read: $!" for qw/stdout stderr/;
                     open STDOUT, '>&=', $daemon_pipes{stdout}{write} or die "Can't open stdout write: $!";
