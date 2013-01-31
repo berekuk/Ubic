@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.48_01 2013-01-31
     * guardian supports logs proxying and reopening them on SIGHUP
      (see https://github.com/berekuk/Ubic/pull/47)
     * hint about 'ubic help' on unknown command
