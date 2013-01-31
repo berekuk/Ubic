@@ -293,8 +293,6 @@ sub start_daemon($) {
     my $pid_state = Ubic::Daemon::PidState->new($pidfile);
     $pid_state->init;
 
-    my $stdin = '/dev/null';
-
     pipe my ($read_pipe, $write_pipe) or die "pipe failed";
     my $child;
 
@@ -333,13 +331,15 @@ sub start_daemon($) {
                 $guard = Ubic::AccessGuard->new($credentials) if $credentials;
                 open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
                 open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+                if (defined $ubic_log) {
+                    open $ubic_fh, ">>", $ubic_log or die "Can't write to '$ubic_log': $!";
+                    $ubic_fh->autoflush(1);
+                }
             };
             $open_handles_sub->();
+            my $stdin = '/dev/null';
             open STDIN, "<", $stdin or die "Can't read from '$stdin': $!";
-            if (defined $ubic_log) {
-                open $ubic_fh, ">>", $ubic_log or die "Can't write to '$ubic_log': $!";
-                $ubic_fh->autoflush(1);
-            }
+
             $SIG{HUP} = 'ignore';
             $0 = "ubic-guardian $name";
             setsid; # ubic-daemon gets it's own session

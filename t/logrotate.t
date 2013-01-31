@@ -23,7 +23,7 @@ sub setup :Test(setup) {
     local_ubic;
 }
 
-sub logrotate :Tests(2) {
+sub logrotate :Tests(3) {
     my $service = Ubic::Service::SimpleDaemon->new({
         name => 'simple1',
         bin => ['perl', '-e', 'use IO::Handle; use Time::HiRes qw(sleep); STDOUT->autoflush(1); $SIG{HUP} = "IGNORE"; for (1..100) {print "stdout: $_\n"; warn "stderr $_\n"; sleep 0.1;}'],
@@ -36,12 +36,14 @@ sub logrotate :Tests(2) {
     sleep 1;
     move 'tfiles/stdout', 'tfiles/stdout2';
     move 'tfiles/stderr', 'tfiles/stderr2';
+    move 'tfiles/ubic.log', 'tfiles/ubic.log.2';
     sleep 1;
     $service->reload;
     sleep 2;
     $service->stop;
     ok((-s 'tfiles/stdout' and -s 'tfiles/stdout2'), 'stdout was reopened');
     ok((-s 'tfiles/stderr' and -s 'tfiles/stderr2'), 'stderr was reopened');
+    ok((-s 'tfiles/ubic.log' and -s 'tfiles/ubic.log.2'), 'ubic_log was reopened');
 }
 
 __PACKAGE__->new->runtests;
