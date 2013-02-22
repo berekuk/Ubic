@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * 'ubic status' exits with status code 0 if there're disabled services
 
 1.48_01 2013-01-31
     * guardian supports logs proxying and reopening them on SIGHUP

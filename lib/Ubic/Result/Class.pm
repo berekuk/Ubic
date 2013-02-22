@@ -107,7 +107,7 @@ sub status {
     if (grep { $_ eq $self->{type} } ('running', 'already running', 'started', 'already started', 'restarted', 'reloaded', 'stopping')) {
         return 'running';
     }
-    elsif (grep { $_ eq $self->{type} } ('not running', 'stopped', 'down', 'starting')) {
+    elsif (grep { $_ eq $self->{type} } ('not running', 'stopped', 'starting')) {
         return 'not running';
     }
     elsif (grep { $_ eq $self->{type} } ('down')) {
