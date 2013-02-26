@@ -54,7 +54,10 @@ We also provide .deb packages for Debian/Ubuntu. Latest .deb package can be down
 Debian package build can be reproduced with this command:
     dzil build && cd Ubic* && cp -r ../debian . && debuild
 
-If you'll write ebuilds for Gentoo or specs for RPM-based systems, please contribute them back :)
+Rpm package can be created with this command:
+    rpmbuild -ba redhat/perl-Ubic.spec
+
+If you'll write an ebuild for Gentoo, please contribute it back :)
 
 ## Documentation
 
