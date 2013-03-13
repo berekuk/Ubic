@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * stable release, no code changes
 
 1.48_02 2013-02-26
     * 'ubic status' exits with status code 0 if there're disabled services
