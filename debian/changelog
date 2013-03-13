@@ -1,3 +1,11 @@
+ubic (1.49-1) unstable; urgency=low
+
+  * guardian supports logs proxying and reopening them on SIGHUP
+  * 'ubic status' exits with status code 0 if there're disabled services
+  * 'ubic help' command
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 13 Mar 2013 18:14:25 +0400
+
 ubic (1.44-3) unstable; urgency=low
 
   * depend on liburi-perl for older libhttp-server-simple-perl
