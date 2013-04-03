@@ -117,6 +117,14 @@ If your service's I<user> is C<root> and I<daemon_user> is something else, you c
 
 L<BSD::Resource> must be installed to use this feature.
 
+=item I<term_timeout>
+
+Number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to the daemon on stopping.
+
+Zero value means that guardian will send I<SIGKILL> to the daemon immediately.
+
+Default is 10 seconds.
+
 =item I<reload_signal>
 
 Send given signal to the daemon on C<reload> command.
@@ -157,6 +165,7 @@ sub new {
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
         reload_signal => { type => SCALAR, optional => 1 },
+        term_timeout => { type => SCALAR, optional => 1, regex => qr/^\d+$/ },
         ulimit => { type => HASHREF, optional => 1 },
     });
 
@@ -193,7 +202,7 @@ sub start_impl {
         pidfile => $self->pidfile,
         bin => $self->{bin},
     };
-    for (qw/ env cwd stdout stderr ubic_log /) {
+    for (qw/ env cwd stdout stderr ubic_log term_timeout /) {
         $start_params->{$_} = $self->{$_} if defined $self->{$_};
     }
     if ($self->{reload_signal}) {

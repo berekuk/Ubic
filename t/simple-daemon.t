@@ -185,4 +185,54 @@ sub ulimit :Tests(4) {
     like $exception, qr/Failed to create daemon: '.*Error: setrlimit: Unknown limit 'BLAH'/s, 'start with invalid ulimit fails';
 }
 
+sub term_timeout_default :Tests {
+    my $service = Ubic::Service::SimpleDaemon->new({
+        name => 'undying',
+        bin => ['perl', '-e', 'use IO::Handle; $SIG{TERM} = sub { print "ignore sigterm\n"; STDOUT->flush; }; print "stdout\n"; STDOUT->flush; sleep 100 for 1..10'],
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ubic_log => 'tfiles/ubic.log',
+    });
+
+    my $time = time;
+
+    $service->start;
+    like($service->status, qr/^running \(pid \d+\)$/, 'start works');
+
+    sleep 1;
+
+    $service->stop;
+    is($service->status, 'not running', 'stop works');
+
+    is(slurp('tfiles/stdout'), "stdout\nignore sigterm\n", 'daemon stdout');
+
+    cmp_ok(time - $time, '>=', 10, 'stop took more than 10 seconds');
+}
+
+sub term_timeout_custom :Tests {
+    my $service = Ubic::Service::SimpleDaemon->new({
+        name => 'undying',
+        bin => ['perl', '-e', 'use IO::Handle; $SIG{TERM} = sub { print "ignore sigterm\n"; STDOUT->flush; }; print "stdout\n"; STDOUT->flush; sleep 100 for 1..10'],
+        stdout => 'tfiles/stdout',
+        stderr => 'tfiles/stderr',
+        ubic_log => 'tfiles/ubic.log',
+        term_timeout => 3,
+    });
+
+    my $time = time;
+
+    $service->start;
+    like($service->status, qr/^running \(pid \d+\)$/, 'start works');
+
+    sleep 1;
+
+    $service->stop;
+    is($service->status, 'not running', 'stop works');
+
+    is(slurp('tfiles/stdout'), "stdout\nignore sigterm\n", 'daemon stdout');
+
+    cmp_ok(time - $time, '>=', 3, 'stop took more than 3 seconds');
+    cmp_ok(time - $time, '<=', 5, 'stop took less than 5 seconds');
+}
+
 __PACKAGE__->new->runtests;

@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * support 'term_timeout' option in SimpleDaemon
 
 1.49    2013-03-13
     * stable release, no code changes
