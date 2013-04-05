@@ -19,11 +19,19 @@ use t::Utils;
 my $ignore_warn = ignore_warn(qr/Can't construct 'broken': failed/);
 
 sub setup :Test(setup) {
+    eval { Ubic->stop('sleeping-daemon-autostart') };
     rebuild_tfiles;
-    local_ubic;
+    local_ubic; 
+}
+
+sub autostart :Test(2) {
+    is(Ubic->cached_status('sleeping-daemon-autostart')->status, "autostarting");
+    xsystem("$perl bin/ubic-watchdog >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
+    is(Ubic->service('sleeping-daemon-autostart')->status->status, "running");
 }
 
 sub silence :Test(2) {
+    Ubic->start('sleeping-daemon-autostart');
     xsystem("$perl bin/ubic-watchdog >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
     ok(-z 'tfiles/watchdog.log', 'watchdog is silent when everything is ok');
     ok(-z 'tfiles/watchdog.err.log', 'watchdog is silent when everything is ok');
@@ -43,6 +51,7 @@ sub reviving :Test(4) {
 }
 
 sub extended_status :Test(2) {
+    Ubic->start('sleeping-daemon-autostart');
     Ubic->start('sleeping-daemon');
     xsystem("$perl bin/ubic-watchdog >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
     ok(-z 'tfiles/watchdog.log', 'watchdog is silent when everything is ok');
@@ -57,7 +66,7 @@ sub _services_from_log {
 
 sub verbose :Test {
     xsystem("$perl bin/ubic-watchdog -v >>tfiles/watchdog.log 2>>tfiles/watchdog.err.log");
-    is(scalar( @{ _services_from_log() }), 13, 'watchdog checks all services by default');
+    is(scalar( @{ _services_from_log() }), 14, 'watchdog checks all services by default');
 }
 
 sub filter_exact :Test {

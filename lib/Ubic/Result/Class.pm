@@ -39,6 +39,8 @@ Possible statuses:
 
 =item I<down>
 
+=item I<autostarting>
+
 =back
 
 =head1 ACTIONS
@@ -112,6 +114,9 @@ sub status {
     }
     elsif (grep { $_ eq $self->{type} } ('down')) {
         return 'down';
+    }
+    elsif (grep { $_ eq $self->{type} } ('autostarting')) {
+        return 'autostarting';
     }
     else {
         return 'broken';
