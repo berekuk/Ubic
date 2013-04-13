@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.51    2013-04-14
     * autoflush stdout and stdin in ubic-guardian
       (especially when we're proxying daemon's logs)
 
