@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * autoflush stdout and stdin in ubic-guardian
+      (especially when we're proxying daemon's logs)
 
 1.50_01 2013-04-03
     * support 'term_timeout' option in SimpleDaemon
