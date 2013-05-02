@@ -323,6 +323,7 @@ sub setup {
     }
 
     my $crontab_env_fix = '';
+    my $crontab_wrap_bash;
     my $ubic_watchdog_full_name = which('ubic-watchdog') or die "ubic-watchdog script not found in your current PATH";
     {
         my @path = split /:/, $ENV{PATH};
@@ -340,6 +341,7 @@ sub setup {
             }
             print_tty "I'll source your perlbrew config in ubic crontab entry to start the watchdog in the correct environment.\n";
             $crontab_env_fix .= "source $perlbrew_config && ";
+            $crontab_wrap_bash = 1;
         }
         elsif (@perls > 1) {
             print_tty "\nYou're using custom perl and it's not from perlbrew.\n";
@@ -429,15 +431,20 @@ sub setup {
         }
 
         if ($old_crontab =~ /\subic-watchdog\b/) {
-            print "Looks like you already have ubic commands in your crontab.\n";
-        }
-        else {
             open my $fh, '|-', 'crontab -' or die "Can't run 'crontab -': $!";
             my $printc = sub {
                 print {$fh} @_ or die "Can't write to pipe: $!";
             };
+            my @crontab_lines = split /\n/, $old_crontab;
+            @crontab_lines = grep { $_ !~ /\Qubic-watchdog ubic.watchdog\E/ } @crontab_lines;
             $printc->($old_crontab."\n");
-            $printc->("* * * * * $crontab_env_fix$ubic_watchdog_full_name ubic.watchdog    >>$log_dir/watchdog.log 2>>$log_dir/watchdog.err.log\n");
+
+            my $crontab_command = "$crontab_env_fix$ubic_watchdog_full_name ubic.watchdog";
+            if ($crontab_wrap_bash) {
+                $crontab_command = "bash -c '$crontab_command'";
+            }
+            push @crontab_lines, "* * * * * $crontab_command    >>$log_dir/watchdog.log 2>>$log_dir/watchdog.err.log";
+            $printc->("$_\n") for @crontab_lines;
             close $fh or die "Can't close pipe: $!";
         }
     }
