@@ -66,6 +66,9 @@ use Ubic;
 use Ubic::Cmd;
 
 return 1 if caller();
+unless (grep { $_ eq '/usr/local/bin' } split /:/, $ENV{PATH}) {
+    $ENV{PATH} .= '/usr/local/bin';
+}
 
 my $force;
 GetOptions(
