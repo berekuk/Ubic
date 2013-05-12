@@ -43,7 +43,7 @@ use Ubic::Watchdog;
 
 return 1 if caller();
 unless (grep { $_ eq '/usr/local/bin' } split /:/, $ENV{PATH}) {
-    $ENV{PATH} .= ':/usr/local/bin';
+    $ENV{PATH} .= "/usr/local/bin:$ENV{PATH}";
 }
 
 my $compile_timeout = 10;
