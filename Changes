@@ -1,6 +1,7 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * fix crontab generation on setup!
 
 1.52    2013-05-12
     * always add /usr/local/bin to $PATH
