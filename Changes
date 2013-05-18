@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.53    2013-05-18
     * fix crontab generation on setup!
 
 1.52    2013-05-12
