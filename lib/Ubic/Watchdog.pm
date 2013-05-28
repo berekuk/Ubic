@@ -203,12 +203,19 @@ sub check($) {
             return;
         }
 
+        my $cached_status = Ubic->cached_status($name);
         my $status = Ubic->status($name);
         unless ($status->status eq 'running') {
             # following code can throw an exception, so we want to cache invalid status immediately
             Ubic->set_cached_status($name, $status);
 
-            ERROR("$name status is '$status', restarting");
+            if ($cached_status eq "autostarting") {
+                INFO("$name is autostarting");
+            }
+            else {
+                ERROR("$name status is '$status', restarting");
+            }
+
             Ubic->restart($name);
 
             # This is a precaution against services with wrong start/status logic.

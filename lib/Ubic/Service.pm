@@ -253,6 +253,15 @@ sub parent_name($;$) {
     }
 }
 
+=item B<auto_start()>
+
+A boolean value that determines the state of a service if it has never been explicitely enabled or disabled yet. Service is considered initialy enabled when auto_start is true.
+
+=cut
+sub auto_start($) {
+    return 0;
+}
+
 =back
 
 =head1 FUTURE DIRECTIONS

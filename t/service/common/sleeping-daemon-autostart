@@ -1,0 +1,7 @@
+# vim:ft=perl
+use Ubic::Service::SimpleDaemon;
+
+Ubic::Service::SimpleDaemon->new({
+    bin => 'sleep 100',
+    auto_start => 1,
+});
