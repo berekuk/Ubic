@@ -365,7 +365,7 @@ sub cached_status($$) {
     my ($name) = validate_pos(@_, $validate_service);
 
     my $type;
-    unless ($self->is_enabled($name)) {
+    if (not $self->is_enabled($name)) {
         $type = 'disabled';
     }
     elsif (-e $self->status_file($name)) {

@@ -171,7 +171,7 @@ sub new {
         reload_signal => { type => SCALAR, optional => 1 },
         term_timeout => { type => SCALAR, optional => 1, regex => qr/^\d+$/ },
         ulimit => { type => HASHREF, optional => 1 },
-        auto_start => { default => 0 },
+        auto_start => { type => BOOLEAN, default => 0 },
     });
 
     if ($params->{ulimit}) {

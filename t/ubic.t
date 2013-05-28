@@ -23,16 +23,13 @@ sub services :Test(2) {
     ok(scalar(grep { $_->name eq 'sleeping-daemon' } @services), 'sleeping-daemon is presented in services list');
 }
 
-sub enable_disable :Test(6) {
+sub enable_disable :Test(4) {
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled');
     Ubic->enable('sleeping-daemon');
     ok(Ubic->is_enabled('sleeping-daemon'), 'sleeping-daemon is enabled now');
     ok(not(Ubic->is_enabled('sleeping-daemon2')), 'sleeping-daemon2 is still disabled');
     Ubic->disable('sleeping-daemon');
     ok(not(Ubic->is_enabled('sleeping-daemon')), 'sleeping-daemon is disabled again');
-    ok(Ubic->is_enabled('sleeping-daemon-autostart'), 'autostart service is initially enabled');
-    Ubic->disable('sleeping-daemon-autostart');
-    ok(not(Ubic->is_enabled('sleeping-daemon-autostart')), 'sleeping-daemon-autostart is explicitely disabled');
 }
 
 sub start_stop :Test(4) {
