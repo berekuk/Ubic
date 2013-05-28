@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.54    2013-05-28
     * 'auto_start' option in Ubic::Service and SimpleDaemon
 
 1.53    2013-05-18
