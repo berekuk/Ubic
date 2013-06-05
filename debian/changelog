@@ -1,3 +1,10 @@
+ubic (1.54-1) unstable; urgency=low
+
+  * 'auto_start' option in Ubic::Service and SimpleDaemon
+  * fix crontab generation on setup
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 05 Jun 2013 18:57:05 +0400
+
 ubic (1.52-1) unstable; urgency=low
 
   * support 'term_timeout' option in SimpleDaemon
