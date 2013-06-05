@@ -1,4 +1,13 @@
-ubic (1.49-1) unstable; urgency=low
+ubic (1.52-1) unstable; urgency=low
+
+  * support 'term_timeout' option in SimpleDaemon
+  * autoflush stdout and stdin in ubic-guardian
+    (especially when we're proxying daemon's logs)
+  * always add /usr/local/bin to $PATH
+
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Sun, 12 May 2013 22:01:17 +0000
+
+ubic (1.49-2) unstable; urgency=low
 
   * guardian supports logs proxying and reopening them on SIGHUP
   * 'ubic status' exits with status code 0 if there're disabled services

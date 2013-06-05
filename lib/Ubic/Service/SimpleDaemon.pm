@@ -117,6 +117,14 @@ If your service's I<user> is C<root> and I<daemon_user> is something else, you c
 
 L<BSD::Resource> must be installed to use this feature.
 
+=item I<term_timeout>
+
+Number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to the daemon on stopping.
+
+Zero value means that guardian will send I<SIGKILL> to the daemon immediately.
+
+Default is 10 seconds.
+
 =item I<reload_signal>
 
 Send given signal to the daemon on C<reload> command.
@@ -139,6 +147,10 @@ Service's name.
 
 Name will usually be set by upper-level multiservice. Don't set it unless you know what you're doing.
 
+=item I<auto_start>
+
+Autostart flag is off by default. See L<Ubic::Service> C<auto_start> method for details.
+
 =back
 
 =cut
@@ -157,7 +169,9 @@ sub new {
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
         reload_signal => { type => SCALAR, optional => 1 },
+        term_timeout => { type => SCALAR, optional => 1, regex => qr/^\d+$/ },
         ulimit => { type => HASHREF, optional => 1 },
+        auto_start => { type => BOOLEAN, default => 0 },
     });
 
     if ($params->{ulimit}) {
@@ -193,7 +207,7 @@ sub start_impl {
         pidfile => $self->pidfile,
         bin => $self->{bin},
     };
-    for (qw/ env cwd stdout stderr ubic_log /) {
+    for (qw/ env cwd stdout stderr ubic_log term_timeout /) {
         $start_params->{$_} = $self->{$_} if defined $self->{$_};
     }
     if ($self->{reload_signal}) {
@@ -265,6 +279,11 @@ sub reload {
     kill HUP => $guardian_pid;
 
     return result('reloaded', "sent $self->{reload_signal} to $pid, sent HUP to $guardian_pid");
+}
+
+sub auto_start {
+    my $self = shift;
+    return $self->{auto_start};
 }
 
 =back

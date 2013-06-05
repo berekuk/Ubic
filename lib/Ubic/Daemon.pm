@@ -258,9 +258,9 @@ Note that hook is called *before* the credentials are set. Raising the ulimits w
 
 =item I<term_timeout>
 
-Can contain integer number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to daemon.
+Number of seconds to wait between sending I<SIGTERM> and I<SIGKILL> to the daemon on stopping.
 
-Zero value means that guardian will send sigkill to daemon immediately.
+Zero value means that guardian will send I<SIGKILL> to the daemon immediately.
 
 Default is 10 seconds.
 
@@ -345,6 +345,8 @@ sub start_daemon($) {
                 $guard = Ubic::AccessGuard->new($credentials) if $credentials;
                 open STDOUT, ">>", $stdout or die "Can't write to '$stdout': $!";
                 open STDERR, ">>", $stderr or die "Can't write to '$stderr': $!";
+                STDOUT->autoflush(1);
+                STDERR->autoflush(1);
                 if (defined $ubic_log) {
                     open $ubic_fh, ">>", $ubic_log or die "Can't write to '$ubic_log': $!";
                     $ubic_fh->autoflush(1);

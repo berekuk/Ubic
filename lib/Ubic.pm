@@ -320,7 +320,9 @@ sub is_enabled($$) {
     my ($name) = validate_pos(@_, $validate_service);
 
     die "Service '$name' not found" unless $self->root_service->has_service($name);
-    return unless -e $self->status_file($name);
+    unless (-e $self->status_file($name)) {
+        return $self->service($name)->auto_start();
+    }
 
     my $status_obj = $self->status_obj_ro($name);
     if ($status_obj->{enabled} or not exists $status_obj->{enabled}) {
@@ -363,11 +365,13 @@ sub cached_status($$) {
     my ($name) = validate_pos(@_, $validate_service);
 
     my $type;
-    unless ($self->is_enabled($name)) {
+    if (not $self->is_enabled($name)) {
         $type = 'disabled';
     }
-    else {
+    elsif (-e $self->status_file($name)) {
         $type = $self->status_obj_ro($name)->{status};
+    } else {
+        $type = 'autostarting';
     }
     return Ubic::Result::Class->new({ type => $type, cached => 1 });
 }
@@ -509,7 +513,7 @@ sub set_cached_status($$$) {
     }
     my $lock = $self->lock($name);
 
-    if ($self->status_obj_ro($name)->{status} eq $status) {
+    if (-e $self->status_file($name) and $self->status_obj_ro($name)->{status} eq $status) {
         # optimization - don't update status if nothing changed
         return;
     }
