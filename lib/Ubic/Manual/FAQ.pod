@@ -15,7 +15,7 @@ In the future, this one-liner will be reimplemented as "ubic fix-permissions" co
 
 Yes you can, but you have to be careful.
 
-Perlbrew depends on environment variables, so you have to make sure that they are configured correctly in all cases when you call ubic. This especially includes the crontab which entry ubic installs for you. You'll probably have to edit it manually, like this:
+Perlbrew depends on environment variables, so you have to make sure that they are configured correctly in all cases when you call ubic. This especially includes the crontab entry which ubic installs for you. You'll probably have to edit it manually, like this:
 
   * * * * * . /home/your_login/perl5/perlbrew/etc/bashrc && ubic-watchdog ubic.watchdog    >>/dev/null 2>>/dev/null
 
