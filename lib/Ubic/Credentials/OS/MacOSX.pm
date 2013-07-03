@@ -179,7 +179,7 @@ sub set_effective {
         $) = "$new_gid 0";
         my ($current_gid) = $) =~ /^(\d+)/;
         if ($current_gid != $new_gid) {
-            die "Failed to change group from $group to $current_group: $!";
+            die "Failed to change group from $current_group to $group: $!";
         }
     }
 
