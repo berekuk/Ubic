@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.55    2013-07-26
     * support PERLBREW_ROOT
     (thanks to github:spacebat for the patch, see https://github.com/berekuk/Ubic/pull/54)
 
