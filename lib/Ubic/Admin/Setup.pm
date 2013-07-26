@@ -24,6 +24,7 @@ use Carp;
 use IPC::Open3;
 use File::Path;
 use File::Which;
+use File::Spec;
 
 use Ubic::AtomicFile;
 use Ubic::Settings;
@@ -335,7 +336,7 @@ sub setup {
             unless ($HOME) {
                 die "HOME env variable not defined";
             }
-            my $perlbrew_config = "$HOME/perl5/perlbrew/etc/bashrc";
+            my $perlbrew_config = File::Spec->catfile($ENV{PERLBREW_ROOT} || "$HOME/perl5/perlbrew", "etc/bashrc");
             if (not -e $perlbrew_config) {
                 die "Can't find perlbrew config (assumed $perlbrew_config)";
             }
