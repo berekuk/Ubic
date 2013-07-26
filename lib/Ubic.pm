@@ -806,6 +806,8 @@ Ivan Bessarabov <ivan@bessarabov.ru>
 
 Oleg Komarov <komarov@cpan.org>
 
+Andrew Kirkpatrick <ubermonk@gmail.com>
+
 =head1 SEE ALSO
 
 Most Ubic-related links are collected on github wiki: L<http://github.com/berekuk/Ubic/wiki>.
