@@ -250,26 +250,26 @@ Revision history for Ubic
          - Ubic::Daemon::OS modules family for OS-specific daemonization tasks
          - Ubic::Credentials::OS modules family for OS-specific user/group tasks
 
-1.24    Wed Feb 23, 2011
+1.24    2011-02-23
         * ubic-watchdog: change process name while checking specific service
         * check that uid change was successful before calling service action methods
         * default check_timeout() lowered from 10 minutes to 1 minute
 
-1.23    Thu Dec 02, 2010
+1.23    2010-12-02
         * ubic-ping: 404 message content fixed
         * ubic-watchdog:
          - set check_timeout alarm a bit earlier
          - another alarm before compiling services
 
-1.22    Sun Nov 07, 2010
+1.22    2010-11-07
         * Ubic::Multiservice:
          - default implementation of 'has_simple_service' method
          - POD improvements
 
-1.21_01 Thu Oct 21, 2010
+1.21_01 2010-10-21
         * fixed races in t/daemon.t
 
-1.21    Tue Oct 19, 2010
+1.21    2010-10-19
         * Ubic.pm:
          - set_ubic_dir() renamed to set_data_dir()
          (set_ubic_dir still remains in code for backward compatibility)
@@ -285,25 +285,25 @@ Revision history for Ubic
         * deprecated Ubic::Catalog module removed (it was renamed into Ubic::Multiservice long time ago)
 
 
-1.20    Wed Oct 13, 2010
+1.20    2010-10-13
         * documentation improvements
 
-1.19    Tue Sep 14, 2010
+1.19    2010-09-14
         * ubic-watchdog always uses Ubic->status interface to check service status
 
-1.18    Tue Sep 14, 2010
+1.18    2010-09-14
         * critical bugfix: ubic-watchdog correctly interpret extended statuses
         (thanks to Sawyer X for noticing this, see http://github.com/berekuk/Ubic/issues#issue/7)
         * Ubic::Lockf::Alarm moved to separate file, so PODs are now correct
 
-1.17    Mon Sep 13, 2010
+1.17    2010-09-13
         * Ubic::Run: recognize RedHat init script names
         (thanks to Sawyer X for the patch, see http://github.com/berekuk/Ubic/issues/#issue/5)
         * test improvements:
          - ubic-ping uses Config.pm to determine full perl binary path
          - memory-leak.t is more robust
 
-1.16    Tue Sep 07, 2010
+1.16    2010-09-07
         * Ubic::Daemon:
          - check_daemon() now returns proper Ubic::Daemon::Status object
          - don't log warning if daemon exited by sigterm
@@ -314,17 +314,17 @@ Revision history for Ubic
          - watchdog.t skips all tests if 'fakeroot' is not present
         * Ubic::Cmd: print 'running' result as good when it contains extended message
 
-1.15    Mon Sep 06, 2010
+1.15    2010-09-06
         * tests fixed to work under root user (http://github.com/berekuk/Ubic/issues#issue/4)
 
-1.14    Thu Sep 02, 2010
+1.14    2010-09-02
         * handle supplementary groups correctly
         * ubic-watchdog doesn't require root privileges anymore (unless service requires them, of course)
         * repo and bugtracker resources in META.yml
         * PodWeaver in dist.ini config, so all modules now have proper AUTHOR and COPYRIGHT sections
         * SimpleDaemon and Common services accept arrayref as 'group' value
 
-1.13    Wed Sep 01, 2010
+1.13    2010-09-01
         * Perl6::Slurp removed from dependencies
         * Ubic::Manual::FAQ now is actually added
         * group() method in services:
@@ -332,46 +332,46 @@ Revision history for Ubic
          - ubic will call setgid() before invoking any service methods
          - default group list consists only of main user's group, as returned by getpwnam; supplementary groups are not supported yet
 
-1.12    Thu Aug 26, 2010
+1.12    2010-08-26
         * Ubic::Manual::FAQ with first 2 questions
         * Ubic::Log documentation updated according to 1.11 changes
 
-1.11    Thu Aug 26, 2010
+1.11    2010-08-26
         * ubic-watchdog prints errors to stdout only
 
-1.10    Wed Aug 18, 2010
+1.10    2010-08-18
         * security bugfix: store all statuses in JSON format
 
-1.09    Thu Aug 12, 2010
+1.09    2010-08-12
         * bugfix: custom commands print 'ok' using green color and exit with zero
         code when there are not errors
 
-1.08    Tue Aug 03, 2010
+1.08    2010-08-03
         * bugfix: has_service for nested unexistent services
         * debian/ dir in distribution too
 
-1.07    Fri Jul 30, 2010
+1.07    2010-07-30
         * localize $@ in destructors
         * Ubic::Cmd refactoring, more consistent console results printing
 
-1.06    Fri Jun 18, 2010
+1.06    2010-06-18
         * using $Config{perlpath} in tests - should fix CPAN tests
         * Dist::Zilla
 
-1.05    Sun Jun 13, 2010
+1.05    2010-06-13
         MANIFEST up-to-date.
         Small POD improvements.
 
-1.04    Tue May 25, 2010
+1.04    2010-05-25
         - important bugfix: service locks fixed!
         - Ubic::Daemon: join all bin args if bin is arrayref.
         - Remove old configs from old yandex-ubic package.
 
-1.02    Tue May 4, 2010
+1.02    2010-05-04
         Remove old configs from old yandex-ubic package.
 
-1.01    Thu Apr 29, 2010
+1.01    2010-04-29
         Just fixing debian dependency issues.
 
-1.00    Wed Apr 28, 2010
+1.00    2010-04-28
         First opensource release.
