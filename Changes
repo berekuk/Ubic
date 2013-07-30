@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * Reformatted Changes as per CPAN::Changes::Spec
+    (thanks to github:sergeyromanov for the patch, see https://github.com/berekuk/Ubic/pull/55)
 
 1.55    2013-07-26
     * support PERLBREW_ROOT
