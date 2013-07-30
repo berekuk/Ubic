@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.56    2013-07-30
     * Reformatted Changes as per CPAN::Changes::Spec
     (thanks to github:sergeyromanov for the patch, see https://github.com/berekuk/Ubic/pull/55)
 
