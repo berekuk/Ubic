@@ -43,14 +43,14 @@ I</etc/ubic> and I</var/lib/ubic>. These contain the configuration and state
 of monitored processes. The ubic.watchdog daemon will be running
 and a cron job will be configured to watch the watchdog. 
 
-Confirm that all is running properly with I<sudo ubic status>. You will see something like the following:
+Confirm that all is running properly with C<sudo ubic status>. You will see something like the following:
 
     ubic
         ubic.ping   off
         ubic.update off
         ubic.watchdog       running (pid 15320)
 
-This shows a minimal default Ubic configuration. Running I<sudo crontab -l> will show the watchdog watching cron job.
+This shows a minimal default Ubic configuration. Running C<sudo crontab -l> will show the watchdog watching cron job.
 
     * * * * * /usr/bin/ubic-watchdog ubic.watchdog >>/var/log/ubic/watchdog.log 2>>/var/log/ubic/watchdog.err.log
 
