@@ -55,7 +55,7 @@ This shows a minimal default Ubic configuration. Running C<sudo crontab -l> will
     * * * * * /usr/bin/ubic-watchdog ubic.watchdog >>/var/log/ubic/watchdog.log 2>>/var/log/ubic/watchdog.err.log
 
 With this configiguration no init.d script is needed.  There are alternative
-ways to deploy described in L<Ubic::Manual::Overview>. For this discussion
+ways to deploy discussed in L<Ubic::Manual::FAQ>. For this discussion
 we'll stick with these defaults.
 
 =head1 WRITE YOUR FIRST SERVICE
