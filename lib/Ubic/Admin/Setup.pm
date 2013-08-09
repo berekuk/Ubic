@@ -196,7 +196,7 @@ sub setup {
         'sticky-777!' => \$opt_sticky_777,
         'install-services!' => \$opt_install_services,
         'crontab!' => \$opt_crontab,
-        'crontab=i' => \$opt_umask,
+        'umask=i' => \$opt_umask,
     ) or die "Getopt failed";
 
     die "Unexpected arguments '@ARGV'" if @ARGV;
