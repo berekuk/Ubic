@@ -179,7 +179,7 @@ sub setup {
     my $opt_sticky_777 = 1;
     my $opt_install_services = 1;
     my $opt_crontab = 1;
-    my $opt_umask = 0002;
+    my $opt_umask = 0022;
     my $opt_local;
 
     # These options are documented in ubic-admin script POD.
@@ -296,13 +296,12 @@ sub setup {
         my $s_umask = sprintf ("%04o", umask);
         my $t_umask = sprintf ("%04o", $opt_umask);
         print_tty "\nUbic configuration typicaly needs to be readable by all users.\n";
-        print_tty "So typicaly a generous umask is used so that the state\n";
+        print_tty "Typicaly a generous umask is used so that the state\n";
         print_tty "and configuration are accessable to everyone.\n";
         print_tty "Of course this means that you should not put secrets into\n";
         print_tty "Ubic's configuration files.\n\n";
-        print_tty "The current umask is $s_umask\n";
-        umask $opt_umask if (prompt_bool("should the permissive $t_umask umask be used?", 1));
-        printf ("%04o\n", umask);
+        print_tty "The current umask is $s_umask.\n";
+        umask $opt_umask if (prompt_bool("Should the permissive $t_umask umask be used?", 1));
     } 
 
     my $enable_1777;
