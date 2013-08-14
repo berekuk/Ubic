@@ -18,33 +18,36 @@ sub _print_status($;$) {
 
     unless (Ubic->is_enabled($name)) {
         if ($options->{noc}) {
-            print "HTTP/1.0 500 Disabled\r\n\r\n";
+            print "HTTP/1.1 500 Disabled\r\n";
         }
         else {
-            print "HTTP/1.0 200 OK\r\n\r\n";
+            print "HTTP/1.1 200 OK\r\n";
         }
+        print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
         print "disabled\n";
         return;
     }
     my $status = Ubic->cached_status($name)->status; # should read status from static file on disk
     if ($status eq 'running') {
-        print "HTTP/1.0 200 OK\r\n\r\n";
+        print "HTTP/1.1 200 OK\r\n";
+        print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
         print "ok\n";
         return;
     }
     else {
         if ($options->{noc}) {
             if ($status =~ /^[\w ]+$/) {
-                print "HTTP/1.0 500 $status\r\n\r\n";
+                print "HTTP/1.1 500 $status\r\n";
             }
             else {
                 # invalid status, fallback to default status message
-                print "HTTP/1.0 500 Wrong status\r\n\r\n";
+                print "HTTP/1.1 500 Wrong status\r\n";
             }
         }
         else {
-            print "HTTP/1.0 200 OK\r\n\r\n";
+            print "HTTP/1.1 200 OK\r\n";
         }
+        print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
         print "$status\n";
         return;
     }
@@ -56,7 +59,8 @@ sub handle_request {
     try {
         if ($cgi->path_info eq '/ping') {
             # ping self
-            print "HTTP/1.0 200 OK\r\n\r\n";
+            print "HTTP/1.1 200 OK\r\n";
+            print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
             print "ok\n";
             return;
         }
@@ -64,7 +68,8 @@ sub handle_request {
             my $port = $1;
             my $name = Ubic::PortMap::port2name($port);
             unless (defined $name) {
-                print "HTTP/1.0 404 Not found\r\n\r\n";
+                print "HTTP/1.1 404 Not found\r\n";
+                print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
                 print "Service at port '$port' not found\n";
                 return;
             }
@@ -75,7 +80,8 @@ sub handle_request {
             my $port = $1;
             my $name = Ubic::PortMap::port2name($port);
             unless (defined $name) {
-                print "HTTP/1.0 404 Not found\r\n\r\n";
+                print "HTTP/1.1 404 Not found\r\n";
+                print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
                 print "Service at port '$port' not found\n";
                 return;
             }
@@ -84,20 +90,23 @@ sub handle_request {
         }
         elsif (my ($name) = $cgi->path_info =~ m{^/status/service/(.+?)/?$}) {
             unless (Ubic->has_service($name)) {
-                print "HTTP/1.0 404 Not found\r\n\r\n";
+                print "HTTP/1.1 404 Not found\r\n";
+                print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
                 print "Service with name '$name' not found\n";
                 return;
             }
             _print_status($name);
         }
         else {
-            print "HTTP/1.0 404 Not found\r\n\r\n";
+            print "HTTP/1.1 404 Not found\r\n";
+            print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
             print "Expected /status/service/NAME or /status/port/PORT query\n";
             return;
         }
     }
     catch {
-        print "HTTP/1.0 500 Internal error\r\n\r\n";
+        print "HTTP/1.1 500 Internal error\r\n";
+        print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
         print "Error: $_";
     };
 }
