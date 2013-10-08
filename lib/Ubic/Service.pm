@@ -164,7 +164,7 @@ Services can define custom commands which don't fit into the usual C<start/stop/
 
 =item B<custom_commands()>
 
-Get the list of service's custom commands, if there are any.
+Should return the list of service's custom commands, if there are any.
 
 =cut
 sub custom_commands {
@@ -173,7 +173,7 @@ sub custom_commands {
 
 =item B<do_custom_command($command)>
 
-Execute specified command, if it is supported. Throw an exception otherwise.
+Should execute specified command, if it is supported. Throw an exception otherwise.
 
 =cut
 sub do_custom_command {
