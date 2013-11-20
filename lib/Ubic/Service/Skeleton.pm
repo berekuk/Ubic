@@ -88,7 +88,7 @@ Subclass must overload following methods with simple status, start and stop impl
 
 =item B<status_impl>
 
-Status implentation. Should return result object or plain string which coerces to result object.
+Status implantation. Should return result object or plain string which coerces to result object.
 
 =cut
 sub status_impl {
