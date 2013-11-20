@@ -768,7 +768,7 @@ sub forked_call {
             POSIX::_exit(0); # don't allow to lock to be released - this process was forked from unknown environment, don't want to run unknown destructors
         }
         catch {
-            # probably tmp_file is not writtable
+            # probably tmp_file is not writable
             warn $_;
             POSIX::_exit(1);
         };

@@ -14,7 +14,7 @@ use warnings;
 
 =head1 DESCRIPTION
 
-C<lockf> is a perlfunc C<flock> wrapper. The lock is autotamically released as soon as the assotiated object is
+C<lockf> is a perlfunc C<flock> wrapper. The lock is autotamically released as soon as the associated object is
 no longer referenced.
 
 =head1 METHODS
@@ -70,7 +70,7 @@ OFF by default. Tells to achieve a shared lock. If not set, an exclusive lock is
 
 ON by default. If unset, a non-blocking mode of flock is used. If this flock fails because the lock is already held by some other process,
 C<undef> is returned. If the failure reason is somewhat different, permissions problems or the
-absence of a target file directory for example, an exception is raisen.
+absence of a target file directory for example, an exception is raised.
 
 =item I<timeout>
 

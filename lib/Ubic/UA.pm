@@ -4,7 +4,7 @@ package Ubic::UA;
 
 =head1 DESCRIPTION
 
-This module is a tiny and horribly incomplete http useragent implementetion.
+This module is a tiny and horribly incomplete http useragent implementation.
 
 It's used by L<Ubic::Ping::Service> and it allows ubic to avoid dependency on LWP.
 
