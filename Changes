@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.57    2013-11-21
     * fix various documentation typos
     (thanks to github:dsteinbrunner and github:akarelas for patches)
     * modernize Ubic::Ping to respond with http 1.1 message and a proper content-type header
