@@ -52,7 +52,7 @@ sub is_empty {
 
 =item B<init()>
 
-Create pid dir. After tihs method is called, C<is_empty()> will start to return false value.
+Create pid dir. After this method is called, C<is_empty()> will start to return false value.
 
 =cut
 sub init {
