@@ -48,7 +48,7 @@ my $ag_ref;
 
 Construct new access guard object.
 
-User and group will be changed into given C<$credentials>. It will be changed back on guard's desctruction.
+User and group will be changed into given C<$credentials>. It will be changed back on guard's destruction.
 
 =cut
 
