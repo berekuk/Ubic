@@ -184,7 +184,7 @@ sub do_custom_command {
 
 =head2 NAME METHODS
 
-These methods should not be overriden by specific service classes.
+These methods should not be overridden by specific service classes.
 They are usually used by the code which loads service (i.e. some kind of L<Ubic::Multiservice>) to associate service with its name.
 
 These methods are just the simple interdependent r/w accessors.
