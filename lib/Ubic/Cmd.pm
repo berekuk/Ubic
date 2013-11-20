@@ -33,7 +33,7 @@ use Ubic::Cmd::Results;
 
 =item B<< new($params) >>
 
-All methods of this class can be invoked as class methods, but you can construct your own instance if neccesary (although constructor doesn't have any options by now, so it is useless).
+All methods of this class can be invoked as class methods, but you can construct your own instance if necessary (although constructor doesn't have any options by now, so it is useless).
 
 =cut
 sub new {
@@ -271,7 +271,7 @@ sub traverse($$$) {
             $indent = $indent + 4;
         }
         for my $subservice ($service->services) {
-            $self->traverse($subservice, $callback, $indent); # FIXME - rememeber result
+            $self->traverse($subservice, $callback, $indent); # FIXME - remember result
         }
     }
     else {
@@ -308,7 +308,7 @@ sub print_status($$;$$) {
         print $name;
 
         # calculating the number of tabs to separate service name from status
-        # status will be aligned whenether possible without sacrificing the real-time properties
+        # status will be aligned whenever possible without sacrificing the real-time properties
         # i.e., we add several tabs to align status with previous lines, but following lines can increase the number of tabs if necessary
         # TODO - there are two possibilities to improve this:
         # 1) look at the further *simple* services and add tabs:
