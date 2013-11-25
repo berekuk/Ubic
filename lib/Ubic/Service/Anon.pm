@@ -23,6 +23,7 @@ require Moo;
 require Moo::Role;
 
 my $ANON = 1;
+my @COMMANDS = qw( start stop restart status ); # TODO: More to come
 
 sub import {
     my $class = shift;
@@ -43,7 +44,8 @@ sub import {
 
     *{"$caller[0]\::cmd"} = sub {
         my($name, $code) = @_;
-        $service->_cmd->{$name} = $code;
+        my $fqn = "$service_class\::${name}_impl";
+        *$fqn = Sub::Name::subname($fqn, $code);
         return $service if wantarray;
         exit _run($service, @ARGV);
     };
@@ -59,13 +61,14 @@ sub import {
 
 sub _run {
     my($self, $action, @args) = @_;
+    my $code;
 
-    if($action and $self->_cmd->{$action}) {
-        return $self->_cmd->{$action}->($self, @args);
+    if($action and $code = $self->can_action($action)) {
+        return $self->$code(@args);
     }
     else {
         local $" = '|';
-        printf "Usage: %s [%s]\n", $0, join '|', keys %{ $self->_cmd };
+        printf "Usage: %s [%s]\n", $0, join '|', grep { $self->can_action($_) } @COMMANDS;
         return 0;
     }
 }
@@ -82,6 +85,7 @@ sub _service_class {
         package $service_class;
         use Moo;
         has _cmd => ( is => 'ro', default => sub { +{} } );
+        sub can_action { shift->can(shift ."_impl") }
         1;
     PACKAGE
 
