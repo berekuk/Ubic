@@ -279,7 +279,7 @@ sub start_daemon($) {
         term_timeout => { type => SCALAR, default => 10, regex => qr/^\d+$/ },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
-        proxy_logs => { type => SCALAR, optional => 1 },
+        proxy_logs => { type => BOOLEAN, optional => 1 },
         credentials => { isa => 'Ubic::Credentials', optional => 1 },
         start_hook => { type => CODEREF, optional => 1 },
     });

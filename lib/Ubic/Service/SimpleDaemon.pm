@@ -95,6 +95,12 @@ Optional filename of ubic log. Log will contain some technical information about
 
 None by default.
 
+=item I<proxy_logs>
+
+Boolean flag. If enabled, C<ubic-guardian> will replace daemon's stdout and
+stderr filehandles with pipes, proxy all data to the log files, and reopen them
+on C<SIGHUP>.
+
 =item I<cwd>
 
 Change working directory before starting a daemon.
@@ -166,6 +172,7 @@ sub new {
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
         ubic_log => { type => SCALAR, optional => 1 },
+        proxy_logs => { type => BOOLEAN, optional => 1 },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
         reload_signal => { type => SCALAR, optional => 1 },
@@ -207,7 +214,7 @@ sub start_impl {
         pidfile => $self->pidfile,
         bin => $self->{bin},
     };
-    for (qw/ env cwd stdout stderr ubic_log term_timeout /) {
+    for (qw/ env cwd stdout stderr ubic_log proxy_logs term_timeout /) {
         $start_params->{$_} = $self->{$_} if defined $self->{$_};
     }
     if ($self->{reload_signal}) {
