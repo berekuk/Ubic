@@ -35,6 +35,6 @@ sub file2uid {
 is(file2uid('tfiles/pid'), scalar(getpwnam('root')), 'pidfile belongs to root');
 is(file2uid('tfiles/stdout'), scalar(getpwnam('daemon')), 'stdout belongs to daemon');
 is(file2uid('tfiles/stderr'), scalar(getpwnam('daemon')), 'stderr belongs to daemon');
-is(file2uid('tfiles/ubic.log'), scalar(getpwnam('root')), 'stderr belongs to root');
+is(file2uid('tfiles/ubic.log'), scalar(getpwnam('daemon')), 'stderr belongs to daemon');
 
 stop_daemon('tfiles/pid');

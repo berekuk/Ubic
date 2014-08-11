@@ -49,7 +49,7 @@ sub test_grants :Tests {
         is($stat[5], scalar(getgrnam($group)), "$file group is $group") unless $^O eq 'darwin';
     };
     $check_file->("tfiles/$name.result", $result_user, $result_group);
-    $check_file->("tfiles/$name.ubic.log", $user, $group);
+    $check_file->("tfiles/$name.ubic.log", $result_user, $result_group);
     $check_file->("tfiles/ubic/status/$name", $user, $group);
     $check_file->("tfiles/ubic/lock/$name", $user, $group);
 }

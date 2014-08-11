@@ -260,8 +260,8 @@ sub eq {
     if (
         $self->effective_user_id == $other->effective_user_id
         and $self->real_user_id == $other->real_user_id
-        and $self->_groups_equal($self->effective_group_id, $other->effective_group_id)
-        and $self->_groups_equal($self->real_group_id, $other->real_group_id)
+        and $self->_groups_equal(join(" ", $self->effective_group_id), join(" ", $other->effective_group_id))
+        and $self->_groups_equal(join(" ", $self->real_group_id), join(" ", $other->real_group_id))
     ) {
         return 1;
     }
