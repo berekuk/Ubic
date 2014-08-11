@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.57_01 2014-08-11
     * fix Ubic::Credentials::OS::POSIX 'eq' method
 
 1.57    2013-11-21
