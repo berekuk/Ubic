@@ -47,6 +47,23 @@ sub _pid_dir {
     return $PID_DIR;
 }
 
+sub _send_signal {
+    my ($self, $signal) = @_;
+
+    my $daemon = check_daemon($self->pidfile);
+    unless ($daemon) {
+        return result('not running');
+    }
+
+    my $pid = $daemon->pid;
+    kill $signal => $pid;
+
+    my $guardian_pid = $daemon->guardian_pid;
+    kill HUP => $guardian_pid;
+
+    return result('reloaded', "sent $self->{reload_signal} to $pid, sent HUP to $guardian_pid");
+}
+
 =head1 METHODS
 
 =over
@@ -267,18 +284,7 @@ sub reload {
     unless (defined $self->{reload_signal}) {
         return result('unknown', 'not implemented');
     }
-    my $daemon = check_daemon($self->pidfile);
-    unless ($daemon) {
-        return result('not running');
-    }
-
-    my $pid = $daemon->pid;
-    kill $self->{reload_signal} => $pid;
-
-    my $guardian_pid = $daemon->guardian_pid;
-    kill HUP => $guardian_pid;
-
-    return result('reloaded', "sent $self->{reload_signal} to $pid, sent HUP to $guardian_pid");
+    return $self->_send_signal($self->{reload_signal});
 }
 
 sub auto_start {
