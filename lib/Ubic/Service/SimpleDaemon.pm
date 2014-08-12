@@ -35,6 +35,11 @@ use Params::Validate qw(:all);
 # Beware - this code will ignore any overrides if you're using custom Ubic->new(...) objects
 our $PID_DIR;
 
+our %SIGNALS = (
+    sigusr1 => 'SIGUSR1',
+    sigusr2 => 'SIGUSR2',
+);
+
 sub _pid_dir {
     return $PID_DIR if defined $PID_DIR;
     if ($ENV{UBIC_DAEMON_PID_DIR}) {
@@ -290,6 +295,20 @@ sub reload {
 sub auto_start {
     my $self = shift;
     return $self->{auto_start};
+}
+
+sub custom_commands {
+    my ($self) = @_;
+    return keys %SIGNALS;
+}
+
+sub do_custom_command {
+    my ($self, $command) = @_;
+    unless (defined $SIGNALS{$command}) {
+        return result('unknown', 'not implemented');
+    }
+
+    return $self->_send_signal($SIGNALS{$command});
 }
 
 =back
