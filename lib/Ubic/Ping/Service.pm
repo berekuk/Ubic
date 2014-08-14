@@ -57,7 +57,7 @@ sub new {
                 return 'not running';
             }
             my $ua = Ubic::UA->new(timeout => 1);
-            my $response = $ua->get("http://localhost:$port/ping");
+            my $response = $ua->get("http://127.0.0.1:$port/ping");
             if ($response->{error}) {
                 return result('broken', $response->{error});
             }
