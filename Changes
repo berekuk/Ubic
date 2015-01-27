@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.58    2015-01-28
     * SimpleDaemon: customizable stop_timeout
     (thanks to github:nwtour for the patch, see https://github.com/berekuk/Ubic/pull/73)
     * SimpleDaemon: sigusr1 and sigusr2 custom commands
