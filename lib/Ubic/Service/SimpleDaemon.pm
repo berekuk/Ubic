@@ -170,6 +170,7 @@ sub new {
         env => { type => HASHREF, optional => 1 },
         reload_signal => { type => SCALAR, optional => 1 },
         term_timeout => { type => SCALAR, optional => 1, regex => qr/^\d+$/ },
+        stop_timeout => { type => SCALAR, optional => 1, regex => qr/^\d+$/ },
         ulimit => { type => HASHREF, optional => 1 },
         auto_start => { type => BOOLEAN, default => 0 },
     });
@@ -249,7 +250,9 @@ sub group {
 
 sub stop_impl {
     my ($self) = @_;
-    stop_daemon($self->pidfile);
+    my $options = {};
+    $options->{timeout} = $self->{stop_timeout} if $self->{stop_timeout};
+    stop_daemon($self->pidfile,$options);
 }
 
 sub status_impl {
