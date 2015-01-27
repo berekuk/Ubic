@@ -35,11 +35,6 @@ use Params::Validate qw(:all);
 # Beware - this code will ignore any overrides if you're using custom Ubic->new(...) objects
 our $PID_DIR;
 
-our %SIGNALS = (
-    sigusr1 => 'SIGUSR1',
-    sigusr2 => 'SIGUSR2',
-);
-
 sub _pid_dir {
     return $PID_DIR if defined $PID_DIR;
     if ($ENV{UBIC_DAEMON_PID_DIR}) {
@@ -306,6 +301,20 @@ sub auto_start {
     return $self->{auto_start};
 }
 
+=back
+
+=head1 CUSTOM COMMANDS
+
+All services using this class support two custom commands: I<sigusr1> and I<sigusr2>.
+So, C<ubic sigusr1 your.service.name> will send I<SIGUSR1> to your daemon (and also send I<SIGHUP> to ubic-guardian, which can result in reopening log files.)
+
+=cut
+
+our %SIGNALS = (
+    sigusr1 => 'SIGUSR1',
+    sigusr2 => 'SIGUSR2',
+);
+
 sub custom_commands {
     my ($self) = @_;
     return keys %SIGNALS;
@@ -319,8 +328,6 @@ sub do_custom_command {
 
     return $self->_send_signal($SIGNALS{$command});
 }
-
-=back
 
 =head1 SEE ALSO
 
