@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * SimpleDaemon: customizable stop_timeout
+    (thanks to github:nwtour for the patch, see https://github.com/berekuk/Ubic/pull/73)
 
 1.57_01 2014-08-11
     * fix Ubic::Credentials::OS::POSIX 'eq' method

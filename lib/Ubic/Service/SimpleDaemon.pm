@@ -125,6 +125,12 @@ Zero value means that guardian will send I<SIGKILL> to the daemon immediately.
 
 Default is 10 seconds.
 
+=item I<stop_timeout>
+
+Number of seconds to wait before raising exception that daemon can't be stopped.
+
+This should always be greater than I<term_timeout>, and defaults to 30 seconds (via L<Ubic::Daemon>'s defaults.)
+
 =item I<reload_signal>
 
 Send given signal to the daemon on C<reload> command.
