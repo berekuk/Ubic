@@ -35,6 +35,11 @@ use Params::Validate qw(:all);
 # Beware - this code will ignore any overrides if you're using custom Ubic->new(...) objects
 our $PID_DIR;
 
+our %SIGNALS = (
+    sigusr1 => 'SIGUSR1',
+    sigusr2 => 'SIGUSR2',
+);
+
 sub _pid_dir {
     return $PID_DIR if defined $PID_DIR;
     if ($ENV{UBIC_DAEMON_PID_DIR}) {
@@ -45,6 +50,23 @@ sub _pid_dir {
         $PID_DIR = Ubic::Settings->data_dir."/simple-daemon/pid";
     }
     return $PID_DIR;
+}
+
+sub _send_signal {
+    my ($self, $signal) = @_;
+
+    my $daemon = check_daemon($self->pidfile);
+    unless ($daemon) {
+        return result('not running');
+    }
+
+    my $pid = $daemon->pid;
+    kill $signal => $pid;
+
+    my $guardian_pid = $daemon->guardian_pid;
+    kill HUP => $guardian_pid;
+
+    return result('reloaded', "sent $self->{reload_signal} to $pid, sent HUP to $guardian_pid");
 }
 
 =head1 METHODS
@@ -276,23 +298,26 @@ sub reload {
     unless (defined $self->{reload_signal}) {
         return result('unknown', 'not implemented');
     }
-    my $daemon = check_daemon($self->pidfile);
-    unless ($daemon) {
-        return result('not running');
-    }
-
-    my $pid = $daemon->pid;
-    kill $self->{reload_signal} => $pid;
-
-    my $guardian_pid = $daemon->guardian_pid;
-    kill HUP => $guardian_pid;
-
-    return result('reloaded', "sent $self->{reload_signal} to $pid, sent HUP to $guardian_pid");
+    return $self->_send_signal($self->{reload_signal});
 }
 
 sub auto_start {
     my $self = shift;
     return $self->{auto_start};
+}
+
+sub custom_commands {
+    my ($self) = @_;
+    return keys %SIGNALS;
+}
+
+sub do_custom_command {
+    my ($self, $command) = @_;
+    unless (defined $SIGNALS{$command}) {
+        return result('unknown', 'not implemented');
+    }
+
+    return $self->_send_signal($SIGNALS{$command});
 }
 
 =back
