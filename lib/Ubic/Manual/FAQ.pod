@@ -83,7 +83,7 @@ Anyway, don't worry about it, it's completely harmless.
 C<ubic.update> service (and ubic-update script) updates portmap - local C<< { port => service-name } >> mapping.
 It makes possible to check a service status via C<ubic.ping> using service port instead of its name:
 
-    $ wget -q -O - 'http://127.0.0.1:12345/status/port/12345'
+    $ wget -q -O - 'http://localhost:12345/status/port/12345'
     ok
 
 Resolving of service by port can't be done on-the-fly by C<ubic.ping>, because all service definitions are cached internally by Ubic.pm (L<Ubic::Multiservice>, actually, but you don't have to know the difference), since constant reloading of service definition can cause memory leaks.
