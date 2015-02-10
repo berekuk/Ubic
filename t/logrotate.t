@@ -26,7 +26,7 @@ sub setup :Test(setup) {
 sub logrotate :Tests(4) {
     my $service = Ubic::Service::SimpleDaemon->new({
         name => 'simple1',
-        bin => ['perl', '-e', 'use IO::Handle; use Time::HiRes qw(sleep); STDOUT->autoflush(1); $SIG{HUP} = "IGNORE"; for (1..100) {print "stdout: $_\n"; warn "stderr $_\n"; sleep 0.1;}'],
+        bin => [$^X, '-e', 'use IO::Handle; use Time::HiRes qw(sleep); STDOUT->autoflush(1); $SIG{HUP} = "IGNORE"; for (1..100) {print "stdout: $_\n"; warn "stderr $_\n"; sleep 0.1;}'],
         stdout => 'tfiles/stdout',
         stderr => 'tfiles/stderr',
         ubic_log => 'tfiles/ubic.log',
