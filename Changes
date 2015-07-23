@@ -7,6 +7,9 @@ Revision history for Ubic
     * Small optimization of Ubic::Service::Utils::wait_for_status to prevent last sleep
     (thanks to github:Logioniz for pointing this out, see https://github.com/berekuk/Ubic/issues/76)
 
+    * SimpleDaemon supports 'pidfile' and 'proxy_logs' options
+    (thanks to github:dionys for the patch, see https://github.com/berekuk/Ubic/pull/69)
+
 1.58    2015-01-28
     * SimpleDaemon: customizable stop_timeout
     (thanks to github:nwtour for the patch, see https://github.com/berekuk/Ubic/pull/73)
