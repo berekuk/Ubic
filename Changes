@@ -4,6 +4,9 @@ Revision history for Ubic
     * fix PATH hack in ubic-watchdog
     (thanks to David Djurberg for pointing this, see https://groups.google.com/forum/#!topic/ubic-perl/dAY9S3mXoVM)
 
+    * Small optimization of Ubic::Service::Utils::wait_for_status to prevent last sleep
+    (thanks to github:Logioniz for pointing this out, see https://github.com/berekuk/Ubic/issues/76)
+
 1.58    2015-01-28
     * SimpleDaemon: customizable stop_timeout
     (thanks to github:nwtour for the patch, see https://github.com/berekuk/Ubic/pull/73)

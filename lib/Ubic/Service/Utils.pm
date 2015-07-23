@@ -74,9 +74,12 @@ sub wait_for_status {
         $status = result($service->status);
         my $status_str = $status->status;
         last if grep { $_ eq $status_str } @expect_status;
-        my $sleep = $step * $trial;
-        sleep($sleep);
-        $time += $sleep;
+
+        if ($trial < $trials) {
+            my $sleep = $step * $trial;
+            sleep($sleep);
+            $time += $sleep;
+        }
     }
     return $status;
 }
