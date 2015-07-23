@@ -20,7 +20,9 @@ use warnings;
 
 Use this class to turn any binary into ubic service.
 
-This module uses L<Ubic::Daemon> module for process daemonization. All pidfiles are stored in ubic data dir, with their names based on service names.
+This module uses L<Ubic::Daemon> module for process daemonization. Unless
+otherwise specified, all pidfiles are stored in ubic data dir, with their names
+based on service names.
 
 =cut
 
@@ -98,6 +100,13 @@ Value can be either scalar or arrayref.
 
 Defaults to all groups of service's user.
 
+=item I<pidfile>
+
+Dir in local filesystem which will be used as a storage of daemon's info. If
+not defined, then it will be concatenated from simple-daemon pid dir and
+service's name. It will be created if necessary, assuming that its parent dir
+exists.
+
 =item I<stdout>
 
 File into which daemon's stdout will be redirected.  None by default.
@@ -111,6 +120,12 @@ File into which daemon's stderr will be redirected. None by default.
 Optional filename of ubic log. Log will contain some technical information about running daemon.
 
 None by default.
+
+=item I<proxy_logs>
+
+Boolean flag. If enabled, C<ubic-guardian> will replace daemon's stdout and
+stderr filehandles with pipes, proxy all data to the log files, and reopen them
+on C<SIGHUP>.
 
 =item I<cwd>
 
@@ -186,9 +201,11 @@ sub new {
         daemon_user => { type => SCALAR, optional => 1 },
         daemon_group => { type => SCALAR | ARRAYREF, optional => 1 },
         name => { type => SCALAR, optional => 1 },
+        pidfile => { type => SCALAR, optional => 1 },
         stdout => { type => SCALAR, optional => 1 },
         stderr => { type => SCALAR, optional => 1 },
         ubic_log => { type => SCALAR, optional => 1 },
+        proxy_logs => { type => BOOLEAN, optional => 1 },
         cwd => { type => SCALAR, optional => 1 },
         env => { type => HASHREF, optional => 1 },
         reload_signal => { type => SCALAR, optional => 1 },
@@ -215,11 +232,12 @@ sub new {
 
 =item B<< pidfile() >>
 
-Get pid filename. It will be concatenated from simple-daemon pid dir and service's name.
+Get pid filename. It will be concatenated from simple-daemon pid dir and service's name by default.
 
 =cut
 sub pidfile {
     my ($self) = @_;
+    return $self->{pidfile} if exists($self->{pidfile});
     my $name = $self->full_name or die "Can't start nameless SimpleDaemon";
     return _pid_dir."/$name";
 }
@@ -231,7 +249,7 @@ sub start_impl {
         pidfile => $self->pidfile,
         bin => $self->{bin},
     };
-    for (qw/ env cwd stdout stderr ubic_log term_timeout /) {
+    for (qw/ env cwd stdout stderr ubic_log proxy_logs term_timeout /) {
         $start_params->{$_} = $self->{$_} if defined $self->{$_};
     }
     if ($self->{reload_signal}) {
