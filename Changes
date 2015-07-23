@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.58_01 2015-07-23
     * fix PATH hack in ubic-watchdog
     (thanks to David Djurberg for pointing this, see https://groups.google.com/forum/#!topic/ubic-perl/dAY9S3mXoVM)
 
