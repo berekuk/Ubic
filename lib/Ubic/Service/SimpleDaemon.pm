@@ -213,6 +213,7 @@ sub new {
         stop_timeout => { type => SCALAR, optional => 1, regex => qr/^\d+$/ },
         ulimit => { type => HASHREF, optional => 1 },
         auto_start => { type => BOOLEAN, default => 0 },
+        kill_child_signal => { type => SCALAR, default => -15, optional => 1 },
     });
 
     if ($params->{ulimit}) {
@@ -255,6 +256,9 @@ sub start_impl {
     if ($self->{reload_signal}) {
         $start_params->{proxy_logs} = 1;
     }
+    if ($self->{kill_child_signal}) {
+	    $start_params->{kill_child_signal} = $self->{kill_child_signal};
+	}	
     if (defined $self->{daemon_user}) {
         $start_params->{credentials} = Ubic::Credentials->new(
             user => $self->{daemon_user},

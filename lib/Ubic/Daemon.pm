@@ -282,9 +282,11 @@ sub start_daemon($) {
         proxy_logs => { type => BOOLEAN, optional => 1 },
         credentials => { isa => 'Ubic::Credentials', optional => 1 },
         start_hook => { type => CODEREF, optional => 1 },
+        kill_child_signal => { type => SCALAR, default => -15, optional => 1 },
+        
     });
-    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials, $start_hook, $proxy_logs)
-    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials   start_hook   proxy_logs /};
+    my           ($bin, $function, $name, $pidfile, $stdout, $stderr, $ubic_log, $term_timeout, $cwd, $env, $credentials, $start_hook, $proxy_logs, $kill_child_signal)
+    = @options{qw/ bin   function   name   pidfile   stdout   stderr   ubic_log   term_timeout   cwd   env   credentials   start_hook   proxy_logs kill_child_signal/};
     if (not defined $bin and not defined $function) {
         croak "One of 'bin' and 'function' should be specified";
     }
@@ -419,7 +421,7 @@ sub start_daemon($) {
                         $SIG{ALRM} = $kill_sub;
                         alarm($term_timeout);
                         _log($ubic_fh, "sending SIGTERM to $child");
-                        kill -15 => $child;
+                        kill $kill_child_signal => $child;
                         $sigterm_sent = 1;
                     }
                     else {
