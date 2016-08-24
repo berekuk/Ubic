@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+    * Parametrize terminate signal
+    (thanks to github:and-hom for the patch, see https://github.com/berekuk/Ubic/pull/81)
 
 1.59    2016-03-28
     * stable release, no code changes
