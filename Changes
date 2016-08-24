@@ -1,6 +1,8 @@
 Revision history for Ubic
 
 {{$NEXT}}
+
+1.60    2016-08-25
     * Parametrize terminate signal
     (thanks to github:and-hom for the patch, see https://github.com/berekuk/Ubic/pull/81)
 
