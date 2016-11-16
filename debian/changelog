@@ -1,11 +1,11 @@
 ubic (1.60) unstable; urgency=low
     * Parametrize terminate signal
       (thanks to github:and-hom for the patch, see https://github.com/berekuk/Ubic/pull/81)
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru> Thu, 25 Aug 2016 01:43:48 +0300
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 25 Aug 2016 01:43:48 +0300
 
 ubic (1.59) unstable; urgency=low
     * stable release, no code changes
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru> Mon, 28 Mar 2016 21:05:40 +0300
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 28 Mar 2016 21:05:40 +0300
 
 ubic (1.58_01) unstable; urgency=low
     * fix PATH hack in ubic-watchdog
@@ -14,7 +14,7 @@ ubic (1.58_01) unstable; urgency=low
       (thanks to github:Logioniz for pointing this out, see https://github.com/berekuk/Ubic/issues/76)
     * SimpleDaemon supports 'pidfile' and 'proxy_logs' options
       (thanks to github:dionys for the patch, see https://github.com/berekuk/Ubic/pull/69)
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru> Thu, 23 Jul 2015 21:19:34 +0300
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 23 Jul 2015 21:19:34 +0300
 
 ubic (1.58) unstable; urgency=low
     * SimpleDaemon: customizable stop_timeout
@@ -23,18 +23,18 @@ ubic (1.58) unstable; urgency=low
       (thanks to github:bacek for the patch, see https://github.com/berekuk/Ubic/pull/70)
     * Ubic::Ping - check via 127.0.0.1 instead of localhost
       (thanks to github:eightn for the patch, see https://github.com/berekuk/Ubic/pull/71)
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru> Wed, 28 Jan 2015 01:10:36 +0300
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Wed, 28 Jan 2015 01:10:36 +0300
 
 ubic (1.57_01) unstable; urgency=low
     * fix Ubic::Credentials::OS::POSIX 'eq' method
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru> Mon, 11 Aug 2014 21:58:18 +0000
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Mon, 11 Aug 2014 21:58:18 +0000
 
 ubic (1.57) unstable; urgency=low
     * fix various documentation typos
       (thanks to github:dsteinbrunner and github:akarelas for patches)
     * modernize Ubic::Ping to respond with http 1.1 message and a proper content-type header
       (thanks to github:alnewkirk)
- -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru> Thu, 21 Nov 2013 01:00:11 +0400
+ -- Vyacheslav Matjukhin (No comments) <mmcleric@yandex-team.ru>  Thu, 21 Nov 2013 01:00:11 +0400
 
 ubic (1.56) unstable; urgency=low
     * Reformatted Changes as per CPAN::Changes::Spec
