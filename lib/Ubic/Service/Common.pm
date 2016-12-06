@@ -90,7 +90,7 @@ Service's port.
 sub new {
     my $class = shift;
     my $params = validate(@_, {
-        auto_start  => { type => SCALAR, default => 0 },
+        auto_start  => { type => BOOLEAN, default => 0 },
         start       => { type => CODEREF },
         stop        => { type => CODEREF },
         status      => { type => CODEREF },
