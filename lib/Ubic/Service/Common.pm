@@ -90,6 +90,7 @@ Service's port.
 sub new {
     my $class = shift;
     my $params = validate(@_, {
+        auto_start  => { type => SCALAR, default => 0 },
         start       => { type => CODEREF },
         stop        => { type => CODEREF },
         status      => { type => CODEREF },
@@ -127,6 +128,11 @@ sub start_impl {
 sub stop_impl {
     my $self = shift;
     return $self->{stop}->();
+}
+
+sub auto_start($) {
+    my $self = shift;
+    return $self->{auto_start};
 }
 
 sub timeout_options {
