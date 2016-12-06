@@ -1,8 +1,9 @@
 Revision history for Ubic
 
 {{$NEXT}}
+1.61    2016-12-06
     * added lost PR about 'auto_start' option in Ubic::Service
-    (github:rodart for the patch, see https://github.com/berekuk/Ubic/pull/56)
+    (thanks to github:rodart for the patch, see https://github.com/berekuk/Ubic/pull/56)
 
 1.60    2016-08-25
     * Parametrize terminate signal
