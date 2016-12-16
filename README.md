@@ -76,7 +76,7 @@ You can also look for information at:
 * [Github Wiki](http://github.com/berekuk/Ubic/wiki)
 * [CPAN](https://metacpan.org/release/Ubic)
 
-## Suppor
+## Support
 
 There is also a low-volume mailing list is <ubic-perl@googlegroups.com>. Send an empty message to <ubic-perl+subscribe@googlegroups.com> to subscribe.
 
