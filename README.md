@@ -1,5 +1,9 @@
 # Ubic
 
+> **My priorities have changed and I can't promise the proper maintainence of this software anymore. The codebase is solid enough to be used without any significant issues, though. Feel free to ask me for a commit bit if you want to fix something or take over completely.**
+>
+> -- [@berekuk](https://github.com/berekuk)
+
 Ubic is a polymorphic service manager.
 
 "Polymorphic" means that Ubic can use various pluggable backends for managing services, for configuring services and even for describing a list of all services.
