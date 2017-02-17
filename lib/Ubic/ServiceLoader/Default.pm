@@ -31,8 +31,24 @@ sub load {
     my $content = do { local $/; <$fh> };
     close $fh or die "Can't close $file: $!";
 
-    $content = "# line 1 $file\n$content";
-    $content = "package UbicService".($eval_id++).";\n# line 1 $file\n$content";
+    $content = <<"    PACKAGE";
+package UbicService$eval_id;
+our \$AUTOLOAD;
+# line 1 $file
+sub AUTOLOAD {
+  if(\$AUTOLOAD =~ /^UbicService\\d+::(\\w+)/) {
+    my \$module = "Ubic::Service::\$1";
+    eval "require \$module; 1" or die \$@;
+    return \$module->new(\@_);
+  }
+  else {
+    die qq(Can't locate object method "\$AUTOLOAD");
+  }
+}
+$content
+    PACKAGE
+
+    $eval_id++;
     my $service = eval $content;
     if ($@) {
         die "Failed to eval '$file': $@";
