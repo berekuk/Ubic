@@ -1,0 +1,20 @@
+use Ubic::Service::Anon;
+
+# with qw( Ubic::Service::Role::Guardian );
+# extends qw( Some::Service::Class );
+
+cmd start => sub {
+    warn $service;
+},
+
+cmd stop => sub {
+    warn "stop";
+},
+
+cmd restart => sub {
+    warn "restart";
+},
+
+cmd status => sub {
+    warn "status";
+},
