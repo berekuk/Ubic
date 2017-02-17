@@ -351,6 +351,11 @@ sub setup {
             # TODO - what if PATH contains " quotes? hopefully nobody is that crazy...
             $crontab_env_fix .= qq[PATH="$ENV{PATH}" ];
         }
+        else {
+            require File::Basename;
+            my $path = File::Basename::dirname($ubic_watchdog_full_name);
+            $crontab_env_fix .= qq[PATH="$path\:\$PATH" ];
+        }
 
         if ($ENV{PERL5LIB}) {
             print_tty "\nYou're using custom PERL5LIB.\n";
@@ -443,7 +448,7 @@ sub setup {
         if ($crontab_wrap_bash) {
             $crontab_command = "bash -c '$crontab_command'";
         }
-        push @crontab_lines, "* * * * * $crontab_command    >>$log_dir/watchdog.log 2>>$log_dir/watchdog.err.log";
+        push @crontab_lines, "* * * * * $crontab_command >>$log_dir/watchdog.log 2>>$log_dir/watchdog.err.log";
         $printc->("$_\n") for @crontab_lines;
         close $fh or die "Can't close pipe: $!";
     }

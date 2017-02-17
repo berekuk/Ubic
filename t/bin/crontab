@@ -1,0 +1,14 @@
+#!/usr/bin/env perl
+
+open my $LOG, '>>', 'tfiles/crontab.log';
+
+print { $LOG } join ' ', @ARGV;
+print { $LOG } "\n";
+
+unless(-t STDIN) {
+    while(<STDIN>) {
+      print { $LOG } $_;
+    }
+}
+
+print { $LOG } "---\n";
