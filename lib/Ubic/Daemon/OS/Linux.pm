@@ -21,14 +21,14 @@ use parent qw(Ubic::Daemon::OS);
 sub pid2guid {
     my ($self, $pid) = @_;
 
-    unless (-d "/proc/$pid") {
+    unless ($self->pid_exists($pid)) {
         return; # process not found
     }
     my $opened = open(my $fh, '<', "/proc/$pid/stat");
     unless ($opened) {
         # open failed
         my $error = $!;
-        unless (-d "/proc/$pid") {
+        unless ($self->pid_exists($pid)) {
             return; # process exited right now
         }
         die "Open /proc/$pid/stat failed: $!";
@@ -78,7 +78,7 @@ sub close_all_fh {
 
 sub pid_exists {
     my ($self, $pid) = @_;
-    return (-d "/proc/$pid");
+    return (-d "/proc/$pid" && -e "/proc/$pid/exe");
 }
 
 1;
