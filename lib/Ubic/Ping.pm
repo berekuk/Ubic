@@ -53,6 +53,22 @@ sub _print_status($;$) {
     }
 }
 
+sub _traverse_statuses {
+    my $service = shift;
+    if ($service && !$service->can("services")) {
+        my $name = $service->full_name;
+        my $status = Ubic->cached_status($name)->status;
+        unless (Ubic->is_enabled($name)) { $status = "off"; }
+        return $status;
+    }
+    my @subservices = $service ? $service->services : Ubic->services;
+    my $statuses;
+    for my $s (@subservices) {
+        $statuses->{$s->name} = _traverse_statuses($s);
+    }
+    return $statuses;
+}
+
 sub handle_request {
     my ($self, $cgi) = @_;
 
@@ -96,6 +112,14 @@ sub handle_request {
                 return;
             }
             _print_status($name);
+        }
+        elsif ($cgi->path_info =~ m{^/status/service/?$}) {
+            # get all services status in json;
+            my $statuses =  _traverse_statuses(); 
+            print "HTTP/1.1 200 OK\r\n";
+            print "Content-Type: application/json; charset=utf-8\r\n\r\n";
+            print encode_json $statuses;
+            return;
         }
         else {
             print "HTTP/1.1 404 Not found\r\n";
