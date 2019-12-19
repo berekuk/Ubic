@@ -9,6 +9,7 @@ use warnings;
 use Ubic;
 use Ubic::PortMap;
 use Params::Validate qw(:all);
+use JSON qw(encode_json);
 use Try::Tiny;
 
 use parent qw(HTTP::Server::Simple::CGI);
