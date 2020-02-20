@@ -57,7 +57,8 @@ sub get {
     my $socket = IO::Socket::INET->new(
         PeerAddr => $authority,
         Proto    => 'tcp',
-        Timeout  => $self->{timeout}
+        Timeout  => $self->{timeout},
+        GetAddrInfoFlags => 0
     ) or return {error => $@};
     $socket->autoflush(1);
     $path .= '?' . $query if $query;
