@@ -1,3 +1,17 @@
+ubic (1.63) unstable; urgency=low
+
+  * fixed ubic.ping status check for ipv6-only hosts
+    https://github.com/berekuk/Ubic/pull/94
+
+ -- Evgeniy Zaitsev <eightn@yandex-team.ru>  Tue, 25 Feb 2020 20:02:53 +0300
+
+ubic (1.62) unstable; urgency=low
+
+  * added 127.0.0.1:12345/status/service
+    https://github.com/berekuk/Ubic/pull/92
+
+ -- Evgeniy Zaitsev <eightn@yandex-team.ru>  Thu, 19 Dec 2019 10:15:11 +0300
+
 ubic (1.61) unstable; urgency=low
 
   * added lost PR about 'auto_start' option in Ubic::Service

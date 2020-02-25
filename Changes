@@ -1,6 +1,14 @@
 Revision history for Ubic
 
 {{$NEXT}}
+1.63    2020-02-25
+    * fixed ubic.ping status check for ipv6-only hosts
+    https://github.com/berekuk/Ubic/pull/94
+
+1.62    2019-12-19
+    * added 127.0.0.1:12345/status/service
+    https://github.com/berekuk/Ubic/pull/92
+
 1.61    2016-12-06
     * added lost PR about 'auto_start' option in Ubic::Service
     (thanks to github:rodart for the patch, see https://github.com/berekuk/Ubic/pull/56)
