@@ -78,7 +78,16 @@ sub close_all_fh {
 
 sub pid_exists {
     my ($self, $pid) = @_;
-    return (-d "/proc/$pid" && -e "/proc/$pid/exe");
+
+    for (my $i = 0; $i < 100; $i++) {
+        if (-d "/proc/$pid" && -e "/proc/$pid/exe") {
+            return 1;
+        }
+
+        sleep 0.001;
+    }
+
+    return;
 }
 
 1;
