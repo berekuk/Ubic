@@ -90,7 +90,7 @@ sub pid_exists {
 
         last if $i >= 7;
 
-        warn "Failed to check PID '$pid' in '/proc', attempt $i. Sleeping '$check_interval' before next check."
+        warn "Failed to check PID '$pid' in '/proc', attempt $i. Sleeping '$check_interval' before next check.";
         sleep $check_interval;
         $check_interval = $check_interval*2;
     }
