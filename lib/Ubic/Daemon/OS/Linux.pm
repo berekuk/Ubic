@@ -78,7 +78,24 @@ sub close_all_fh {
 
 sub pid_exists {
     my ($self, $pid) = @_;
-    return (-d "/proc/$pid" && -e "/proc/$pid/exe");
+    my $check_interval = 0.001;
+
+    # Wait at most 127ms before giving up and returning false.
+    # This helps to avoid race: check can return false negative
+    # for its own process immediately after 'fork' in some cases.
+    for (my $i = 0; 1; $i++) {
+        if (-d "/proc/$pid" && -e "/proc/$pid/exe") {
+            return 1;
+        }
+
+        last if $i >= 7;
+
+        warn "Failed to check PID '$pid' in '/proc', attempt $i. Sleeping '$check_interval' before next check.";
+        sleep $check_interval;
+        $check_interval = $check_interval*2;
+    }
+
+    return;
 }
 
 1;
