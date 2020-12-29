@@ -257,13 +257,7 @@ sub start_impl {
         $start_params->{proxy_logs} = 1;
     }
     if ($self->{kill_child_signal}) {
-	    $start_params->{kill_child_signal} = $self->{kill_child_signal};
-	}	
-    if (defined $self->{daemon_user}) {
-        $start_params->{credentials} = Ubic::Credentials->new(
-            user => $self->{daemon_user},
-            group => $self->{daemon_group},
-        );
+        $start_params->{kill_child_signal} = $self->{kill_child_signal};
     }
     if (defined $self->{ulimit}) {
         $start_params->{start_hook} = sub {
@@ -275,6 +269,12 @@ sub start_impl {
                 }
             }
         };
+    }
+    if (defined $self->{daemon_user}) {
+        $start_params->{credentials} = Ubic::Credentials->new(
+            user => $self->{daemon_user},
+            group => $self->{daemon_group},
+        );
     }
     start_daemon($start_params);
 }
