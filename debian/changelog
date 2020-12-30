@@ -1,3 +1,10 @@
+ubic (1.64) unstable; urgency=low
+
+  * fixed set limit before change user in Ubic::Service::SimpleDaemon
+    https://github.com/berekuk/Ubic/pull/96
+
+ -- Dmitriy Karpukhin <kdmitriy@yandex-team.ru>  Wed, 30 Dec 2020 14:30:34 +0300
+
 ubic (1.63) unstable; urgency=low
 
   * fixed ubic.ping status check for ipv6-only hosts
