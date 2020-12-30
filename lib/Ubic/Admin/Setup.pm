@@ -292,9 +292,10 @@ sub setup {
     my $enable_1777;
     if ($is_root) {
         print_tty "\nSystem-wide installations usually need to store service-related data\n";
-        print_tty "into data dir for different users. For non-root services to work\n";
-        print_tty "1777 grants for some data dir subdirectories is required.\n";
-        print_tty "(1777 grants means that everyone is able to write to the dir,\n";
+        print_tty "into various data directories for different users.\n";
+        print_tty "The only way for non-root services to be able to use a system-wide installation\n";
+        print_tty "is to set permissions for those data subdirectories to 1777.\n";
+        print_tty "(1777 grants permission so everyone is able to write to the dir,\n";
         print_tty "but only file owners are able to modify and remove their files.)\n";
         print_tty "There are no known security issues with this approach, but you have\n";
         print_tty "to decide for yourself if that's ok for you.\n";
