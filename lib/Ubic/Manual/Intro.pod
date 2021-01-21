@@ -35,6 +35,29 @@ Alternatively, if you're using Debian or Ubuntu, you can install ubic .deb packa
     apt-get update
     apt-get install ubic
 
+=head1 GENERAL LAYOUT
+
+After C<sudo ubic-admin setup> has successfully finished you will have a
+working Ubic deployment ready to use.  Two file hierarchies will be present:
+I</etc/ubic> and I</var/lib/ubic>. These contain the configuration and state
+of monitored processes. The ubic.watchdog daemon will be running
+and a cron job will be configured to watch the watchdog. 
+
+Confirm that all is running properly with C<sudo ubic status>. You will see something like the following:
+
+    ubic
+        ubic.ping   off
+        ubic.update off
+        ubic.watchdog       running (pid 15320)
+
+This shows a minimal default Ubic configuration. Running C<sudo crontab -l> will show the watchdog watching cron job.
+
+    * * * * * /usr/bin/ubic-watchdog ubic.watchdog >>/var/log/ubic/watchdog.log 2>>/var/log/ubic/watchdog.err.log
+
+With this configiguration no init.d script is needed.  There are alternative
+ways to deploy discussed in L<Ubic::Manual::FAQ>. For this discussion
+we'll stick with these defaults.
+
 =head1 WRITE YOUR FIRST SERVICE
 
 Put this code in your service dir, i.e. in the file I</etc/ubic/service/example> (or if you opted for a home-dir installation, in the I<~/ubic/service/example>):
@@ -74,6 +97,42 @@ Now let's see how the watchdog works by killing the process (replace the pid val
     [Thu May 26 20:20:54 2011]  example is broken, restarting
 
 You don't have to run C<ubic-watchdog> manually; it will do its work in background in a minute.
+
+=head1 WRITE YOUR SECOND SERVICE
+
+Put this config into I<example2.ini> your service directory as in example 1 
+above:
+
+    module = Ubic::Service::SimpleDaemon
+    [options]
+    bin = sleep 15
+    user = nobody
+
+Set up a simple terminal display to watch what is going on:
+
+    watch 'ps -ef | grep sleep | grep -v grep; ubic status;
+            tail -n 5 /var/log/ubic/watchdog.log'
+
+In another terminal start the process
+
+    ubic start example2
+
+Note that the background process dies every 15 seconds as expected. Also note
+that it is restared by the watchdog after it has been idle for about a minute.
+
+More details about using .ini files can be found in
+L<Ubic::ServiceLoader::Ext::ini>.  You can also use JSON config. That
+alternative is described in L<Ubic::ServiceLoader::Ext::json>.
+
+=head1 OTHER SERVICES
+
+There are two other services deployed as part of the default Ubic setup. 
+They are off by default and can probably be left that way.
+These are I<ubic.ping> and I<ubic.update>.  The I<ubic.ping> service provides
+a way to check that services are running via a REST like API.
+The I<ubic.update> service provides a similar function by port number.
+As of this writing they are not particulary useful for basic users of I<Ubic>
+service.
 
 =head1 SEE ALSO
 
