@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 package ubic_periodic;
 
 # ABSTRACT: run given command every N seconds
