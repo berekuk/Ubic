@@ -13,8 +13,8 @@ Architecture: all
 Depends: ${perl:Depends},
  libclass-accessor-perl, liblist-moreutils-perl, libparams-validate-perl,
  libhttp-server-simple-perl, libhttp-server-simple-perl (>= 0.42) | liburi-perl,
- libtry-tiny-perl, libjson-perl, libparent-perl, libconfig-tiny-perl, libfile-which-perl
-Recommends: libbsd-resource-perl (>= 1.2900)
+ libtry-tiny-perl, libjson-perl, libparent-perl, libconfig-tiny-perl, libfile-which-perl,
+ libbsd-resource-perl (>= 1.2900)
 Provides: yandex-ubic
 Replaces: yandex-ubic (<< 1.00)
 Conflicts: yandex-ubic (<< 1.00)
