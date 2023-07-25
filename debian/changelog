@@ -1,3 +1,10 @@
+ubic (1.65) unstable; urgency=low
+
+  * Add libbsd-resource-perl to depends (not recommends)
+    https://github.com/berekuk/Ubic/pull/98
+
+ -- Evgeny Avramenko <kanst9@yandex-team.ru>  Tue, 25 Jul 2023 13:55:27 +0300
+
 ubic (1.64) unstable; urgency=low
 
   * fixed set limit before change user in Ubic::Service::SimpleDaemon
